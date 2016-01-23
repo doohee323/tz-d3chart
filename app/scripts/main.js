@@ -5,14 +5,17 @@ var main_margin = {
   right : 80,
   bottom : 100,
   left : 40
-}, mini_margin = {
+};
+var mini_margin = {
   top : 430,
   right : 80,
   bottom : 20,
   left : 40
-}, main_width = 960 - main_margin.left - main_margin.right, main_height = 500
+};
+var main_width = 960 - main_margin.left - main_margin.right, main_height = 500
     - main_margin.top - main_margin.bottom, mini_height = 500 - mini_margin.top
     - mini_margin.bottom;
+
 // 2016-01-23T00:36:00.000Z
 var formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ"), parseDate = formatDate.parse, bisectDate = d3
     .bisector(function(d) {
@@ -77,8 +80,7 @@ var mini = svg.append("g").attr("transform",
     "translate(" + mini_margin.left + "," + mini_margin.top + ")");
 
 d3
-    .json(
-        "data2.txt",
+    .json("data2.txt",
         function(error, data) {
           data.forEach(function(d) {
             d.date = parseDate(d.date);
@@ -104,10 +106,16 @@ d3
           mini_y1.domain(main_y1.domain());
 
           main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-              "class", "line line0").attr("d", main_line0);
+              "class", "line line0").attr("d", main_line0).attr("data-legend",
+              function(d) {
+                return "DNS Lookup";
+              });
 
           main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-              "class", "line line1").attr("d", main_line1);
+              "class", "line line1").attr("d", main_line1).attr("data-legend",
+              function(d) {
+                return "Aggregate uptime";
+              });
 
           main.append("g").attr("class", "x axis").attr("transform",
               "translate(0," + main_height + ")").call(main_xAxis);
@@ -115,20 +123,20 @@ d3
           main.append("g").attr("class", "y axis axisLeft")
               .call(main_yAxisLeft).append("text").attr("transform",
                   "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
-                  "text-anchor", "end").text("Ã˜ AWZ (ms)");
+                  "text-anchor", "end").text("( ms )");
 
           main.append("g").attr("class", "y axis axisRight").attr("transform",
               "translate(" + main_width + ", 0)").call(main_yAxisRight).append(
               "text").attr("transform", "rotate(-90)").attr("y", -12).attr(
-              "dy", ".71em").style("text-anchor", "end").text("Anzahl");
+              "dy", ".71em").style("text-anchor", "end").text("( % )");
 
           mini.append("g").attr("class", "x axis").attr("transform",
               "translate(0," + mini_height + ")").call(main_xAxis);
 
-          mini.append("path").datum(data).attr("class", "line").attr("d",
+          mini.append("path").datum(data).attr("class", "line line0").attr("d",
               mini_line0);
 
-          mini.append("path").datum(data).attr("class", "line").attr("d",
+          mini.append("path").datum(data).attr("class", "line line1").attr("d",
               mini_line1);
 
           mini.append("g").attr("class", "x brush").call(brush).selectAll(
@@ -137,16 +145,12 @@ d3
           var focus = main.append("g").attr("class", "focus").style("display",
               "none");
 
-          // Anzeige auf der Zeitleiste
           focus.append("line").attr("class", "x").attr("y1", main_y0(0) - 6)
               .attr("y2", main_y0(0) + 6)
 
-          // Anzeige auf der linken Leiste
-          focus.append("line").attr("class", "y0").attr("x1", main_width - 6) // nach
-          // links
-          .attr("x2", main_width + 6); // nach rechts
+          focus.append("line").attr("class", "y0").attr("x1", main_width - 6)
+              .attr("x2", main_width + 6);
 
-          // Anzeige auf der rechten Leiste
           focus.append("line").attr("class", "y1").attr("x1", main_width - 6)
               .attr("x2", main_width + 6);
 
@@ -168,31 +172,49 @@ d3
 
           function mousemove() {
             var x0 = main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0,
-                1), d0 = data[i - 1], d1 = data[i], d = x0 - d0.date > d1.date
-                - x0 ? d1 : d0;
-            focus.select("circle.y0").attr(
-                "transform",
-                "translate(" + main_x(d.date) + "," + main_y0(d['DNSLookup'])
-                    + ")");
-            focus.select("text.y0").attr(
-                "transform",
-                "translate(" + main_x(d.date) + "," + main_y0(d['DNSLookup'])
-                    + ")").text(formatOutput0(d));
-            focus.select("circle.y1").attr("transform",
-                "translate(" + main_x(d.date) + "," + main_y1(d['Aggregateuptime']) + ")");
-            focus.select("text.y1").attr("transform",
-                "translate(" + main_x(d.date) + "," + main_y1(d['Aggregateuptime']) + ")")
-                .text(formatOutput1(d));
-            focus.select(".x").attr("transform",
-                "translate(" + main_x(d.date) + ",0)");
-            focus.select(".y0").attr(
-                "transform",
-                "translate(" + main_width * -1 + ", " + main_y0(d['DNSLookup'])
-                    + ")").attr("x2", main_width + main_x(d.date));
-            focus.select(".y1").attr("transform",
-                "translate(0, " + main_y1(d['Aggregateuptime']) + ")").attr("x1",
-                main_x(d.date));
+                1), d0 = data[i - 1]
+            var d1 = data[i];
+            if (d1.date) {
+              var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+              focus.select("circle.y0").attr(
+                  "transform",
+                  "translate(" + main_x(d.date) + "," + main_y0(d['DNSLookup'])
+                      + ")");
+              focus.select("text.y0").attr(
+                  "transform",
+                  "translate(" + main_x(d.date) + "," + main_y0(d['DNSLookup'])
+                      + ")").text(formatOutput0(d));
+              focus.select("circle.y1").attr(
+                  "transform",
+                  "translate(" + main_x(d.date) + ","
+                      + main_y1(d['Aggregateuptime']) + ")");
+              focus.select("text.y1").attr(
+                  "transform",
+                  "translate(" + main_x(d.date) + ","
+                      + main_y1(d['Aggregateuptime']) + ")").text(
+                  formatOutput1(d));
+              focus.select(".x").attr("transform",
+                  "translate(" + main_x(d.date) + ",0)");
+              focus.select(".y0").attr(
+                  "transform",
+                  "translate(" + main_width * -1 + ", "
+                      + main_y0(d['DNSLookup']) + ")").attr("x2",
+                  main_width + main_x(d.date));
+              focus.select(".y1").attr("transform",
+                  "translate(0, " + main_y1(d['Aggregateuptime']) + ")").attr(
+                  "x1", main_x(d.date));
+            }
           }
+
+          var legend = svg.append("g").attr("class", "legend").attr(
+              "transform", "translate(80,30)").style("font-size", "10px").call(
+              d3.legend)
+
+          setTimeout(function() {
+            legend.style("font-size", "10px").attr("data-style-padding", 10)
+                .call(d3.legend)
+          }, 1000)
+
         });
 
 function brush() {
@@ -201,3 +223,67 @@ function brush() {
   main.select(".line1").attr("d", main_line1);
   main.select(".x.axis").call(main_xAxis);
 }
+
+(function() {
+  d3.legend = function(g) {
+    g.each(function() {
+      var g = d3.select(this), items = {};
+      var svg = d3.select(g.property("nearestViewportElement"));
+      var legendPadding = g.attr("data-style-padding") || 10;
+      var lb = g.selectAll(".legend-box").data([ true ]);
+      var li = g.selectAll(".legend-items").data([ true ]);
+
+      lb.enter().append("rect").classed("legend-box", true);
+      li.enter().append("g").classed("legend-items", true);
+
+      svg.selectAll("[data-legend]").each(
+          function() {
+            var self = d3.select(this);
+            items[self.attr("data-legend")] = {
+              pos : self.attr("data-legend-pos") || this.getBBox().y,
+              color : self.attr("data-legend-color") != undefined ? self
+                  .attr("data-legend-color")
+                  : self.style("fill") != 'none' ? self.style("fill") : self
+                      .style("stroke")
+            }
+          })
+
+      items = d3.entries(items).sort(function(a, b) {
+        return a.value.pos - b.value.pos;
+      })
+
+      li.selectAll("text").data(items, function(d) {
+        return d.key;
+      }).call(function(d) {
+        d.enter().append("text");
+      }).call(function(d) {
+        d.exit().remove();
+      }).attr("y", function(d, i) {
+        return i + "em";
+      }).attr("x", "1em").text(function(d) {
+        return d.key;
+      })
+
+      li.selectAll("circle").data(items, function(d) {
+        return d.key;
+      }).call(function(d) {
+        d.enter().append("circle");
+      }).call(function(d) {
+        d.exit().remove();
+      }).attr("cy", function(d, i) {
+        return i - 0.25 + "em";
+      }).attr("cx", 0).attr("r", "0.4em").style("fill", function(d) {
+        console.log(d.value.color);
+        return d.value.color;
+      })
+
+      // Reposition and resize the box
+      var lbbox = li[0][0].getBBox();
+      lb.attr("x", (lbbox.x - legendPadding)).attr("y",
+          (lbbox.y - legendPadding)).attr("height",
+          (lbbox.height + 2 * legendPadding)).attr("width",
+          (lbbox.width + 2 * legendPadding));
+    })
+    return g
+  }
+})()

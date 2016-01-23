@@ -1,76 +1,72 @@
 .browsehappy {
-  margin: 0.2em 0;
-  background: #ccc;
-  color: #000;
-  padding: 0.2em 0;
+	margin: 0.2em 0;
+	background: #ccc;
+	color: #000;
+	padding: 0.2em 0;
 }
 
 /* Space out content a bit */
 body {
-  padding-top: 20px;
-  padding-bottom: 20px;
+	padding-top: 20px;
+	padding-bottom: 20px;
 }
 
 /* Everything but the gets side spacing for mobile first views */
-.header,
-.footer {
-  padding-left: 15px;
-  padding-right: 15px;
+.header, .footer {
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 /* Custom page header */
 .header {
-  border-bottom: 1px solid #e5e5e5;
+	border-bottom: 1px solid #e5e5e5;
 }
 
 /* Make the masthead heading the same height as the navigation */
 .header h3 {
-  margin-top: 0;
-  margin-bottom: 0;
-  line-height: 40px;
-  padding-bottom: 19px;
+	margin-top: 0;
+	margin-bottom: 0;
+	line-height: 40px;
+	padding-bottom: 19px;
 }
 
 /* Custom page footer */
 .footer {
-  padding-top: 19px;
-  color: #777;
-  border-top: 1px solid #e5e5e5;
+	padding-top: 19px;
+	color: #777;
+	border-top: 1px solid #e5e5e5;
 }
 
-.container-narrow > hr {
-  margin: 30px 0;
+.container-narrow>hr {
+	margin: 30px 0;
 }
 
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
-  .container {
-    max-width: 730px;
-  }
+	.container {
+		max-width: 730px;
+	}
 
-  /* Remove the padding we set earlier */
-  .header,
-  .footer {
-    padding-left: 0;
-    padding-right: 0;
-  }
+	/* Remove the padding we set earlier */
+	.header, .footer {
+		padding-left: 0;
+		padding-right: 0;
+	}
 
-  /* Space out the masthead */
-  .header {
-    margin-bottom: 30px;
-  }
+	/* Space out the masthead */
+	.header {
+		margin-bottom: 30px;
+	}
 }
-
 
 body {
-  font: 10px sans-serif;
+	font: 10px sans-serif;
 }
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
+.axis path, .axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
 }
 
 /*
@@ -78,57 +74,64 @@ body {
   display: none;
 }
 */
-
 .line {
-  stroke: black;
-  fill: none;
-  stroke-width: 0.75px;
+	stroke: black;
+	fill: none;
+	stroke-width: 0.75px;
 }
 
 .line.line0 {
-  stroke: steelblue;
+	stroke: steelblue;
 }
 
 .line.line1 {
-  stroke: indianred;
+	stroke: indianred;
 }
 
 .overlay {
-  fill: none;
-  pointer-events: all;
+	fill: none;
+	pointer-events: all;
 }
 
 .focus circle {
-  fill: none;
+	fill: none;
 }
 
 .focus circle.y0 {
-  stroke: blue;
+	stroke: blue;
 }
 
 .focus circle.y1 {
-  stroke: red;
+	stroke: red;
 }
 
 .focus line {
-  stroke: purple;
-  shape-rendering: crispEdges;
+	stroke: purple;
+	shape-rendering: crispEdges;
 }
 
 .focus line.y0 {
-  stroke: steelblue;
-  stroke-dasharray: 3 3;
-  opacity: .5;
+	stroke: steelblue;
+	stroke-dasharray: 3 3;
+	opacity: .5;
 }
 
 .focus line.y1 {
-  stroke: indianred;
-  stroke-dasharray: 3 3;
-  opacity: .5;
+	stroke: indianred;
+	stroke-dasharray: 3 3;
+	opacity: .5;
 }
 
 .brush .extent {
-  stroke: #fff;
-  fill-opacity: .125;
-  shape-rendering: crispEdges;
+	stroke: #fff;
+	fill-opacity: .125;
+	shape-rendering: crispEdges;
 }
+
+.legend rect {
+	fill: white;
+	stroke: black;
+	opacity: 0.8;
+}
+
+
