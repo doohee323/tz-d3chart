@@ -32,11 +32,12 @@ var main_y0 = d3.scale.sqrt().range([ main_height, 0 ]), main_y1 = d3.scale
     [ mini_height, 0 ]), mini_y1 = d3.scale.sqrt().range([ mini_height, 0 ]);
 
 var main_xAxis = d3.svg.axis().scale(main_x)
-    .tickFormat(d3.time.format("%H:%M")).orient("bottom"), mini_xAxis = d3.svg
-    .axis().scale(mini_x).tickFormat(d3.time.format("%H:%M")).orient("bottom");
+    .tickFormat(d3.time.format("%H:%M")).orient("bottom");
+var mini_xAxis = d3.svg.axis().scale(mini_x)
+    .tickFormat(d3.time.format("%H:%M")).orient("bottom");
 
 var main_yAxisLeft = d3.svg.axis().scale(main_y0).orient("left");
-var main_yAxisRight = d3.svg.axis().scale(main_y1).orient("right");
+var main_yAxisRight = d3.svg.axis().scale(main_y1).orient("right").ticks(1);
 
 var brush = d3.svg.brush().x(mini_x).on("brush", brush);
 
@@ -64,6 +65,9 @@ var mini_line1 = d3.svg.line().x(function(d) {
   return mini_y1(d['Aggregateuptime']);
 });
 
+var bar_x = d3.scale.ordinal().rangeRoundBands([ 0, main_width + 50 ], .5);
+var bar_y = d3.scale.ordinal().rangeRoundBands([ 0, main_height + 100 ], .5);
+
 var svg = d3.select("#chart").append("svg").attr("width",
     main_width + main_margin.left + main_margin.right).attr("height",
     main_height + main_margin.top + main_margin.bottom);
@@ -84,11 +88,19 @@ d3
             d.date = parseDate(d.date);
             d['DNSLookup'] = +d['DNSLookup'];
             d['Aggregateuptime'] = +d['Aggregateuptime'];
+            d['Judge'] = +d['Judge'];
           });
 
           data.sort(function(a, b) {
             return a.date - b.date;
           });
+
+          bar_x.domain(data.map(function(d) {
+            return d.date;
+          }));
+          bar_y.domain([ 0, d3.max(data, function(d) {
+            return d['Judge'];
+          }) ]);
 
           main_x.domain([ data[0].date, data[data.length - 1].date ]);
           main_y0.domain(d3.extent(data, function(d) {
@@ -103,61 +115,64 @@ d3
           mini_y0.domain(main_y0.domain());
           mini_y1.domain(main_y1.domain());
 
+          // /[ main chart ]///////////////////////////
           main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
               "class", "line line0").attr("d", main_line0).attr("data-legend",
               function(d) {
                 return "DNS Lookup";
               });
-
           main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
               "class", "line line1").attr("d", main_line1).attr("data-legend",
               function(d) {
                 return "Aggregate uptime";
               });
 
+          svg.selectAll("rect").data(data).enter().append("rect").style("fill",
+              "steelblue").style("opacity", .2).attr("x", function(d) {
+            return bar_x(d.date) + 5;
+          }).attr("width", bar_x.rangeBand()).attr("y", function(d) {
+            return bar_y(d['Judge']);
+          }).attr("height", function(d) {
+            return (main_height - bar_y(d['Judge'])) + 20;
+          });
+
+          // /[ main 좌측x ]///////////////////////////
           main.append("g").attr("class", "x axis").attr("transform",
               "translate(0," + main_height + ")").call(main_xAxis);
-
+          // /[ main 좌측y ]///////////////////////////
           main.append("g").attr("class", "y axis axisLeft")
               .call(main_yAxisLeft).append("text").attr("transform",
                   "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
                   "text-anchor", "end").text("( ms )");
 
+          // /[ main 우측y ]///////////////////////////
           main.append("g").attr("class", "y axis axisRight").attr("transform",
               "translate(" + main_width + ", 0)").call(main_yAxisRight).append(
-              "text").attr("transform", "rotate(-90)").attr("y", -12).attr(
-              "dy", ".71em").style("text-anchor", "end").text("( % )");
+              "text").attr("transform", "rotate(-90)").attr("y", 2).attr("dy",
+              ".71em").style("text-anchor", "end");
 
+          // /[ mini ]///////////////////////////
           mini.append("g").attr("class", "x axis").attr("transform",
               "translate(0," + mini_height + ")").call(main_xAxis);
-
           mini.append("path").datum(data).attr("class", "line line0").attr("d",
               mini_line0);
-
           mini.append("path").datum(data).attr("class", "line line1").attr("d",
               mini_line1);
-
           mini.append("g").attr("class", "x brush").call(brush).selectAll(
               "rect").attr("y", -6).attr("height", mini_height + 7);
 
+          // ///////////////////////////
           var focus = main.append("g").attr("class", "focus").style("display",
               "none");
-
-          focus.append("line").attr("class", "x").attr("y1", main_y0(0) - 6)
-              .attr("y2", main_y0(0) + 6)
-
           focus.append("line").attr("class", "y0").attr("x1", main_width - 6)
               .attr("x2", main_width + 6);
-
           focus.append("line").attr("class", "y1").attr("x1", main_width - 6)
               .attr("x2", main_width + 6);
 
           focus.append("circle").attr("class", "y0").attr("r", 4);
-
           focus.append("text").attr("class", "y0").attr("dy", "-1em");
 
           focus.append("circle").attr("class", "y1").attr("r", 4);
-
           focus.append("text").attr("class", "y1").attr("dy", "-1em");
 
           main.append("rect").attr("class", "overlay")
@@ -286,51 +301,51 @@ function brush() {
   }
 })()
 
-var margin = {
-  top : 20,
-  right : 20,
-  bottom : 70,
-  left : 40
-}, width = 600 - margin.left - margin.right, height = 300 - margin.top
-    - margin.bottom;
-// Parse the date / time
-var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse;
-var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .05);
-var y = d3.scale.linear().range([ height, 0 ]);
-var xAxis = d3.svg.axis().scale(x).orient("bottom").tickFormat(
-    d3.time.format("%H:%M"));
-var yAxis = d3.svg.axis().scale(y).orient("left").ticks(1);
-var svg = d3.select("#bar").append("svg").attr("width",
-    width + margin.left + margin.right).attr("height",
-    height + margin.top + margin.bottom).append("g").attr("transform",
-    "translate(" + margin.left + "," + margin.top + ")");
-d3.json("data2.txt", function(error, data) {
-  data.forEach(function(d) {
-    d.date = parseDate(d.date);
-    d.value = +d.Judge;
-  });
-
-  x.domain(data.map(function(d) {
-    return d.date;
-  }));
-  y.domain([ 0, d3.max(data, function(d) {
-    return d.value;
-  }) ]);
-  svg.append("g").attr("class", "x axis").attr("transform",
-      "translate(0," + height + ")").call(xAxis).selectAll("text").style(
-      "text-anchor", "end").attr("dx", "-.8em").attr("dy", "-.55em").attr(
-      "transform", "rotate(-90)");
-  
-  svg.append("g").attr("class", "y axis").call(yAxis).append("text").attr(
-      "transform", "rotate(-90)").attr("y", 2).attr("dy", ".71em").style(
-      "text-anchor", "end").text("State 1/0");
-  
-  svg.selectAll("bar").data(data).enter().append("rect").style("fill",
-      "steelblue").attr("x", function(d) {
-        return x(d.date);
-  }).attr("width", x.rangeBand()).attr("y", function(d) {
-    return y(d.value);
-  }).attr("height", function(d) {
-    return height - y(d.value);
-  });
-});
+// var margin = {
+// top : 20,
+// right : 20,
+// bottom : 70,
+// left : 40
+// }, width = 600 - margin.left - margin.right, height = 300 - margin.top
+// - margin.bottom;
+// // Parse the date / time
+// var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse;
+// var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .05);
+// var y = d3.scale.linear().range([ height, 0 ]);
+// var xAxis = d3.svg.axis().scale(x).orient("bottom").tickFormat(
+// d3.time.format("%H:%M"));
+// var yAxis = d3.svg.axis().scale(y).orient("left").ticks(1);
+// var svg = d3.select("#bar").append("svg").attr("width",
+// width + margin.left + margin.right).attr("height",
+// height + margin.top + margin.bottom).append("g").attr("transform",
+// "translate(" + margin.left + "," + margin.top + ")");
+// d3.json("data2.txt", function(error, data) {
+// data.forEach(function(d) {
+// d.date = parseDate(d.date);
+// d.value = +d.Judge;
+// });
+//
+// x.domain(data.map(function(d) {
+// return d.date;
+// }));
+// y.domain([ 0, d3.max(data, function(d) {
+// return d.value;
+// }) ]);
+// svg.append("g").attr("class", "x axis").attr("transform",
+// "translate(0," + height + ")").call(xAxis).selectAll("text").style(
+// "text-anchor", "end").attr("dx", "-.8em").attr("dy", "-.55em").attr(
+// "transform", "rotate(-90)");
+//
+// svg.append("g").attr("class", "y axis").call(yAxis).append("text").attr(
+// "transform", "rotate(-90)").attr("y", 2).attr("dy", ".71em").style(
+// "text-anchor", "end").text("State 1/0");
+//
+// svg.selectAll("bar").data(data).enter().append("rect").style("fill",
+// "steelblue").attr("x", function(d) {
+// return x(d.date);
+// }).attr("width", x.rangeBand()).attr("y", function(d) {
+// return y(d.value);
+// }).attr("height", function(d) {
+// return height - y(d.value);
+// });
+// });
