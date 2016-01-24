@@ -24,12 +24,16 @@ var formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ"), parseDate = formatDate
   return formatDate(d.date) + " - " + d['Aggregateuptime'];
 };
 
-var main_x = d3.time.scale().range([ 0, main_width ]), mini_x = d3.time.scale()
-    .range([ 0, main_width ]);
+var main_x = d3.time.scale().range([ 0, main_width ]);
+var mini_x = d3.time.scale().range([ 0, main_width ]);
 
-var main_y0 = d3.scale.sqrt().range([ main_height, 0 ]), main_y1 = d3.scale
-    .sqrt().range([ main_height, 0 ]), mini_y0 = d3.scale.sqrt().range(
-    [ mini_height, 0 ]), mini_y1 = d3.scale.sqrt().range([ mini_height, 0 ]);
+var main_y0 = d3.scale.sqrt().range([ main_height, 0 ])
+var main_y1 = d3.scale.sqrt().range([ main_height, 0 ]);
+var main_y2 = d3.scale.sqrt().range([ main_height, 0 ]);
+
+var mini_y0 = d3.scale.sqrt().range([ mini_height, 0 ]);
+var mini_y1 = d3.scale.sqrt().range([ mini_height, 0 ]);
+var mini_y2 = d3.scale.sqrt().range([ mini_height, 0 ]);
 
 var main_xAxis = d3.svg.axis().scale(main_x)
     .tickFormat(d3.time.format("%H:%M")).orient("bottom");
@@ -53,6 +57,12 @@ var main_line1 = d3.svg.line().interpolate("cardinal").x(function(d) {
   return main_y1(d['Aggregateuptime']);
 });
 
+var main_line2 = d3.svg.line().interpolate("cardinal").x(function(d) {
+  return main_x(d.date);
+}).y(function(d) {
+  return main_y2(d['Judge']);
+});
+
 var mini_line0 = d3.svg.line().x(function(d) {
   return mini_x(d.date);
 }).y(function(d) {
@@ -65,8 +75,11 @@ var mini_line1 = d3.svg.line().x(function(d) {
   return mini_y1(d['Aggregateuptime']);
 });
 
-var bar_x = d3.scale.ordinal().rangeRoundBands([ 0, main_width + 50 ], .5);
-var bar_y = d3.scale.ordinal().rangeRoundBands([ 0, main_height + 100 ], .5);
+var mini_line2 = d3.svg.line().x(function(d) {
+  return mini_x(d.date);
+}).y(function(d) {
+  return mini_y2(d['Judge']);
+});
 
 var svg = d3.select("#chart").append("svg").attr("width",
     main_width + main_margin.left + main_margin.right).attr("height",
@@ -95,25 +108,20 @@ d3
             return a.date - b.date;
           });
 
-          bar_x.domain(data.map(function(d) {
-            return d.date;
-          }));
-          bar_y.domain([ 0, d3.max(data, function(d) {
-            return d['Judge'];
-          }) ]);
-
           main_x.domain([ data[0].date, data[data.length - 1].date ]);
           main_y0.domain(d3.extent(data, function(d) {
             return d['DNSLookup'];
           }));
-          // main_y0.domain([0.1, d3.max(data, function(d) { return
-          // d['DNSLookup']; })]);
           main_y1.domain(d3.extent(data, function(d) {
             return d['Aggregateuptime'];
+          }));
+          main_y2.domain(d3.extent(data, function(d) {
+            return d['Judge'];
           }));
           mini_x.domain(main_x.domain());
           mini_y0.domain(main_y0.domain());
           mini_y1.domain(main_y1.domain());
+          mini_y2.domain(mini_y2.domain());
 
           // /[ main chart ]///////////////////////////
           main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
@@ -126,42 +134,49 @@ d3
               function(d) {
                 return "Aggregate uptime";
               });
+          main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
+              "class", "line line2").attr("d", main_line2).attr("data-legend",
+              function(d) {
+                return "Judge";
+              });
 
-          svg.selectAll("rect").data(data).enter().append("rect").style("fill",
-              "steelblue").style("opacity", .2).attr("x", function(d) {
-            return bar_x(d.date) + 5;
-          }).attr("width", bar_x.rangeBand()).attr("y", function(d) {
-            return bar_y(d['Judge']);
-          }).attr("height", function(d) {
-            return (main_height - bar_y(d['Judge'])) + 20;
-          });
+          // svg.selectAll("rect").data(data).enter().append("rect").style("fill",
+          // "steelblue").style("opacity", .2).attr("x", function(d) {
+          // return main_y2(d.date) + 5;
+          // }).attr("width", main_y2.rangeBand()).attr("y", function(d) {
+          // return mini_y2(d['Judge']);
+          // }).attr("height", function(d) {
+          // return (main_height - mini_y2(d['Judge'])) + 20;
+          // });
 
-          // /[ main 좌측x ]///////////////////////////
+          // /[ main left x ]///////////////////////////
           main.append("g").attr("class", "x axis").attr("transform",
               "translate(0," + main_height + ")").call(main_xAxis);
-          // /[ main 좌측y ]///////////////////////////
+          // /[ main left y ]///////////////////////////
           main.append("g").attr("class", "y axis axisLeft")
               .call(main_yAxisLeft).append("text").attr("transform",
                   "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
                   "text-anchor", "end").text("( ms )");
 
-          // /[ main 우측y ]///////////////////////////
+          // /[ main right y ]///////////////////////////
           main.append("g").attr("class", "y axis axisRight").attr("transform",
               "translate(" + main_width + ", 0)").call(main_yAxisRight).append(
               "text").attr("transform", "rotate(-90)").attr("y", 2).attr("dy",
               ".71em").style("text-anchor", "end");
 
-          // /[ mini ]///////////////////////////
+          // /[ mini chart ]///////////////////////////
           mini.append("g").attr("class", "x axis").attr("transform",
               "translate(0," + mini_height + ")").call(main_xAxis);
           mini.append("path").datum(data).attr("class", "line line0").attr("d",
               mini_line0);
           mini.append("path").datum(data).attr("class", "line line1").attr("d",
               mini_line1);
+          mini.append("path").datum(data).attr("class", "line line2").attr("d",
+              mini_line2);
           mini.append("g").attr("class", "x brush").call(brush).selectAll(
               "rect").attr("y", -6).attr("height", mini_height + 7);
 
-          // ///////////////////////////
+          // /[ focus ]///////////////////////////
           var focus = main.append("g").attr("class", "focus").style("display",
               "none");
           focus.append("line").attr("class", "y0").attr("x1", main_width - 6)
@@ -185,7 +200,7 @@ d3
 
           function mousemove() {
             var x0 = main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0,
-                1), d0 = data[i - 1]
+                1), d0 = data[i - 1];
             var d1 = data[i];
             if (d1.date) {
               var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
@@ -219,6 +234,7 @@ d3
             }
           }
 
+          // /[ legend ]///////////////////////////
           var legend = svg.append("g").attr("class", "legend").attr(
               "transform", "translate(80,30)").style("font-size", "10px").call(
               d3.legend)
@@ -234,6 +250,7 @@ function brush() {
   main_x.domain(brush.empty() ? mini_x.domain() : brush.extent());
   main.select(".line0").attr("d", main_line0);
   main.select(".line1").attr("d", main_line1);
+  main.select(".line2").attr("d", main_line2);
   main.select(".x.axis").call(main_xAxis);
 }
 

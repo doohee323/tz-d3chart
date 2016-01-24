@@ -29,7 +29,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "Service State": 1,
-    "Judge": 1,
+    "Judge": 0,
     "Aggregateuptime": 16.1
   },
   {
@@ -62,7 +62,7 @@
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
     "Service State": 1,
-    "Judge": 1,
+    "Judge": 0,
     "Aggregateuptime": 17.2
   },
   {
@@ -95,7 +95,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "Service State": 1,
-    "Judge": 1,
+    "Judge": 0,
     "Aggregateuptime": 16.5
   },
   {
