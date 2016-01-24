@@ -57,7 +57,7 @@ var main_line1 = d3.svg.line().interpolate("cardinal").x(function(d) {
   return main_y1(d['Aggregateuptime']);
 });
 
-var main_line2 = d3.svg.line().interpolate("cardinal").x(function(d) {
+var main_line2 = d3.svg.line().interpolate("step").x(function(d) {
   return main_x(d.date);
 }).y(function(d) {
   return main_y2(d['Judge']);
@@ -75,7 +75,7 @@ var mini_line1 = d3.svg.line().x(function(d) {
   return mini_y1(d['Aggregateuptime']);
 });
 
-var mini_line2 = d3.svg.line().x(function(d) {
+var mini_line2 = d3.svg.line().interpolate("step").x(function(d) {
   return mini_x(d.date);
 }).y(function(d) {
   return mini_y2(d['Judge']);
