@@ -1,438 +1,210 @@
 [
   {
     "date": "2016-01-23T00:36:00.000Z",
-    "DNSLookup": 76,
-    
-    "TimeToConnect": 77,
-    "TimeToFirstByte": 88,
-    "RoundtripTime": 88,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 100
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:37:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 16.1
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:38:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "Service State": 1,
-    "Judge": 0,
-    "Aggregateuptime": 16.1
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:39:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 18,
-    "RoundtripTime": 18,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.8
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:40:00.000Z",
-    "DNSLookup": 14,
-    
-    "TimeToConnect": 14,
-    "TimeToFirstByte": 24,
-    "RoundtripTime": 24,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 22.7
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:41:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 20,
-    "RoundtripTime": 20,
-    "Service State": 1,
-    "Judge": 0,
-    "Aggregateuptime": 17.2
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:42:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.8
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:43:00.000Z",
-    "DNSLookup": 22,
-    
-    "TimeToConnect": 23,
-    "TimeToFirstByte": 33,
-    "RoundtripTime": 33,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 33.3
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:44:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "Service State": 1,
-    "Judge": 0,
-    "Aggregateuptime": 16.5
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:45:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 21,
-    "RoundtripTime": 21,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 17.9
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:46:00.000Z",
-    "DNSLookup": 18,
-    
-    "TimeToConnect": 19,
-    "TimeToFirstByte": 28,
-    "RoundtripTime": 28,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 27.8
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:47:00.000Z",
-    "DNSLookup": 17,
-    
-    "TimeToConnect": 19,
-    "TimeToFirstByte": 27,
-    "RoundtripTime": 27,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 26.7
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:48:00.000Z",
-    "DNSLookup": 52,
-    
-    "TimeToConnect": 53,
-    "TimeToFirstByte": 63,
-    "RoundtripTime": 63,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 70
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:49:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.8
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:50:00.000Z",
-    "DNSLookup": 12,
-    
-    "TimeToConnect": 13,
-    "TimeToFirstByte": 24,
-    "RoundtripTime": 24,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 22
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   },
   {
     "date": "2016-01-23T00:51:00.000Z",
-    "DNSLookup": 7,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 20,
-    "RoundtripTime": 20,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.8
-  },
-  {
-    "date": "2016-01-23T00:52:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 20,
-    "RoundtripTime": 20,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 17.2
-  },
-  {
-    "date": "2016-01-23T00:53:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 20,
-    "RoundtripTime": 20,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 16.1
-  },
-  {
-    "date": "2016-01-23T00:54:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 18,
-    "RoundtripTime": 18,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.4
-  },
-  {
-    "date": "2016-01-23T00:55:00.000Z",
-    "DNSLookup": 11,
-    
-    "TimeToConnect": 12,
-    "TimeToFirstByte": 21,
-    "RoundtripTime": 23,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 20.1
-  },
-  {
-    "date": "2016-01-23T00:56:00.000Z",
-    "DNSLookup": 2,
-    
-    "TimeToConnect": 3,
-    "TimeToFirstByte": 12,
-    "RoundtripTime": 12,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 8.4
-  },
-  {
-    "date": "2016-01-23T00:57:00.000Z",
-    "DNSLookup": 3,
-    
-    "TimeToConnect": 3,
-    "TimeToFirstByte": 13,
-    "RoundtripTime": 13,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 8.8
-  },
-  {
-    "date": "2016-01-23T00:58:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 20,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 16.8
-  },
-  {
-    "date": "2016-01-23T00:59:00.000Z",
-    "DNSLookup": 7,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 18,
-    "RoundtripTime": 18,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15
+    "tokyo": {
+      "status": 1,
+      "longitude": 11.2,
+      "latitude": 122
+    },
+    "sunnyvale": {
+      "status": 1,
+      "longitude": 41,
+      "latitude": -103
+    }
   }
-  
-  
-  
-  
-  ,
-  {
-    "date": "2016-01-23T01:00:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 18,
-    "RoundtripTime": 18,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.4
-  },
-  {
-    "date": "2016-01-23T01:01:00.000Z",
-    "DNSLookup": 7,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 18,
-    "RoundtripTime": 19,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15
-  }
-  
-  
-  
-  
-  
-  ,
-  {
-    "date": "2016-01-23T01:02:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 17,
-    "RoundtripTime": 18,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15
-  },
-  {
-    "date": "2016-01-23T01:03:00.000Z",
-    "DNSLookup": 11,
-    
-    "TimeToConnect": 12,
-    "TimeToFirstByte": 21,
-    "RoundtripTime": 24,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 20.5
-  },
-  {
-    "date": "2016-01-23T01:04:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 82,
-    "RoundtripTime": 83,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 55.7
-  },
-  {
-    "date": "2016-01-23T01:05:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.8
-  },
-  {
-    "date": "2016-01-23T01:06:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 16.1
-  },
-  {
-    "date": "2016-01-23T01:07:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 18,
-    "RoundtripTime": 18,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.4
-  },
-  {
-    "date": "2016-01-23T01:08:00.000Z",
-    "DNSLookup": 4,
-    
-    "TimeToConnect": 5,
-    "TimeToFirstByte": 15,
-    "RoundtripTime": 16,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 11.7
-  }
-  
-  
-  
-  
-  
-  
-  ,
-  {
-    "date": "2016-01-23T01:09:00.000Z",
-    "DNSLookup": 3,
-    
-    "TimeToConnect": 4,
-    "TimeToFirstByte": 14,
-    "RoundtripTime": 15,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 10.3
-  }
-  
-  
-  
-  
-  ,
-  {
-    "date": "2016-01-23T01:10:00.000Z",
-    "DNSLookup": 6,
-    
-    "TimeToConnect": 7,
-    "TimeToFirstByte": 16,
-    "RoundtripTime": 16,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 13.2
-  }
-  
-  
-  
-  
-  ,
-  {
-    "date": "2016-01-23T01:12:00.000Z",
-    "DNSLookup": 3,
-    
-    "TimeToConnect": 4,
-    "TimeToFirstByte": 13,
-    "RoundtripTime": 13,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 9.2
-  },
-  {
-    "date": "2016-01-23T01:13:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 20,
-    "RoundtripTime": 20,
-    "Service State": 1,
-    "Judge": 1,
-    "Aggregateuptime": 16.1
-  }
-  
 ]

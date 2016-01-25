@@ -8,14 +8,14 @@ var main_margin = {
   left : 40
 };
 var mini_margin = {
-  top : 430,
+  top : 300,
   right : 80,
   bottom : 20,
   left : 40
 };
-var main_width = 960 - main_margin.left - main_margin.right, main_height = 500
-    - main_margin.top - main_margin.bottom, mini_height = 500 - mini_margin.top
-    - mini_margin.bottom;
+var main_width = 960 - main_margin.left - main_margin.right, main_height = 400
+    - main_margin.top - main_margin.bottom;
+var mini_height = 350 - mini_margin.top - mini_margin.bottom;
 
 // 2016-01-23T00:36:00.000Z
 var formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ"), parseDate = formatDate.parse, bisectDate = d3
@@ -98,7 +98,7 @@ var mini = svg.append("g").attr("transform",
     "translate(" + mini_margin.left + "," + mini_margin.top + ")");
 
 d3
-    .json("data2.txt",
+    .json("data.txt",
         function(error, data) {
           data.forEach(function(d) {
             d.date = parseDate(d.date);
@@ -238,9 +238,9 @@ d3
           }
 
           // /[ legend ]///////////////////////////
-          var legend = svg.append("g").attr("class", "legend").attr(
-              "transform", "translate(80,30)").style("font-size", "10px").call(
-              d3.legend)
+          var legend = main.append("g").attr("class", "legend").attr(
+              "transform", "translate(40, 10)").style("font-size", "10px")
+              .call(d3.legend);
 
           setTimeout(function() {
             legend.style("font-size", "10px").attr("data-style-padding", 10)
@@ -263,7 +263,7 @@ function brush() {
   d3.legend = function(g) {
     g.each(function() {
       var g = d3.select(this), items = {};
-      var svg = d3.select(g.property("nearestViewportElement"));
+      var svg = d3.select("#chart");
       var legendPadding = g.attr("data-style-padding") || 10;
       var lb = g.selectAll(".legend-box").data([ true ]);
       var li = g.selectAll(".legend-items").data([ true ]);
@@ -377,23 +377,23 @@ function brush() {
 // ///////////////////////////////////////////////////////////////////////////////
 
 var w = 1200;
-var h = 500;
+var h = 400;
 
 var xy = d3.geo.equirectangular().scale(150);
 var path = d3.geo.path().projection(xy);
 
-var svg = d3.select("#graph").insert("svg:svg").attr("width", w).attr("height",
+var svg = d3.select("#graph").insert("svg").attr("width", w).attr("height",
     h);
-var states = svg.append("svg:g").attr("id", "states");
-var circles = svg.append("svg:g").attr("id", "circles");
-var labels = svg.append("svg:g").attr("id", "labels");
+var states = svg.append("g").attr("id", "states");
+var circles = svg.append("g").attr("id", "circles");
+var labels = svg.append("g").attr("id", "labels");
 
 d3.json("countries.json", function(collection) {
-  states.selectAll("path").data(collection.features).enter().append("svg:path")
+  states.selectAll("path").data(collection.features).enter().append("path")
       .attr("d", path).on(
           "mouseover",
           function(d) {
-            d3.select(this).style("fill", "#6C0").append("svg:title").text(
+            d3.select(this).style("fill", "#6C0").append("title").text(
                 d.properties.name);
           }).on("mouseout", function(d) {
         d3.select(this).style("fill", "#ccc");
@@ -405,7 +405,7 @@ d3.json("countries.json", function(collection) {
 
 var scalefactor = 1. / 50.;
 d3.csv("map.csv", function(csv) {
-  circles.selectAll("circle").data(csv).enter().append("svg:circle").attr("cx",
+  circles.selectAll("circle").data(csv).enter().append("circle").attr("cx",
       function(d, i) {
         return xy([ +d["longitude"], +d["latitude"] ])[0];
       }).attr("cy", function(d, i) {
@@ -413,14 +413,14 @@ d3.csv("map.csv", function(csv) {
   }).attr("r", function(d) {
     return (+d["1990"]) * scalefactor;
   }).attr("title", function(d) {
-    return d["country"] + ": " + Math.round(d["1990"]);
+    return d["city"] + ": " + Math.round(d["1990"]);
   }).on("mouseover", function(d) {
     d3.select(this).style("fill", "#FC0");
   }).on("mouseout", function(d) {
     d3.select(this).style("fill", "steelblue");
   });
 
-  labels.selectAll("labels").data(csv).enter().append("svg:text").attr("x",
+  labels.selectAll("labels").data(csv).enter().append("text").attr("x",
       function(d, i) {
         return xy([ +d["longitude"], +d["latitude"] ])[0];
       }).attr("y", function(d, i) {
@@ -435,11 +435,10 @@ function redraw(year) {
       "r", function(d) {
         return (+d[year]) * scalefactor;
       }).attr("title", function(d) {
-    return d["country"] + ": " + Math.round(d[year]);
+    return d["city"] + ": " + Math.round(d[year]);
   });
 
   labels.selectAll("text").text(function(d) {
     return Math.round(d[year]);
   });
 }
-
