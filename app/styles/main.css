@@ -90,6 +90,8 @@ body {
 
 .line.line2 {
 	stroke: green;
+ 	fill: red;
+ 	opacity: 0.2;
 }
 
 .overlay {
