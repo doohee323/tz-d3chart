@@ -140,4 +140,14 @@ body {
 	opacity: 0.9;
 }
 
+#states path {
+  fill: #ccc;
+  stroke: #fff;
+}
+
+circle {
+  fill: steelblue;
+  fill-opacity: .6;
+  stroke: #fff;
+}
 
