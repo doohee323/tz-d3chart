@@ -52,7 +52,6 @@ var main_y = {};
 var mini_y = {};
 var main_line = {};
 var mini_line = {};
-var formatOutput = {};
 
 d3
     .json("data.txt",
@@ -61,6 +60,7 @@ d3
             d.date = parseDate(d.date);
             for ( var key in data[0]) {
               if (key != 'date') {
+//              if (key == 'Judge' || key == 'DNSLookup') {
                 d[key] = +d[key];
               }
             }
@@ -72,11 +72,9 @@ d3
 
           for ( var key in data[0]) {
             if (key != 'date') {
+//            if (key == 'Judge' || key == 'DNSLookup') {
               main_y[key] = d3.scale.sqrt().range([ main_height, 0 ]);
               mini_y[key] = d3.scale.sqrt().range([ mini_height, 0 ]);
-              formatOutput[key] = function(d) {
-                return key + "-" + formatDate2(d.date) + " - " + d[key] + " ms";
-              }
             }
           }
 
@@ -174,10 +172,11 @@ d3
                     "transform",
                     "translate(" + main_x(d.date) + "," + main_y[key](d[key])
                         + ")");
+                var formatOutput = key + "-" + formatDate2(d.date) + " - " + d[key] + " ms";
                 focus.select("text.y" + key).attr(
                     "transform",
                     "translate(" + main_x(d.date) + "," + main_y[key](d[key])
-                        + ")").text(formatOutput[key](d));
+                        + ")").text(formatOutput);
                 focus.select(".y" + key).attr(
                     "transform",
                     "translate(" + main_width * -1 + ", " + main_y[key](d[key])
@@ -202,26 +201,21 @@ d3
 
 function brush() {
   main_x.domain(brush.empty() ? mini_x.domain() : brush.extent());
-//  for ( var key in main_y) {
-//    main.select(".line" + key).attr("d", main_line[key]);
-//  }
-  
-//  main.select(".lineDNSLookup").attr("d", main_line['DNSLookup']);
-  main.select(".lineJudge").attr("d", main_line['Judge']);
-//  main.select(".lineTimeToConnect").attr("d", main_line['TimeToConnect']);
-  
+  for ( var key in main_y) {
+    main.select(".line" + key).attr("d", main_line[key]);
+  }
   main.select(".x.axis").call(main_xAxis);
   
-//  var now =  brush.extent()[1];
-//  var date = new Date(Date.UTC(
-//      now.getFullYear(),
-//      now.getMonth(),
-//      now.getDate(),
-//      now.getHours(),
-//      now.getMinutes()
-//    ));
-//  var lastTime = date.toISOString();
-//  redraw(lastTime);
+  var now =  brush.extent()[1];
+  var date = new Date(Date.UTC(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      now.getHours(),
+      now.getMinutes()
+    ));
+  var lastTime = date.toISOString();
+  redraw(lastTime);
 }
 
 (function() {
