@@ -60,7 +60,7 @@ d3
             d.date = parseDate(d.date);
             for ( var key in data[0]) {
               if (key != 'date') {
-//              if (key == 'Judge' || key == 'DNSLookup') {
+                // if (key == 'Judge' || key == 'DNSLookup') {
                 d[key] = +d[key];
               }
             }
@@ -72,20 +72,64 @@ d3
 
           for ( var key in data[0]) {
             if (key != 'date') {
-//            if (key == 'Judge' || key == 'DNSLookup') {
+              // if (key == 'Judge' || key == 'DNSLookup') {
               main_y[key] = d3.scale.sqrt().range([ main_height, 0 ]);
               mini_y[key] = d3.scale.sqrt().range([ mini_height, 0 ]);
             }
           }
 
-          for ( var key in main_y) {
-            main_line[key] = d3.svg.line().interpolate("cardinal").x(
-                function(d) {
-                  return main_x(d.date);
-                }).y(function(d) {
-              return main_y[key](d[key]);
-            });
+          // /[ line definition ]///////////////////////////
+          main_line['DNSLookup'] = d3.svg.line().interpolate("cardinal").x(
+              function(d) {
+                return main_x(d.date);
+              }).y(function(d) {
+            return main_y['DNSLookup'](d['DNSLookup']);
+          });
+          main_line['TimeToConnect'] = d3.svg.line().interpolate("cardinal").x(
+              function(d) {
+                return main_x(d.date);
+              }).y(function(d) {
+            return main_y['TimeToConnect'](d['TimeToConnect']);
+          });
+          main_line['TimeToFirstByte'] = d3.svg.line().interpolate("cardinal")
+              .x(function(d) {
+                return main_x(d.date);
+              }).y(function(d) {
+                return main_y['TimeToFirstByte'](d['TimeToFirstByte']);
+              });
+          main_line['RoundtripTime'] = d3.svg.line().interpolate("cardinal").x(
+              function(d) {
+                return main_x(d.date);
+              }).y(function(d) {
+            return main_y['RoundtripTime'](d['RoundtripTime']);
+          });
+          main_line['Service State'] = d3.svg.line().interpolate("cardinal").x(
+              function(d) {
+                return main_x(d.date);
+              }).y(function(d) {
+            return main_y['Service State'](d['Service State']);
+          });
+          main_line['Judge'] = d3.svg.line().interpolate("cardinal").x(
+              function(d) {
+                return main_x(d.date);
+              }).y(function(d) {
+            return main_y['Judge'](d['Judge']);
+          });
+          main_line['Aggregateuptime'] = d3.svg.line().interpolate("cardinal")
+              .x(function(d) {
+                return main_x(d.date);
+              }).y(function(d) {
+                return main_y['Aggregateuptime'](d['Aggregateuptime']);
+              });
 
+          for ( var key in main_y) {
+            // main_line[key] = d3.svg.line().interpolate("cardinal").x(
+            // function(d) {
+            // return main_x(d.date);
+            // }).y(function(d) {
+            // return main_y[key](d[key]);
+            // });
+            //
             mini_line[key] = d3.svg.line().interpolate("cardinal").x(
                 function(d) {
                   return mini_x(d.date);
@@ -172,7 +216,8 @@ d3
                     "transform",
                     "translate(" + main_x(d.date) + "," + main_y[key](d[key])
                         + ")");
-                var formatOutput = key + "-" + formatDate2(d.date) + " - " + d[key] + " ms";
+                var formatOutput = key + "-" + formatDate2(d.date) + " - "
+                    + d[key] + " ms";
                 focus.select("text.y" + key).attr(
                     "transform",
                     "translate(" + main_x(d.date) + "," + main_y[key](d[key])
@@ -205,15 +250,10 @@ function brush() {
     main.select(".line" + key).attr("d", main_line[key]);
   }
   main.select(".x.axis").call(main_xAxis);
-  
-  var now =  brush.extent()[1];
-  var date = new Date(Date.UTC(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      now.getHours(),
-      now.getMinutes()
-    ));
+
+  var now = brush.extent()[1];
+  var date = new Date(Date.UTC(now.getFullYear(), now.getMonth(),
+      now.getDate(), now.getHours(), now.getMinutes()));
   var lastTime = date.toISOString();
   redraw(lastTime);
 }
