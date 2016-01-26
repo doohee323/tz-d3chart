@@ -18,71 +18,22 @@ var main_width = 960 - main_margin.left - main_margin.right, main_height = 400
 var mini_height = 350 - mini_margin.top - mini_margin.bottom;
 
 // 2016-01-23T00:38:00.000Z
-var formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ"), parseDate = formatDate.parse, bisectDate = d3
-    .bisector(function(d) {
-      return d.date;
-    }).left, formatOutput0 = function(d) {
-  return formatDate(d.date) + " - " + d['DNSLookup'] + " ms";
-}, formatOutput1 = function(d) {
-  return formatDate(d.date) + " - " + d['Aggregateuptime'];
-};
+var formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
+var formatDate2 = d3.time.format("T%H:%M:%S");
+var parseDate = formatDate.parse
+var bisectDate = d3.bisector(function(d) {
+  return d.date;
+}).left;
 
 var main_x = d3.time.scale().range([ 0, main_width ]);
 var mini_x = d3.time.scale().range([ 0, main_width ]);
-
-var main_y0 = d3.scale.sqrt().range([ main_height, 0 ])
-var main_y1 = d3.scale.sqrt().range([ main_height, 0 ]);
-var main_y2 = d3.scale.sqrt().range([ main_height, 0 ]);
-
-var mini_y0 = d3.scale.sqrt().range([ mini_height, 0 ]);
-var mini_y1 = d3.scale.sqrt().range([ mini_height, 0 ]);
-var mini_y2 = d3.scale.sqrt().range([ mini_height, 0 ]);
 
 var main_xAxis = d3.svg.axis().scale(main_x)
     .tickFormat(d3.time.format("%H:%M")).orient("bottom");
 var mini_xAxis = d3.svg.axis().scale(mini_x)
     .tickFormat(d3.time.format("%H:%M")).orient("bottom");
 
-var main_yAxisLeft = d3.svg.axis().scale(main_y0).orient("left");
-var main_yAxisRight = d3.svg.axis().scale(main_y1).orient("right").ticks(1);
-
 var brush = d3.svg.brush().x(mini_x).on("brush", brush);
-
-var main_line0 = d3.svg.line().interpolate("cardinal").x(function(d) {
-  return main_x(d.date);
-}).y(function(d) {
-  return main_y0(d['DNSLookup']);
-});
-
-var main_line1 = d3.svg.line().interpolate("cardinal").x(function(d) {
-  return main_x(d.date);
-}).y(function(d) {
-  return main_y1(d['Aggregateuptime']);
-});
-
-var main_line2 = d3.svg.line().interpolate("step").x(function(d) {
-  return main_x(d.date);
-}).y(function(d) {
-  return main_y2(d['Judge']);
-});
-
-var mini_line0 = d3.svg.line().x(function(d) {
-  return mini_x(d.date);
-}).y(function(d) {
-  return mini_y0(d['DNSLookup']);
-});
-
-var mini_line1 = d3.svg.line().x(function(d) {
-  return mini_x(d.date);
-}).y(function(d) {
-  return mini_y1(d['Aggregateuptime']);
-});
-
-var mini_line2 = d3.svg.line().interpolate("step").x(function(d) {
-  return mini_x(d.date);
-}).y(function(d) {
-  return mini_y2(d['Judge']);
-});
 
 var svg = d3.select("#chart").append("svg").attr("width",
     main_width + main_margin.left + main_margin.right).attr("height",
@@ -97,71 +48,87 @@ var main = svg.append("g").attr("transform",
 var mini = svg.append("g").attr("transform",
     "translate(" + mini_margin.left + "," + mini_margin.top + ")");
 
+var main_y = {};
+var mini_y = {};
+var main_line = {};
+var mini_line = {};
+var formatOutput = {};
+
 d3
     .json("data.txt",
         function(error, data) {
           data.forEach(function(d) {
             d.date = parseDate(d.date);
-            d['DNSLookup'] = +d['DNSLookup'];
-            d['Aggregateuptime'] = +d['Aggregateuptime'];
-            d['Judge'] = +d['Judge'];
+            for ( var key in data[0]) {
+              if (key != 'date') {
+                d[key] = +d[key];
+              }
+            }
           });
 
           data.sort(function(a, b) {
             return a.date - b.date;
           });
 
+          for ( var key in data[0]) {
+            if (key != 'date') {
+              main_y[key] = d3.scale.sqrt().range([ main_height, 0 ]);
+              mini_y[key] = d3.scale.sqrt().range([ mini_height, 0 ]);
+              formatOutput[key] = function(d) {
+                return key + "-" + formatDate2(d.date) + " - " + d[key] + " ms";
+              }
+            }
+          }
+
+          for ( var key in main_y) {
+            main_line[key] = d3.svg.line().interpolate("cardinal").x(
+                function(d) {
+                  return main_x(d.date);
+                }).y(function(d) {
+              return main_y[key](d[key]);
+            });
+
+            mini_line[key] = d3.svg.line().interpolate("cardinal").x(
+                function(d) {
+                  return mini_x(d.date);
+                }).y(function(d) {
+              return mini_y[key](d[key]);
+            });
+          }
+
           main_x.domain([ data[0].date, data[data.length - 1].date ]);
-          main_y0.domain(d3.extent(data, function(d) {
-            return d['DNSLookup'];
-          }));
-          main_y1.domain(d3.extent(data, function(d) {
-            return d['Aggregateuptime'];
-          }));
-          main_y2.domain(d3.extent(data, function(d) {
-            return d['Judge'];
-          }));
           mini_x.domain(main_x.domain());
-          mini_y0.domain(main_y0.domain());
-          mini_y1.domain(main_y1.domain());
-          mini_y2.domain(mini_y2.domain());
+
+          for ( var key in main_y) {
+            main_y[key].domain(d3.extent(data, function(d) {
+              return d[key];
+            }));
+            mini_y[key].domain(main_y[key].domain());
+          }
 
           // /[ main chart ]///////////////////////////
-          main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-              "class", "line line0").attr("d", main_line0).attr("data-legend",
-              function(d) {
-                return "DNS Lookup";
-              });
-          main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-              "class", "line line1").attr("d", main_line1).attr("data-legend",
-              function(d) {
-                return "Aggregate uptime";
-              });
-          main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-              "class", "line line2").attr("d", main_line2).attr("data-legend",
-              function(d) {
-                return "Judge";
-              });
-
-          // svg.selectAll("rect").data(data).enter().append("rect").style("fill",
-          // "steelblue").style("opacity", .2).attr("x", function(d) {
-          // return main_y2(d.date) + 5;
-          // }).attr("width", main_y2.rangeBand()).attr("y", function(d) {
-          // return mini_y2(d['Judge']);
-          // }).attr("height", function(d) {
-          // return (main_height - mini_y2(d['Judge'])) + 20;
-          // });
+          for ( var key in main_y) {
+            main.append("path").datum(data).attr("clip-path", "url(#clip)")
+                .attr("class", "line line" + key).attr("d", main_line[key])
+                .attr("data-legend", function(d) {
+                  return key;
+                });
+          }
 
           // /[ main left x ]///////////////////////////
           main.append("g").attr("class", "x axis").attr("transform",
               "translate(0," + main_height + ")").call(main_xAxis);
           // /[ main left y ]///////////////////////////
+          var main_yAxisLeft = d3.svg.axis().scale(
+              main_y[Object.keys(main_y)[0]]).orient("left");
           main.append("g").attr("class", "y axis axisLeft")
               .call(main_yAxisLeft).append("text").attr("transform",
                   "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
                   "text-anchor", "end").text("( ms )");
 
           // /[ main right y ]///////////////////////////
+          var main_yAxisRight = d3.svg.axis().scale(main_y['Judge']).orient(
+              "right").ticks(1);
           main.append("g").attr("class", "y axis axisRight").attr("transform",
               "translate(" + main_width + ", 0)").call(main_yAxisRight).append(
               "text").attr("transform", "rotate(-90)").attr("y", 2).attr("dy",
@@ -170,28 +137,23 @@ d3
           // /[ mini chart ]///////////////////////////
           mini.append("g").attr("class", "x axis").attr("transform",
               "translate(0," + mini_height + ")").call(main_xAxis);
-          mini.append("path").datum(data).attr("class", "line line0").attr("d",
-              mini_line0);
-          mini.append("path").datum(data).attr("class", "line line1").attr("d",
-              mini_line1);
-          mini.append("path").datum(data).attr("class", "line line2").attr("d",
-              mini_line2);
+          for ( var key in main_y) {
+            mini.append("path").datum(data).attr("class", "line line" + key)
+                .attr("d", mini_line[key]);
+          }
+
           mini.append("g").attr("class", "x brush").call(brush).selectAll(
               "rect").attr("y", -6).attr("height", mini_height + 7);
 
           // /[ focus ]///////////////////////////
           var focus = main.append("g").attr("class", "focus").style("display",
               "none");
-          focus.append("line").attr("class", "y0").attr("x1", main_width - 6)
-              .attr("x2", main_width + 6);
-          focus.append("line").attr("class", "y1").attr("x1", main_width - 6)
-              .attr("x2", main_width + 6);
-
-          focus.append("circle").attr("class", "y0").attr("r", 4);
-          focus.append("text").attr("class", "y0").attr("dy", "-1em");
-
-          focus.append("circle").attr("class", "y1").attr("r", 4);
-          focus.append("text").attr("class", "y1").attr("dy", "-1em");
+          for ( var key in main_y) {
+            focus.append("line").attr("class", "y" + key).attr("x1",
+                main_width - 6).attr("x2", main_width + 6);
+            focus.append("circle").attr("class", "y" + key).attr("r", 4);
+            focus.append("text").attr("class", "y" + key).attr("dy", "-1em");
+          }
 
           main.append("rect").attr("class", "overlay")
               .attr("width", main_width).attr("height", main_height).on(
@@ -207,33 +169,22 @@ d3
             var d1 = data[i];
             if (d1.date) {
               var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
-              focus.select("circle.y0").attr(
-                  "transform",
-                  "translate(" + main_x(d.date) + "," + main_y0(d['DNSLookup'])
-                      + ")");
-              focus.select("text.y0").attr(
-                  "transform",
-                  "translate(" + main_x(d.date) + "," + main_y0(d['DNSLookup'])
-                      + ")").text(formatOutput0(d));
-              focus.select("circle.y1").attr(
-                  "transform",
-                  "translate(" + main_x(d.date) + ","
-                      + main_y1(d['Aggregateuptime']) + ")");
-              focus.select("text.y1").attr(
-                  "transform",
-                  "translate(" + main_x(d.date) + ","
-                      + main_y1(d['Aggregateuptime']) + ")").text(
-                  formatOutput1(d));
+              for ( var key in main_y) {
+                focus.select("circle.y" + key).attr(
+                    "transform",
+                    "translate(" + main_x(d.date) + "," + main_y[key](d[key])
+                        + ")");
+                focus.select("text.y" + key).attr(
+                    "transform",
+                    "translate(" + main_x(d.date) + "," + main_y[key](d[key])
+                        + ")").text(formatOutput[key](d));
+                focus.select(".y" + key).attr(
+                    "transform",
+                    "translate(" + main_width * -1 + ", " + main_y[key](d[key])
+                        + ")").attr("x2", main_width + main_x(d.date));
+              }
               focus.select(".x").attr("transform",
                   "translate(" + main_x(d.date) + ",0)");
-              focus.select(".y0").attr(
-                  "transform",
-                  "translate(" + main_width * -1 + ", "
-                      + main_y0(d['DNSLookup']) + ")").attr("x2",
-                  main_width + main_x(d.date));
-              focus.select(".y1").attr("transform",
-                  "translate(0, " + main_y1(d['Aggregateuptime']) + ")").attr(
-                  "x1", main_x(d.date));
             }
           }
 
@@ -251,12 +202,26 @@ d3
 
 function brush() {
   main_x.domain(brush.empty() ? mini_x.domain() : brush.extent());
-  main.select(".line0").attr("d", main_line0);
-  main.select(".line1").attr("d", main_line1);
-  main.select(".line2").attr("d", main_line2);
+//  for ( var key in main_y) {
+//    main.select(".line" + key).attr("d", main_line[key]);
+//  }
+  
+//  main.select(".lineDNSLookup").attr("d", main_line['DNSLookup']);
+  main.select(".lineJudge").attr("d", main_line['Judge']);
+//  main.select(".lineTimeToConnect").attr("d", main_line['TimeToConnect']);
+  
   main.select(".x.axis").call(main_xAxis);
-
-  redraw("2016-01-23T00:40:00.000Z");
+  
+//  var now =  brush.extent()[1];
+//  var date = new Date(Date.UTC(
+//      now.getFullYear(),
+//      now.getMonth(),
+//      now.getDate(),
+//      now.getHours(),
+//      now.getMinutes()
+//    ));
+//  var lastTime = date.toISOString();
+//  redraw(lastTime);
 }
 
 (function() {
@@ -389,12 +354,10 @@ var labels = svg.append("g").attr("id", "labels");
 
 d3.json("countries.json", function(collection) {
   states.selectAll("path").data(collection.features).enter().append("path")
-      .attr("d", path).on(
-          "mouseover",
-          function(d) {
-//            d3.select(this).style("fill", "#6C0").append("title").text(
-//                d.properties.name);
-          }).on("mouseout", function(d) {
+      .attr("d", path).on("mouseover", function(d) {
+        // d3.select(this).style("fill", "#6C0").append("title").text(
+        // d.properties.name);
+      }).on("mouseout", function(d) {
         d3.select(this).style("fill", "#ccc");
       })
 });
@@ -408,14 +371,14 @@ d3.csv("map.csv", function(csv) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("r", function(d) {
     return (+d["2016-01-23T00:38:00.000Z"]) * scalefactor;
-//  }).attr("title", function(d) {
-//    return d["city"] + ": " + Math.round(d["2016-01-23T00:38:00.000Z"]);
-//  }).on("mouseover", function(d) {
-//    d3.select(this).style("fill", "#FC0");
-//  }).on("mouseout", function(d) {
-//    d3.select(this).style("fill", "steelblue");
-  }).style("fill", function(d) {
-    return "red";
+    // }).attr("title", function(d) {
+    // return d["city"] + ": " + Math.round(d["2016-01-23T00:38:00.000Z"]);
+    // }).on("mouseover", function(d) {
+    // d3.select(this).style("fill", "#FC0");
+    // }).on("mouseout", function(d) {
+    // d3.select(this).style("fill", "steelblue");
+    // }).style("fill", function(d) {
+    // return "red";
   });
 
   labels.selectAll("labels").data(csv).enter().append("text").attr("x",
@@ -428,15 +391,15 @@ d3.csv("map.csv", function(csv) {
   });
 });
 
-function redraw(year) {
+function redraw(time) {
   circles.selectAll("circle").transition().duration(1000).ease("linear").attr(
       "r", function(d) {
-        return (+d[year]) * scalefactor;
-//      }).attr("title", function(d) {
-//    return d["city"] + ": " + Math.round(d[year]);
-  });
+        return (+d[time]) * scalefactor;
+        // }).attr("title", function(d) {
+        // return d["city"] + ": " + Math.round(d[time]);
+      });
 
   labels.selectAll("text").text(function(d) {
-    return Math.round(d[year]);
+    return Math.round(d[time]);
   });
 }

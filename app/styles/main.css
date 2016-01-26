@@ -80,20 +80,6 @@ body {
 	stroke-width: 0.75px;
 }
 
-.line.line0 {
-	stroke: steelblue;
-}
-
-.line.line1 {
-	stroke: indianred;
-}
-
-.line.line2 {
-	stroke: green;
- 	fill: red;
- 	opacity: 0.2;
-}
-
 .overlay {
 	fill: none;
 	pointer-events: all;
@@ -103,29 +89,9 @@ body {
 	fill: none;
 }
 
-.focus circle.y0 {
-	stroke: blue;
-}
-
-.focus circle.y1 {
-	stroke: red;
-}
-
 .focus line {
 	stroke: purple;
 	shape-rendering: crispEdges;
-}
-
-.focus line.y0 {
-	stroke: steelblue;
-	stroke-dasharray: 3 3;
-	opacity: .5;
-}
-
-.focus line.y1 {
-	stroke: indianred;
-	stroke-dasharray: 3 3;
-	opacity: .5;
 }
 
 .brush .extent {
@@ -141,13 +107,103 @@ body {
 }
 
 #states path {
-  fill: #ccc;
-  stroke: #fff;
+	fill: #ccc;
+	stroke: #fff;
 }
 
 circle {
-  fill: steelblue;
-  fill-opacity: .6;
-  stroke: #fff;
+	fill: steelblue;
+	fill-opacity: .6;
+	stroke: #fff;
 }
 
+/* Judge */
+.line.lineJudge {
+	stroke: steelblue;
+}
+.focus circle.yJudge {
+	stroke: steelblue;
+}
+.focus line.yJudge {
+	stroke: steelblue;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* DNSLookup */
+.line.lineDNSLookup {
+	stroke: green;
+}
+.focus circle.yDNSLookup {
+	stroke: green;
+}
+.focus line.yDNSLookup {
+	stroke: green;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* TimeToConnect */
+.line.lineTimeToConnect {
+	stroke: gray;
+}
+.focus circle.yTimeToConnect {
+	stroke: gray;
+}
+.focus line.yTimeToConnect {
+	stroke: gray;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* TimeToFirstByte */
+.line.lineTimeToFirstByte {
+	stroke: yellow;
+}
+.focus circle.yTimeToFirstByte {
+	stroke: yellow;
+}
+.focus line.yTimeToFirstByte {
+	stroke: yellow;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* RoundtripTime */
+.line.lineRoundtripTime {
+	stroke: pink;
+}
+.focus circle.yRoundtripTime {
+	stroke: pink;
+}
+.focus line.yRoundtripTime {
+	stroke: pink;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* Aggregateuptime */
+.line.lineAggregateuptime {
+	stroke: blue;
+}
+.focus circle.yAggregateuptime {
+	stroke: blue;
+}
+.focus line.yAggregateuptime {
+	stroke: blue;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* Service State */
+.line.lineService {
+	stroke: red;
+}
+.focus circle.yService {
+	stroke: red;
+}
+.focus line.yService {
+	stroke: red;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
