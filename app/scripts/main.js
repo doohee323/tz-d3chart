@@ -17,7 +17,7 @@ var main_width = 960 - main_margin.left - main_margin.right, main_height = 400
     - main_margin.top - main_margin.bottom;
 var mini_height = 350 - mini_margin.top - mini_margin.bottom;
 
-// 2016-01-23T00:36:00.000Z
+// 2016-01-23T00:38:00.000Z
 var formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ"), parseDate = formatDate.parse, bisectDate = d3
     .bisector(function(d) {
       return d.date;
@@ -256,7 +256,7 @@ function brush() {
   main.select(".line2").attr("d", main_line2);
   main.select(".x.axis").call(main_xAxis);
 
-  redraw(2000);
+  redraw("2016-01-23T00:40:00.000Z");
 }
 
 (function() {
@@ -382,8 +382,7 @@ var h = 400;
 var xy = d3.geo.equirectangular().scale(150);
 var path = d3.geo.path().projection(xy);
 
-var svg = d3.select("#graph").insert("svg").attr("width", w).attr("height",
-    h);
+var svg = d3.select("#graph").insert("svg").attr("width", w).attr("height", h);
 var states = svg.append("g").attr("id", "states");
 var circles = svg.append("g").attr("id", "circles");
 var labels = svg.append("g").attr("id", "labels");
@@ -393,17 +392,14 @@ d3.json("countries.json", function(collection) {
       .attr("d", path).on(
           "mouseover",
           function(d) {
-            d3.select(this).style("fill", "#6C0").append("title").text(
-                d.properties.name);
+//            d3.select(this).style("fill", "#6C0").append("title").text(
+//                d.properties.name);
           }).on("mouseout", function(d) {
         d3.select(this).style("fill", "#ccc");
       })
 });
 
-// http://stackoverflow.com/questions/11386150/lat-lon-positon-on-a-d3-js-map
-// +convert to string to number
-
-var scalefactor = 1. / 50.;
+var scalefactor = 1. / 250.;
 d3.csv("map.csv", function(csv) {
   circles.selectAll("circle").data(csv).enter().append("circle").attr("cx",
       function(d, i) {
@@ -411,13 +407,15 @@ d3.csv("map.csv", function(csv) {
       }).attr("cy", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("r", function(d) {
-    return (+d["1990"]) * scalefactor;
-  }).attr("title", function(d) {
-    return d["city"] + ": " + Math.round(d["1990"]);
-  }).on("mouseover", function(d) {
-    d3.select(this).style("fill", "#FC0");
-  }).on("mouseout", function(d) {
-    d3.select(this).style("fill", "steelblue");
+    return (+d["2016-01-23T00:38:00.000Z"]) * scalefactor;
+//  }).attr("title", function(d) {
+//    return d["city"] + ": " + Math.round(d["2016-01-23T00:38:00.000Z"]);
+//  }).on("mouseover", function(d) {
+//    d3.select(this).style("fill", "#FC0");
+//  }).on("mouseout", function(d) {
+//    d3.select(this).style("fill", "steelblue");
+  }).style("fill", function(d) {
+    return "red";
   });
 
   labels.selectAll("labels").data(csv).enter().append("text").attr("x",
@@ -426,7 +424,7 @@ d3.csv("map.csv", function(csv) {
       }).attr("y", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d) {
-    return Math.round(d["1990"]);
+    return Math.round(d["2016-01-23T00:38:00.000Z"]);
   });
 });
 
@@ -434,8 +432,8 @@ function redraw(year) {
   circles.selectAll("circle").transition().duration(1000).ease("linear").attr(
       "r", function(d) {
         return (+d[year]) * scalefactor;
-      }).attr("title", function(d) {
-    return d["city"] + ": " + Math.round(d[year]);
+//      }).attr("title", function(d) {
+//    return d["city"] + ": " + Math.round(d[year]);
   });
 
   labels.selectAll("text").text(function(d) {
