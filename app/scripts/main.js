@@ -19,7 +19,7 @@ var mini_height = 350 - mini_margin.top - mini_margin.bottom;
 
 // 2016-01-23T00:38:00.000Z
 var formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
-var formatDate2 = d3.time.format("T%H:%M:%S");
+var formatDate2 = d3.time.format("%H:%M:%S");
 var parseDate = formatDate.parse
 var bisectDate = d3.bisector(function(d) {
   return d.date;
@@ -109,7 +109,7 @@ d3
               }).y(function(d) {
             return main_y['Service State'](d['Service State']);
           });
-          main_line['Judge'] = d3.svg.line().interpolate("cardinal").x(
+          main_line['Judge'] = d3.svg.line().interpolate("step").x(
               function(d) {
                 return main_x(d.date);
               }).y(function(d) {
@@ -123,6 +123,12 @@ d3
               });
 
           for ( var key in main_y) {
+            var type = '';
+            if(key == 'Judge') {
+              type = 'step';
+            } else {
+              type = 'cardinal';
+            }
             // main_line[key] = d3.svg.line().interpolate("cardinal").x(
             // function(d) {
             // return main_x(d.date);
@@ -130,7 +136,7 @@ d3
             // return main_y[key](d[key]);
             // });
             //
-            mini_line[key] = d3.svg.line().interpolate("cardinal").x(
+            mini_line[key] = d3.svg.line().interpolate(type).x(
                 function(d) {
                   return mini_x(d.date);
                 }).y(function(d) {

@@ -120,6 +120,8 @@ circle {
 /* Judge */
 .line.lineJudge {
 	stroke: steelblue;
+	fill-opacity: .1;
+	fill: red;
 }
 .focus circle.yJudge {
 	stroke: steelblue;
