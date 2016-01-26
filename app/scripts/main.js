@@ -103,11 +103,11 @@ d3
               }).y(function(d) {
             return main_y['RoundtripTime'](d['RoundtripTime']);
           });
-          main_line['Service State'] = d3.svg.line().interpolate("cardinal").x(
+          main_line['ServiceState'] = d3.svg.line().interpolate("cardinal").x(
               function(d) {
                 return main_x(d.date);
               }).y(function(d) {
-            return main_y['Service State'](d['Service State']);
+            return main_y['ServiceState'](d['ServiceState']);
           });
           main_line['Judge'] = d3.svg.line().interpolate("step").x(
               function(d) {

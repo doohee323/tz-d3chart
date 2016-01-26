@@ -6,7 +6,7 @@
     "TimeToConnect": 77,
     "TimeToFirstByte": 88,
     "RoundtripTime": 88,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 100
   },
@@ -17,7 +17,7 @@
     "TimeToConnect": 10,
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 16.1
   },
@@ -28,7 +28,7 @@
     "TimeToConnect": 9,
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 0,
     "Aggregateuptime": 16.1
   },
@@ -39,7 +39,7 @@
     "TimeToConnect": 9,
     "TimeToFirstByte": 18,
     "RoundtripTime": 18,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 15.8
   },
@@ -50,7 +50,7 @@
     "TimeToConnect": 14,
     "TimeToFirstByte": 24,
     "RoundtripTime": 24,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 22.7
   },
@@ -61,7 +61,7 @@
     "TimeToConnect": 10,
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 0,
     "Aggregateuptime": 17.2
   },
@@ -72,7 +72,7 @@
     "TimeToConnect": 9,
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 15.8
   },
@@ -83,7 +83,7 @@
     "TimeToConnect": 23,
     "TimeToFirstByte": 33,
     "RoundtripTime": 33,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 33.3
   },
@@ -94,7 +94,7 @@
     "TimeToConnect": 10,
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 0,
     "Aggregateuptime": 16.5
   },
@@ -105,7 +105,7 @@
     "TimeToConnect": 10,
     "TimeToFirstByte": 21,
     "RoundtripTime": 21,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 17.9
   },
@@ -116,7 +116,7 @@
     "TimeToConnect": 19,
     "TimeToFirstByte": 28,
     "RoundtripTime": 28,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 27.8
   },
@@ -127,7 +127,7 @@
     "TimeToConnect": 19,
     "TimeToFirstByte": 27,
     "RoundtripTime": 27,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 26.7
   },
@@ -138,7 +138,7 @@
     "TimeToConnect": 53,
     "TimeToFirstByte": 63,
     "RoundtripTime": 63,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 70
   },
@@ -149,7 +149,7 @@
     "TimeToConnect": 9,
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 15.8
   },
@@ -160,7 +160,7 @@
     "TimeToConnect": 13,
     "TimeToFirstByte": 24,
     "RoundtripTime": 24,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 22
   },
@@ -171,7 +171,7 @@
     "TimeToConnect": 8,
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
-    "Service State": 1,
+    "ServiceState": 1,
     "Judge": 1,
     "Aggregateuptime": 15.8
   }

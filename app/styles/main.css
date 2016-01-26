@@ -197,14 +197,14 @@ circle {
 	opacity: .5;
 }
 
-/* Service State */
-.line.lineService {
+/* ServiceState */
+.line.lineServiceState {
 	stroke: red;
 }
-.focus circle.yService {
+.focus circle.yServiceState {
 	stroke: red;
 }
-.focus line.yService {
+.focus line.yServiceState {
 	stroke: red;
 	stroke-dasharray: 3 3;
 	opacity: .5;
