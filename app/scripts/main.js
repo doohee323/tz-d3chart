@@ -36,237 +36,29 @@ var mini_xAxis = d3.svg.axis().scale(mini_x)
 var brush = d3.svg.brush().x(mini_x).on("brush", brush).on('brushstart',
     brushstart).on('brushend', brushend);
 
-var svg = d3.select("#chart").append("svg").attr("width",
-    main_width + main_margin.left + main_margin.right).attr("height",
-    main_height + main_margin.top + main_margin.bottom);
-
-svg.append("defs").append("clipPath").attr("id", "clip").append("rect").attr(
-    "width", main_width).attr("height", main_height);
-
-var main = svg.append("g").attr("transform",
-    "translate(" + main_margin.left + "," + main_margin.top + ")");
-
-var mini = svg.append("g").attr("transform",
-    "translate(" + mini_margin.left + "," + mini_margin.top + ")");
-
 var main_y = {};
 var mini_y = {};
 var main_line = {};
 var mini_line = {};
-
-d3
-    .json("data.txt",
-        function(error, data) {
-          data.forEach(function(d) {
-            d.date = parseDate(d.date);
-            for ( var key in data[0]) {
-              if (key != 'date') {
-                // if (key == 'Judge' || key == 'DNSLookup') {
-                d[key] = +d[key];
-              }
-            }
-          });
-
-          data.sort(function(a, b) {
-            return a.date - b.date;
-          });
-
-          for ( var key in data[0]) {
-            if (key != 'date') {
-              // if (key == 'Judge' || key == 'DNSLookup') {
-              main_y[key] = d3.scale.sqrt().range([ main_height, 0 ]);
-              mini_y[key] = d3.scale.sqrt().range([ mini_height, 0 ]);
-            }
-          }
-
-          // /[ line definition ]///////////////////////////
-          main_line['DNSLookup'] = d3.svg.line().interpolate("cardinal").x(
-              function(d) {
-                return main_x(d.date);
-              }).y(function(d) {
-            return main_y['DNSLookup'](d['DNSLookup']);
-          });
-          main_line['TimeToConnect'] = d3.svg.line().interpolate("cardinal").x(
-              function(d) {
-                return main_x(d.date);
-              }).y(function(d) {
-            return main_y['TimeToConnect'](d['TimeToConnect']);
-          });
-          main_line['TimeToFirstByte'] = d3.svg.line().interpolate("cardinal")
-              .x(function(d) {
-                return main_x(d.date);
-              }).y(function(d) {
-                return main_y['TimeToFirstByte'](d['TimeToFirstByte']);
-              });
-          main_line['RoundtripTime'] = d3.svg.line().interpolate("cardinal").x(
-              function(d) {
-                return main_x(d.date);
-              }).y(function(d) {
-            return main_y['RoundtripTime'](d['RoundtripTime']);
-          });
-          main_line['ServiceState'] = d3.svg.line().interpolate("cardinal").x(
-              function(d) {
-                return main_x(d.date);
-              }).y(function(d) {
-            return main_y['ServiceState'](d['ServiceState']);
-          });
-          main_line['Judge'] = d3.svg.line().interpolate("step").x(function(d) {
-            return main_x(d.date);
-          }).y(function(d) {
-            return main_y['Judge'](d['Judge']);
-          });
-          main_line['Aggregateuptime'] = d3.svg.line().interpolate("cardinal")
-              .x(function(d) {
-                return main_x(d.date);
-              }).y(function(d) {
-                return main_y['Aggregateuptime'](d['Aggregateuptime']);
-              });
-
-          for ( var key in main_y) {
-            var type = '';
-            if (key == 'Judge') {
-              type = 'step';
-            } else {
-              type = 'cardinal';
-            }
-            mini_line[key] = d3.svg.line().interpolate(type).x(function(d) {
-              return mini_x(d.date);
-            }).y(function(d) {
-              return mini_y[key](d[key]);
-            });
-          }
-
-          main_x.domain([ data[0].date, data[data.length - 1].date ]);
-          mini_x.domain(main_x.domain());
-
-          for ( var key in main_y) {
-            main_y[key].domain(d3.extent(data, function(d) {
-              return d[key];
-            }));
-            mini_y[key].domain(main_y[key].domain());
-          }
-
-          // /[ main chart ]///////////////////////////
-          for ( var key in main_y) {
-            main.append("path").datum(data).attr("clip-path", "url(#clip)")
-                .attr("class", "line line" + key).attr("d", main_line[key])
-                .attr("data-legend", function(d) {
-                  return key;
-                });
-          }
-
-          // /[ main left x ]///////////////////////////
-          main.append("g").attr("class", "x axis").attr("transform",
-              "translate(0," + main_height + ")").call(main_xAxis);
-          // /[ main left y ]///////////////////////////
-          var main_yAxisLeft = d3.svg.axis().scale(
-              main_y[Object.keys(main_y)[0]]).orient("left");
-          main.append("g").attr("class", "y axis axisLeft")
-              .call(main_yAxisLeft).append("text").attr("transform",
-                  "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
-                  "text-anchor", "end").text("( ms )");
-
-          // /[ main right y ]///////////////////////////
-          var main_yAxisRight = d3.svg.axis().scale(main_y['Judge']).orient(
-              "right").ticks(1);
-          main.append("g").attr("class", "y axis axisRight").attr("transform",
-              "translate(" + main_width + ", 0)").call(main_yAxisRight).append(
-              "text").attr("transform", "rotate(-90)").attr("y", 2).attr("dy",
-              ".71em").style("text-anchor", "end");
-
-          // /[ mini chart ]///////////////////////////
-          mini.append("g").attr("class", "x axis").attr("transform",
-              "translate(0," + mini_height + ")").call(main_xAxis);
-          for ( var key in main_y) {
-            mini.append("path").datum(data).attr("class", "line line" + key)
-                .attr("d", mini_line[key]);
-          }
-
-          mini.append("g").attr("class", "x brush").call(brush).selectAll(
-              "rect").attr("y", -6).attr("height", mini_height + 7);
-
-          // /[ focus ]///////////////////////////
-          var focus = main.append("g").attr("class", "focus").style("display",
-              "none");
-          for ( var key in main_y) {
-            focus.append("line").attr("class", "y" + key).attr("x1",
-                main_width - 6).attr("x2", main_width + 6);
-            focus.append("circle").attr("class", "y" + key).attr("r", 4);
-            focus.append("text").attr("class", "y" + key).attr("dy", "-1em");
-          }
-
-          main.append("rect").attr("class", "overlay")
-              .attr("width", main_width).attr("height", main_height).on(
-                  "mouseover", function() {
-                    focus.style("display", null);
-                  }).on("mouseout", function() {
-                focus.style("display", "none");
-              }).on("mousemove", mousemove);
-
-          function mousemove() {
-            var x0 = main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0,
-                1), d0 = data[i - 1];
-            var d1 = data[i];
-            if (d1.date) {
-              var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
-              for ( var key in main_y) {
-                focus.select("circle.y" + key).attr(
-                    "transform",
-                    "translate(" + main_x(d.date) + "," + main_y[key](d[key])
-                        + ")");
-                var formatOutput = key + "-" + formatDate2(d.date) + " - "
-                    + d[key] + " ms";
-                focus.select("text.y" + key).attr(
-                    "transform",
-                    "translate(" + main_x(d.date) + "," + main_y[key](d[key])
-                        + ")").text(formatOutput);
-                focus.select(".y" + key).attr(
-                    "transform",
-                    "translate(" + main_width * -1 + ", " + main_y[key](d[key])
-                        + ")").attr("x2", main_width + main_x(d.date));
-              }
-              focus.select(".x").attr("transform",
-                  "translate(" + main_x(d.date) + ",0)");
-            }
-          }
-
-          // /[ legend ]///////////////////////////
-          var legend = main.append("g").attr("class", "legend").attr(
-              "transform", "translate(40, 10)").style("font-size", "10px")
-              .call(d3.legend);
-
-          setTimeout(function() {
-            legend.style("font-size", "10px").attr("data-style-padding", 10)
-                .call(d3.legend)
-          }, 1000)
-
-        });
-
-function brush() {
-  main_x.domain(brush.empty() ? mini_x.domain() : brush.extent());
-  for ( var key in main_y) {
-    main.select(".line" + key).attr("d", main_line[key]);
-  }
-  main.select(".x.axis").call(main_xAxis);
-
-}
+var svg, main, mini;
 var startTime;
 var endTime;
-function brushstart() {
-  startTime = brush.extent()[0];
-}
-function brushend() {
-  startTime = new Date(Date.UTC(startTime.getFullYear(), startTime.getMonth(),
-      startTime.getDate(), startTime.getHours(), startTime.getMinutes()));
-  startTime = startTime.toISOString();
 
-  endTime = brush.extent()[1];
-  endTime = new Date(Date.UTC(endTime.getFullYear(), endTime.getMonth(),
-      endTime.getDate(), endTime.getHours(), endTime.getMinutes()));
-  endTime = endTime.toISOString();
+// ///////////////////////////////////////////////////////////////////////////////
+// [ map chart ]
+// ///////////////////////////////////////////////////////////////////////////////
+var w = 1200;
+var h = 400;
 
-  redraw(startTime, endTime);
-}
+var xy = d3.geo.equirectangular().scale(150);
+var path = d3.geo.path().projection(xy);
+var states;
+var circles;
+var labels;
+
+var mapData;
+var scalefactor = 1. / 250.;
+// ///////////////////////////////////////////////////////////////////////////////
 
 (function() {
   d3.legend = function(g) {
@@ -332,62 +124,271 @@ function brushend() {
   }
 })()
 
-// ///////////////////////////////////////////////////////////////////////////////
-// [ map chart ]
-// ///////////////////////////////////////////////////////////////////////////////
-
-var w = 1200;
-var h = 400;
-
-var xy = d3.geo.equirectangular().scale(150);
-var path = d3.geo.path().projection(xy);
-
-var svg = d3.select("#graph").insert("svg").attr("width", w).attr("height", h);
-var states = svg.append("g").attr("id", "states");
-var circles = svg.append("g").attr("id", "circles");
-var labels = svg.append("g").attr("id", "labels");
-var mapData;
-
-d3.json("countries.json", function(collection) {
-  states.selectAll("path").data(collection.features).enter().append("path")
-      .attr("d", path).on(
-          "mouseover",
-          function(d) {
-            d3.select(this).style("fill", "#6C0").append("title").text(
-                d.properties.name);
-          }).on("mouseout", function(d) {
-        d3.select(this).style("fill", "#ccc");
-      })
+d3.json("data.txt", function(error, data) {
+  setUptimeChart(data);
+  makeMap();
 });
 
-d3.csv("map.csv", function(csv) {
-  mapData = csv;
-  circles.selectAll("circle").data(csv).enter().append("circle").attr("cx",
-      function(d, i) {
-        return xy([ +d["longitude"], +d["latitude"] ])[0];
-      }).attr("cy", function(d, i) {
-    return xy([ +d["longitude"], +d["latitude"] ])[1];
-  }).attr("r", function(d) {
-    return getSize(d);
-    // }).attr("title", function(d) {
-    // return d["city"] + ": " + Math.round(d["2016-01-23T00:38:00.000Z"]);
-  }).on("mouseover", function(d) {
-    d3.select(this).style("fill", "#FC0");
-  }).on("mouseout", function(d) {
-    d3.select(this).style("fill", "steelblue");
-  }).style("fill", function(d) {
-    return getColor(d);
+function setUptimeChart(data) {
+  svg = d3.select("#chart").append("svg").attr("width",
+      main_width + main_margin.left + main_margin.right).attr("height",
+      main_height + main_margin.top + main_margin.bottom);
+
+  svg.append("defs").append("clipPath").attr("id", "clip").append("rect").attr(
+      "width", main_width).attr("height", main_height);
+
+  main = svg.append("g").attr("transform",
+      "translate(" + main_margin.left + "," + main_margin.top + ")");
+
+  mini = svg.append("g").attr("transform",
+      "translate(" + mini_margin.left + "," + mini_margin.top + ")");
+
+  data.forEach(function(d) {
+    d.date = parseDate(d.date);
+    for ( var key in data[0]) {
+      if (key != 'date') {
+        // if (key == 'Judge' || key == 'DNSLookup') {
+        d[key] = +d[key];
+      }
+    }
   });
 
-  labels.selectAll("labels").data(csv).enter().append("text").attr("x",
-      function(d, i) {
-        return xy([ +d["longitude"], +d["latitude"] ])[0];
-      }).attr("y", function(d, i) {
-    return xy([ +d["longitude"], +d["latitude"] ])[1];
-  }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d) {
-    return Math.round(getTotal(d));
+  data.sort(function(a, b) {
+    return a.date - b.date;
   });
-});
+
+  for ( var key in data[0]) {
+    if (key != 'date') {
+      // if (key == 'Judge' || key == 'DNSLookup') {
+      main_y[key] = d3.scale.sqrt().range([ main_height, 0 ]);
+      mini_y[key] = d3.scale.sqrt().range([ mini_height, 0 ]);
+    }
+  }
+
+  // /[ line definition ]///////////////////////////
+  main_line['DNSLookup'] = d3.svg.line().interpolate("cardinal").x(function(d) {
+    return main_x(d.date);
+  }).y(function(d) {
+    return main_y['DNSLookup'](d['DNSLookup']);
+  });
+  main_line['TimeToConnect'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return main_x(d.date);
+      }).y(function(d) {
+    return main_y['TimeToConnect'](d['TimeToConnect']);
+  });
+  main_line['TimeToFirstByte'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return main_x(d.date);
+      }).y(function(d) {
+    return main_y['TimeToFirstByte'](d['TimeToFirstByte']);
+  });
+  main_line['RoundtripTime'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return main_x(d.date);
+      }).y(function(d) {
+    return main_y['RoundtripTime'](d['RoundtripTime']);
+  });
+  main_line['ServiceState'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return main_x(d.date);
+      }).y(function(d) {
+    return main_y['ServiceState'](d['ServiceState']);
+  });
+  main_line['Judge'] = d3.svg.line().interpolate("step").x(function(d) {
+    return main_x(d.date);
+  }).y(function(d) {
+    return main_y['Judge'](d['Judge']);
+  });
+  main_line['Aggregateuptime'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return main_x(d.date);
+      }).y(function(d) {
+    return main_y['Aggregateuptime'](d['Aggregateuptime']);
+  });
+
+  for ( var key in main_y) {
+    var type = '';
+    if (key == 'Judge') {
+      type = 'step';
+    } else {
+      type = 'cardinal';
+    }
+    mini_line[key] = d3.svg.line().interpolate(type).x(function(d) {
+      return mini_x(d.date);
+    }).y(function(d) {
+      return mini_y[key](d[key]);
+    });
+  }
+
+  main_x.domain([ data[0].date, data[data.length - 1].date ]);
+  mini_x.domain(main_x.domain());
+
+  for ( var key in main_y) {
+    main_y[key].domain(d3.extent(data, function(d) {
+      return d[key];
+    }));
+    mini_y[key].domain(main_y[key].domain());
+  }
+
+  // /[ main chart ]///////////////////////////
+  for ( var key in main_y) {
+    main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
+        "class", "line line" + key).attr("d", main_line[key]).attr(
+        "data-legend", function(d) {
+          return key;
+        });
+  }
+
+  // /[ main left x ]///////////////////////////
+  main.append("g").attr("class", "x axis").attr("transform",
+      "translate(0," + main_height + ")").call(main_xAxis);
+  // /[ main left y ]///////////////////////////
+  var main_yAxisLeft = d3.svg.axis().scale(main_y[Object.keys(main_y)[0]])
+      .orient("left");
+  main.append("g").attr("class", "y axis axisLeft").call(main_yAxisLeft)
+      .append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy",
+          ".71em").style("text-anchor", "end").text("( ms )");
+
+  // /[ main right y ]///////////////////////////
+  var main_yAxisRight = d3.svg.axis().scale(main_y['Judge']).orient("right")
+      .ticks(1);
+  main.append("g").attr("class", "y axis axisRight").attr("transform",
+      "translate(" + main_width + ", 0)").call(main_yAxisRight).append("text")
+      .attr("transform", "rotate(-90)").attr("y", 2).attr("dy", ".71em").style(
+          "text-anchor", "end");
+
+  // /[ mini chart ]///////////////////////////
+  mini.append("g").attr("class", "x axis").attr("transform",
+      "translate(0," + mini_height + ")").call(main_xAxis);
+  for ( var key in main_y) {
+    mini.append("path").datum(data).attr("class", "line line" + key).attr("d",
+        mini_line[key]);
+  }
+
+  mini.append("g").attr("class", "x brush").call(brush).selectAll("rect").attr(
+      "y", -6).attr("height", mini_height + 7);
+
+  // /[ focus ]///////////////////////////
+  var focus = main.append("g").attr("class", "focus").style("display", "none");
+  for ( var key in main_y) {
+    focus.append("line").attr("class", "y" + key).attr("x1", main_width - 6)
+        .attr("x2", main_width + 6);
+    focus.append("circle").attr("class", "y" + key).attr("r", 4);
+    focus.append("text").attr("class", "y" + key).attr("dy", "-1em");
+  }
+
+  main.append("rect").attr("class", "overlay").attr("width", main_width).attr(
+      "height", main_height).on("mouseover", function() {
+    focus.style("display", null);
+  }).on("mouseout", function() {
+    focus.style("display", "none");
+  }).on("mousemove", mousemove);
+
+  function mousemove() {
+    var x0 = main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0, 1), d0 = data[i - 1];
+    var d1 = data[i];
+    if (d1.date) {
+      var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+      for ( var key in main_y) {
+        focus.select("circle.y" + key).attr("transform",
+            "translate(" + main_x(d.date) + "," + main_y[key](d[key]) + ")");
+        var formatOutput = key + "-" + formatDate2(d.date) + " - " + d[key]
+            + " ms";
+        focus.select("text.y" + key).attr("transform",
+            "translate(" + main_x(d.date) + "," + main_y[key](d[key]) + ")")
+            .text(formatOutput).style('font', '10px sans-serif');
+        focus.select(".y" + key).attr("transform",
+            "translate(" + main_width * -1 + ", " + main_y[key](d[key]) + ")")
+            .attr("x2", main_width + main_x(d.date));
+      }
+      focus.select(".x").attr("transform",
+          "translate(" + main_x(d.date) + ",0)");
+    }
+  }
+
+  // /[ legend ]///////////////////////////
+  var legend = main.append("g").attr("class", "legend").attr("transform",
+      "translate(40, 10)").style('font', '10px sans-serif').call(d3.legend);
+
+  setTimeout(function() {
+    legend.style('font', '10px sans-serif').attr("data-style-padding", 10).call(
+        d3.legend)
+  }, 1000)
+}
+
+function brush() {
+  main_x.domain(brush.empty() ? mini_x.domain() : brush.extent());
+  for ( var key in main_y) {
+    main.select(".line" + key).attr("d", main_line[key]);
+  }
+  main.select(".x.axis").call(main_xAxis);
+}
+
+function brushstart() {
+  startTime = brush.extent()[0];
+}
+function brushend() {
+  startTime = new Date(Date.UTC(startTime.getFullYear(), startTime.getMonth(),
+      startTime.getDate(), startTime.getHours(), startTime.getMinutes()));
+  startTime = startTime.toISOString();
+
+  endTime = brush.extent()[1];
+  endTime = new Date(Date.UTC(endTime.getFullYear(), endTime.getMonth(),
+      endTime.getDate(), endTime.getHours(), endTime.getMinutes()));
+  endTime = endTime.toISOString();
+
+  redraw(startTime, endTime);
+}
+
+function makeMap() {
+  svg = d3.select("#graph").insert("svg").attr("width", w).attr("height", h);
+  states = svg.append("g").attr("id", "states");
+  circles = svg.append("g").attr("id", "circles");
+  labels = svg.append("g").attr("id", "labels");
+
+  d3.json("countries.json", function(collection) {
+
+    states.selectAll("path").data(collection.features).enter().append("path")
+        .attr("d", path).on(
+            "mouseover",
+            function(d) {
+              d3.select(this).style("fill", "#6C0").append("title").text(
+                  d.properties.name);
+            }).on("mouseout", function(d) {
+          d3.select(this).style("fill", "#ccc");
+        })
+  });
+
+  d3.csv("map.csv", function(csv) {
+    mapData = csv;
+    circles.selectAll("circle").data(csv).enter().append("circle").attr("cx",
+        function(d, i) {
+          return xy([ +d["longitude"], +d["latitude"] ])[0];
+        }).attr("cy", function(d, i) {
+      return xy([ +d["longitude"], +d["latitude"] ])[1];
+    }).attr("r", function(d) {
+      return getSize(d);
+      // }).attr("title", function(d) {
+      // return d["city"] + ": " + Math.round(d["2016-01-23T00:38:00.000Z"]);
+    }).on("mouseover", function(d) {
+      d3.select(this).style("fill", "#FC0");
+    }).on("mouseout", function(d) {
+      d3.select(this).style("fill", "steelblue");
+    }).style("fill", function(d) {
+      return getColor(d);
+    });
+
+    labels.selectAll("labels").data(csv).enter().append("text").attr("x",
+        function(d, i) {
+          return xy([ +d["longitude"], +d["latitude"] ])[0];
+        }).attr("y", function(d, i) {
+      return xy([ +d["longitude"], +d["latitude"] ])[1];
+    }).attr("dy", "0.3em").attr("text-anchor", "middle").style('font', '10px sans-serif').text(function(d) {
+      return Math.round(getTotal(d));
+    });
+  });
+}
 
 function redraw(startTime, endTime) {
   var csv = [];
@@ -426,7 +427,6 @@ function redraw(startTime, endTime) {
   });
 }
 
-var scalefactor = 1. / 250.;
 function getSize(d, city) {
   var size = Math.round(getTotal(d, city) * scalefactor);
   if (size >= 200) {
