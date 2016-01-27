@@ -147,7 +147,7 @@ function setUptimeChart(data) {
     d.date = parseDate(d.date);
     for ( var key in data[0]) {
       if (key != 'date') {
-        // if (key == 'Judge' || key == 'DNSLookup') {
+        // if (key == 'Judge' || key == 'nsl_ms') {
         d[key] = +d[key];
       }
     }
@@ -159,52 +159,48 @@ function setUptimeChart(data) {
 
   for ( var key in data[0]) {
     if (key != 'date') {
-      // if (key == 'Judge' || key == 'DNSLookup') {
+      // if (key == 'Judge' || key == 'nsl_ms') {
       main_y[key] = d3.scale.sqrt().range([ main_height, 0 ]);
       mini_y[key] = d3.scale.sqrt().range([ mini_height, 0 ]);
     }
   }
 
   // /[ line definition ]///////////////////////////
-  main_line['DNSLookup'] = d3.svg.line().interpolate("cardinal").x(function(d) {
+  main_line['nsl_ms'] = d3.svg.line().interpolate("cardinal").x(function(d) {
     return main_x(d.date);
   }).y(function(d) {
-    return main_y['DNSLookup'](d['DNSLookup']);
+    return main_y['nsl_ms'](d['nsl_ms']);
   });
-  main_line['TimeToConnect'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return main_x(d.date);
-      }).y(function(d) {
-    return main_y['TimeToConnect'](d['TimeToConnect']);
+  main_line['con_ms'] = d3.svg.line().interpolate("cardinal").x(function(d) {
+    return main_x(d.date);
+  }).y(function(d) {
+    return main_y['con_ms'](d['con_ms']);
   });
-  main_line['TimeToFirstByte'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return main_x(d.date);
-      }).y(function(d) {
-    return main_y['TimeToFirstByte'](d['TimeToFirstByte']);
+  main_line['tfb_ms'] = d3.svg.line().interpolate("cardinal").x(function(d) {
+    return main_x(d.date);
+  }).y(function(d) {
+    return main_y['tfb_ms'](d['tfb_ms']);
   });
-  main_line['RoundtripTime'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return main_x(d.date);
-      }).y(function(d) {
-    return main_y['RoundtripTime'](d['RoundtripTime']);
+  main_line['tot_ms'] = d3.svg.line().interpolate("cardinal").x(function(d) {
+    return main_x(d.date);
+  }).y(function(d) {
+    return main_y['tot_ms'](d['tot_ms']);
   });
-  main_line['ServiceState'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return main_x(d.date);
-      }).y(function(d) {
-    return main_y['ServiceState'](d['ServiceState']);
+  main_line['state'] = d3.svg.line().interpolate("cardinal").x(function(d) {
+    return main_x(d.date);
+  }).y(function(d) {
+    return main_y['state'](d['state']);
   });
   main_line['Judge'] = d3.svg.line().interpolate("step").x(function(d) {
     return main_x(d.date);
   }).y(function(d) {
     return main_y['Judge'](d['Judge']);
   });
-  main_line['Aggregateuptime'] = d3.svg.line().interpolate("cardinal").x(
+  main_line['Aggregate_uptime'] = d3.svg.line().interpolate("cardinal").x(
       function(d) {
         return main_x(d.date);
       }).y(function(d) {
-    return main_y['Aggregateuptime'](d['Aggregateuptime']);
+    return main_y['Aggregate_uptime'](d['Aggregate_uptime']);
   });
 
   for ( var key in main_y) {
@@ -244,8 +240,7 @@ function setUptimeChart(data) {
   main.append("g").attr("class", "x axis").attr("transform",
       "translate(0," + main_height + ")").call(main_xAxis);
   // /[ main left y ]///////////////////////////
-  var main_yAxisLeft = d3.svg.axis().scale(main_y[Object.keys(main_y)[0]])
-      .orient("left");
+  var main_yAxisLeft = d3.svg.axis().scale(main_y['tot_ms']).orient("left");
   main.append("g").attr("class", "y axis axisLeft").call(main_yAxisLeft)
       .append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy",
           ".71em").style("text-anchor", "end").text("( ms )");

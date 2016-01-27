@@ -146,91 +146,91 @@ circle {
 	opacity: .5;
 }
 
-/* DNSLookup */
-.line.lineDNSLookup {
+/* nsl_ms */
+.line.linensl_ms {
 	stroke: green;
 }
 
-.focus circle.yDNSLookup {
+.focus circle.ynsl_ms {
 	stroke: green;
 }
 
-.focus line.yDNSLookup {
+.focus line.ynsl_ms {
 	stroke: green;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
-/* TimeToConnect */
-.line.lineTimeToConnect {
+/* con_ms */
+.line.linecon_ms {
 	stroke: gray;
 }
 
-.focus circle.yTimeToConnect {
+.focus circle.ycon_ms {
 	stroke: gray;
 }
 
-.focus line.yTimeToConnect {
+.focus line.ycon_ms {
 	stroke: gray;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
-/* TimeToFirstByte */
-.line.lineTimeToFirstByte {
+/* tfb_ms */
+.line.linetfb_ms {
 	stroke: yellow;
 }
 
-.focus circle.yTimeToFirstByte {
+.focus circle.ytfb_ms {
 	stroke: yellow;
 }
 
-.focus line.yTimeToFirstByte {
+.focus line.ytfb_ms {
 	stroke: yellow;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
-/* RoundtripTime */
-.line.lineRoundtripTime {
+/* tot_ms */
+.line.linetot_ms {
 	stroke: pink;
 }
 
-.focus circle.yRoundtripTime {
+.focus circle.ytot_ms {
 	stroke: pink;
 }
 
-.focus line.yRoundtripTime {
+.focus line.ytot_ms {
 	stroke: pink;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
-/* Aggregateuptime */
-.line.lineAggregateuptime {
+/* Aggregate_uptime */
+.line.lineAggregate_uptime {
 	stroke: blue;
 }
 
-.focus circle.yAggregateuptime {
+.focus circle.yAggregate_uptime {
 	stroke: blue;
 }
 
-.focus line.yAggregateuptime {
+.focus line.yAggregate_uptime {
 	stroke: blue;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
-/* ServiceState */
-.line.lineServiceState {
+/* state */
+.line.linestate {
 	stroke: red;
 }
 
-.focus circle.yServiceState {
+.focus circle.ystate {
 	stroke: red;
 }
 
-.focus line.yServiceState {
+.focus line.ystate {
 	stroke: red;
 	stroke-dasharray: 3 3;
 	opacity: .5;

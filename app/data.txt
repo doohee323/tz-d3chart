@@ -1,178 +1,92 @@
 [
   {
-    "date": "2016-01-23T00:36:00.000Z",
-    "DNSLookup": 76,
-    
-    "TimeToConnect": 77,
-    "TimeToFirstByte": 88,
-    "RoundtripTime": 88,
-    "ServiceState": 1,
+    "date": "2016-01-27T18:46:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 1,
+    "tfb_ms": 277,
+    "tot_ms": 277,
+    "state": 1,
     "Judge": 1,
-    "Aggregateuptime": 100
+    "Aggregate_uptime": 30.1
   },
   {
-    "date": "2016-01-23T00:37:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "ServiceState": 1,
+    "date": "2016-01-27T18:47:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 1,
+    "tfb_ms": 277,
+    "tot_ms": 277,
+    "state": 1,
     "Judge": 1,
-    "Aggregateuptime": 16.1
+    "Aggregate_uptime": 30.1
   },
   {
-    "date": "2016-01-23T00:38:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "ServiceState": 1,
+    "date": "2016-01-27T18:48:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 0,
+    "tfb_ms": 274,
+    "tot_ms": 274,
+    "state": 1,
+    "Judge": 1,
+    "Aggregate_uptime": 29.8
+  },
+  {
+    "date": "2016-01-27T18:49:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 0,
+    "tfb_ms": 274,
+    "tot_ms": 275,
+    "state": 1,
+    "Judge": 1,
+    "Aggregate_uptime": 100
+  },
+  {
+    "date": "2016-01-27T18:50:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 0,
+    "tfb_ms": 274,
+    "tot_ms": 275,
+    "state": 1,
     "Judge": 0,
-    "Aggregateuptime": 16.1
+    "Aggregate_uptime": 42.9
   },
   {
-    "date": "2016-01-23T00:39:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 18,
-    "RoundtripTime": 18,
-    "ServiceState": 1,
+    "date": "2016-01-27T18:51:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 0,
+    "tfb_ms": 274,
+    "tot_ms": 274,
+    "state": 1,
     "Judge": 1,
-    "Aggregateuptime": 15.8
+    "Aggregate_uptime": 29.8
   },
   {
-    "date": "2016-01-23T00:40:00.000Z",
-    "DNSLookup": 14,
-    
-    "TimeToConnect": 14,
-    "TimeToFirstByte": 24,
-    "RoundtripTime": 24,
-    "ServiceState": 1,
-    "Judge": 1,
-    "Aggregateuptime": 22.7
-  },
-  {
-    "date": "2016-01-23T00:41:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 20,
-    "RoundtripTime": 20,
-    "ServiceState": 1,
+    "date": "2016-01-27T18:52:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 0,
+    "tfb_ms": 274,
+    "tot_ms": 274,
+    "state": 1,
     "Judge": 0,
-    "Aggregateuptime": 17.2
+    "Aggregate_uptime": 0
   },
   {
-    "date": "2016-01-23T00:42:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "ServiceState": 1,
+    "date": "2016-01-27T18:53:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 1,
+    "tfb_ms": 274,
+    "tot_ms": 274,
+    "state": 1,
     "Judge": 1,
-    "Aggregateuptime": 15.8
+    "Aggregate_uptime": 29.8
   },
   {
-    "date": "2016-01-23T00:43:00.000Z",
-    "DNSLookup": 22,
-    
-    "TimeToConnect": 23,
-    "TimeToFirstByte": 33,
-    "RoundtripTime": 33,
-    "ServiceState": 1,
+    "date": "2016-01-27T18:54:00.000Z",
+    "nsl_ms": 0,
+    "con_ms": 0,
+    "tfb_ms": 299,
+    "tot_ms": 300,
+    "state": 1,
     "Judge": 1,
-    "Aggregateuptime": 33.3
-  },
-  {
-    "date": "2016-01-23T00:44:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "ServiceState": 1,
-    "Judge": 0,
-    "Aggregateuptime": 16.5
-  },
-  {
-    "date": "2016-01-23T00:45:00.000Z",
-    "DNSLookup": 9,
-    
-    "TimeToConnect": 10,
-    "TimeToFirstByte": 21,
-    "RoundtripTime": 21,
-    "ServiceState": 1,
-    "Judge": 1,
-    "Aggregateuptime": 17.9
-  },
-  {
-    "date": "2016-01-23T00:46:00.000Z",
-    "DNSLookup": 18,
-    
-    "TimeToConnect": 19,
-    "TimeToFirstByte": 28,
-    "RoundtripTime": 28,
-    "ServiceState": 1,
-    "Judge": 1,
-    "Aggregateuptime": 27.8
-  },
-  {
-    "date": "2016-01-23T00:47:00.000Z",
-    "DNSLookup": 17,
-    
-    "TimeToConnect": 19,
-    "TimeToFirstByte": 27,
-    "RoundtripTime": 27,
-    "ServiceState": 1,
-    "Judge": 1,
-    "Aggregateuptime": 26.7
-  },
-  {
-    "date": "2016-01-23T00:48:00.000Z",
-    "DNSLookup": 52,
-    
-    "TimeToConnect": 53,
-    "TimeToFirstByte": 63,
-    "RoundtripTime": 63,
-    "ServiceState": 1,
-    "Judge": 1,
-    "Aggregateuptime": 70
-  },
-  {
-    "date": "2016-01-23T00:49:00.000Z",
-    "DNSLookup": 8,
-    
-    "TimeToConnect": 9,
-    "TimeToFirstByte": 19,
-    "RoundtripTime": 19,
-    "ServiceState": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.8
-  },
-  {
-    "date": "2016-01-23T00:50:00.000Z",
-    "DNSLookup": 12,
-    
-    "TimeToConnect": 13,
-    "TimeToFirstByte": 24,
-    "RoundtripTime": 24,
-    "ServiceState": 1,
-    "Judge": 1,
-    "Aggregateuptime": 22
-  },
-  {
-    "date": "2016-01-23T00:51:00.000Z",
-    "DNSLookup": 7,
-    
-    "TimeToConnect": 8,
-    "TimeToFirstByte": 20,
-    "RoundtripTime": 20,
-    "ServiceState": 1,
-    "Judge": 1,
-    "Aggregateuptime": 15.8
+    "Aggregate_uptime": 0
   }
 ]
