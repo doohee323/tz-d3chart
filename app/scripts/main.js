@@ -17,7 +17,6 @@ var main_width = 960 - main_margin.left - main_margin.right, main_height = 400
     - main_margin.top - main_margin.bottom;
 var mini_height = 350 - mini_margin.top - mini_margin.bottom;
 
-// 2016-01-23T00:38:00.000Z
 var formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
 var formatDate2 = d3.time.format("%H:%M:%S");
 var parseDate = formatDate.parse
@@ -56,7 +55,7 @@ var states;
 var circles;
 var labels;
 
-var mapData;
+var mapData = new Array();
 var scalefactor = 1. / 250.;
 // ///////////////////////////////////////////////////////////////////////////////
 
@@ -125,11 +124,11 @@ var scalefactor = 1. / 250.;
 })()
 
 d3.json("data.txt", function(error, data) {
-  setUptimeChart(data);
+  makeUptimeChart(data);
   makeMap();
 });
 
-function setUptimeChart(data) {
+function makeUptimeChart(data) {
   svg = d3.select("#chart").append("svg").attr("width",
       main_width + main_margin.left + main_margin.right).attr("height",
       main_height + main_margin.top + main_margin.bottom);
@@ -336,14 +335,13 @@ function brushend() {
   redraw(startTime, endTime);
 }
 
-function makeMap() {
+function makeMap(csv) {
   svg = d3.select("#graph").insert("svg").attr("width", w).attr("height", h);
   states = svg.append("g").attr("id", "states");
   circles = svg.append("g").attr("id", "circles");
   labels = svg.append("g").attr("id", "labels");
 
   d3.json("countries.json", function(collection) {
-
     states.selectAll("path").data(collection.features).enter().append("path")
         .attr("d", path).on(
             "mouseover",
@@ -355,7 +353,7 @@ function makeMap() {
         })
   });
 
-  d3.csv("map.csv", function(csv) {
+  d3.json("map.csv", function(csv) {
     mapData = csv;
     circles.selectAll("circle").data(csv).enter().append("circle").attr("cx",
         function(d, i) {
