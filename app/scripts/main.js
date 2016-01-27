@@ -335,7 +335,7 @@ function brushend() {
   redraw(startTime, endTime);
 }
 
-function makeMap(csv) {
+function makeMap(json) {
   svg = d3.select("#graph").insert("svg").attr("width", w).attr("height", h);
   states = svg.append("g").attr("id", "states");
   circles = svg.append("g").attr("id", "circles");
@@ -353,9 +353,9 @@ function makeMap(csv) {
         })
   });
 
-  d3.json("map.csv", function(csv) {
-    mapData = csv;
-    circles.selectAll("circle").data(csv).enter().append("circle").attr("cx",
+  d3.json("map.json", function(json) {
+    mapData = json;
+    circles.selectAll("circle").data(json).enter().append("circle").attr("cx",
         function(d, i) {
           return xy([ +d["longitude"], +d["latitude"] ])[0];
         }).attr("cy", function(d, i) {
@@ -372,7 +372,7 @@ function makeMap(csv) {
       return getColor(d);
     });
 
-    labels.selectAll("labels").data(csv).enter().append("text").attr("x",
+    labels.selectAll("labels").data(json).enter().append("text").attr("x",
         function(d, i) {
           return xy([ +d["longitude"], +d["latitude"] ])[0];
         }).attr("y", function(d, i) {
@@ -385,7 +385,7 @@ function makeMap(csv) {
 }
 
 function redraw(startTime, endTime) {
-  var csv = [];
+  var json = [];
   if (startTime && endTime) {
     for (var i = 0; i < mapData.length; i++) {
       var obj = {};
@@ -399,25 +399,25 @@ function redraw(startTime, endTime) {
           }
         }
       }
-      csv.push(obj);
+      json.push(obj);
     }
   } else {
-    csv = mapData;
+    json = mapData;
   }
 
   circles.selectAll("circle").transition().duration(1000).ease("linear").attr(
       "r", function(d) {
-        return getSize(csv, d.city);
+        return getSize(json, d.city);
       }).attr("title", function(d) {
-    return d["city"] + ": " + Math.round(getTotal(csv, d.city));
+    return d["city"] + ": " + Math.round(getTotal(json, d.city));
   });
 
   circles.selectAll("circle").style("fill", function(d) {
-    return getColor(csv, d.city);
+    return getColor(json, d.city);
   });
 
   labels.selectAll("text").text(function(d) {
-    return Math.round(getTotal(csv, d.city));
+    return Math.round(getTotal(json, d.city));
   });
 }
 
