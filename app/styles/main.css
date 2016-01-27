@@ -100,6 +100,18 @@ body {
 	shape-rendering: crispEdges;
 }
 
+.brushstart .extent {
+	stroke: #fff;
+	fill-opacity: .125;
+	shape-rendering: crispEdges;
+}
+
+.brushend .extent {
+	stroke: #fff;
+	fill-opacity: .125;
+	shape-rendering: crispEdges;
+}
+
 .legend rect {
 	fill: white;
 	stroke: black;

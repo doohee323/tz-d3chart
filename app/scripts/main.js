@@ -33,7 +33,8 @@ var main_xAxis = d3.svg.axis().scale(main_x)
 var mini_xAxis = d3.svg.axis().scale(mini_x)
     .tickFormat(d3.time.format("%H:%M")).orient("bottom");
 
-var brush = d3.svg.brush().x(mini_x).on("brush", brush);
+var brush = d3.svg.brush().x(mini_x).on("brush", brush).on('brushstart',
+    brushstart).on('brushend', brushend);
 
 var svg = d3.select("#chart").append("svg").attr("width",
     main_width + main_margin.left + main_margin.right).attr("height",
@@ -109,10 +110,9 @@ d3
               }).y(function(d) {
             return main_y['ServiceState'](d['ServiceState']);
           });
-          main_line['Judge'] = d3.svg.line().interpolate("step").x(
-              function(d) {
-                return main_x(d.date);
-              }).y(function(d) {
+          main_line['Judge'] = d3.svg.line().interpolate("step").x(function(d) {
+            return main_x(d.date);
+          }).y(function(d) {
             return main_y['Judge'](d['Judge']);
           });
           main_line['Aggregateuptime'] = d3.svg.line().interpolate("cardinal")
@@ -124,7 +124,7 @@ d3
 
           for ( var key in main_y) {
             var type = '';
-            if(key == 'Judge') {
+            if (key == 'Judge') {
               type = 'step';
             } else {
               type = 'cardinal';
@@ -136,10 +136,9 @@ d3
             // return main_y[key](d[key]);
             // });
             //
-            mini_line[key] = d3.svg.line().interpolate(type).x(
-                function(d) {
-                  return mini_x(d.date);
-                }).y(function(d) {
+            mini_line[key] = d3.svg.line().interpolate(type).x(function(d) {
+              return mini_x(d.date);
+            }).y(function(d) {
               return mini_y[key](d[key]);
             });
           }
@@ -257,11 +256,23 @@ function brush() {
   }
   main.select(".x.axis").call(main_xAxis);
 
-  var now = brush.extent()[1];
-  var date = new Date(Date.UTC(now.getFullYear(), now.getMonth(),
-      now.getDate(), now.getHours(), now.getMinutes()));
-  var lastTime = date.toISOString();
-  redraw(lastTime);
+}
+var startTime;
+var endTime;
+function brushstart() {
+  startTime = brush.extent()[0];
+}
+function brushend() {
+  startTime = new Date(Date.UTC(startTime.getFullYear(), startTime.getMonth(),
+      startTime.getDate(), startTime.getHours(), startTime.getMinutes()));
+  startTime = startTime.toISOString();
+
+  endTime = brush.extent()[1];
+  endTime = new Date(Date.UTC(endTime.getFullYear(), endTime.getMonth(),
+      endTime.getDate(), endTime.getHours(), endTime.getMinutes()));
+  endTime = endTime.toISOString();
+
+  redraw(startTime, endTime);
 }
 
 (function() {
@@ -391,34 +402,37 @@ var svg = d3.select("#graph").insert("svg").attr("width", w).attr("height", h);
 var states = svg.append("g").attr("id", "states");
 var circles = svg.append("g").attr("id", "circles");
 var labels = svg.append("g").attr("id", "labels");
+var mapData;
 
 d3.json("countries.json", function(collection) {
   states.selectAll("path").data(collection.features).enter().append("path")
-      .attr("d", path).on("mouseover", function(d) {
-        // d3.select(this).style("fill", "#6C0").append("title").text(
-        // d.properties.name);
-      }).on("mouseout", function(d) {
+      .attr("d", path).on(
+          "mouseover",
+          function(d) {
+            d3.select(this).style("fill", "#6C0").append("title").text(
+                d.properties.name);
+          }).on("mouseout", function(d) {
         d3.select(this).style("fill", "#ccc");
       })
 });
 
-var scalefactor = 1. / 250.;
 d3.csv("map.csv", function(csv) {
+  mapData = csv;
   circles.selectAll("circle").data(csv).enter().append("circle").attr("cx",
       function(d, i) {
         return xy([ +d["longitude"], +d["latitude"] ])[0];
       }).attr("cy", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("r", function(d) {
-    return (+d["2016-01-23T00:38:00.000Z"]) * scalefactor;
+    return getSize(d);
     // }).attr("title", function(d) {
     // return d["city"] + ": " + Math.round(d["2016-01-23T00:38:00.000Z"]);
-    // }).on("mouseover", function(d) {
-    // d3.select(this).style("fill", "#FC0");
-    // }).on("mouseout", function(d) {
-    // d3.select(this).style("fill", "steelblue");
-    // }).style("fill", function(d) {
-    // return "red";
+  }).on("mouseover", function(d) {
+    d3.select(this).style("fill", "#FC0");
+  }).on("mouseout", function(d) {
+    d3.select(this).style("fill", "steelblue");
+  }).style("fill", function(d) {
+    return getColor(d);
   });
 
   labels.selectAll("labels").data(csv).enter().append("text").attr("x",
@@ -427,19 +441,84 @@ d3.csv("map.csv", function(csv) {
       }).attr("y", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d) {
-    return Math.round(d["2016-01-23T00:38:00.000Z"]);
+    return Math.round(getTotal(d));
   });
 });
 
-function redraw(time) {
+function redraw(startTime, endTime) {
+  var csv = [];
+  if (startTime && endTime) {
+    for (var i = 0; i < mapData.length; i++) {
+      var obj = {};
+      for ( var key in mapData[i]) {
+        if (key == 'city' || key == 'latitude' || key == 'longitude') {
+          obj[key] = mapData[i][key];
+        } else {
+          if (new Date(key) >= new Date(startTime)
+              && new Date(key) <= new Date(endTime)) {
+            obj[key] = mapData[i][key];
+          }
+        }
+      }
+      csv.push(obj);
+    }
+  } else {
+    csv = mapData;
+  }
+
   circles.selectAll("circle").transition().duration(1000).ease("linear").attr(
       "r", function(d) {
-        return (+d[time]) * scalefactor;
-        // }).attr("title", function(d) {
-        // return d["city"] + ": " + Math.round(d[time]);
-      });
+        return getSize(csv, d.city);
+      }).attr("title", function(d) {
+    return d["city"] + ": " + Math.round(getTotal(csv, d.city));
+  });
+  
+  circles.selectAll("circle").style("fill", function(d) {
+    return getColor(csv, d.city);
+  });
 
   labels.selectAll("text").text(function(d) {
-    return Math.round(d[time]);
+    return Math.round(getTotal(csv, d.city));
   });
+}
+
+var scalefactor = 1. / 250.;
+function getSize(d, city) {
+  var size = Math.round(getTotal(d, city) * scalefactor);
+  if(size >= 200) {
+    size = 30;
+  } else if(size >= 50) {
+    size = 10;
+  } else if(size < 50) {
+    size = 5;
+  }
+  return size;
+}
+
+function getColor(d, city) {
+  var size = Math.round(getTotal(d, city) * scalefactor);
+  if(size >= 200) {
+    return "red";
+  } else if(size >= 50) {
+    return "yellow";
+  }
+  return "green";
+}
+
+function getTotal(d, city) {
+  if(city) {
+    for(var i=0;i<d.length;i++) {
+      if(d[i].city == city) {
+        d = d[i];
+        break;
+      }
+    }
+  }
+  var total = 0;
+  for ( var key in d) {
+    if (key != 'city' && key != 'latitude' && key != 'longitude') {
+      total += parseFloat(d[key]);
+    }
+  }
+  return total;
 }
