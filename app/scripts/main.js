@@ -312,8 +312,8 @@ function setUptimeChart(data) {
       "translate(40, 10)").style('font', '10px sans-serif').call(d3.legend);
 
   setTimeout(function() {
-    legend.style('font', '10px sans-serif').attr("data-style-padding", 10).call(
-        d3.legend)
+    legend.style('font', '10px sans-serif').attr("data-style-padding", 10)
+        .call(d3.legend)
   }, 1000)
 }
 
@@ -384,7 +384,8 @@ function makeMap() {
           return xy([ +d["longitude"], +d["latitude"] ])[0];
         }).attr("y", function(d, i) {
       return xy([ +d["longitude"], +d["latitude"] ])[1];
-    }).attr("dy", "0.3em").attr("text-anchor", "middle").style('font', '10px sans-serif').text(function(d) {
+    }).attr("dy", "0.3em").attr("text-anchor", "middle").style('font',
+        '10px sans-serif').text(function(d) {
       return Math.round(getTotal(d));
     });
   });

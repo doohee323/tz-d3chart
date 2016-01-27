@@ -135,9 +135,11 @@ circle {
 	fill-opacity: .1;
 	fill: red;
 }
+
 .focus circle.yJudge {
 	stroke: steelblue;
 }
+
 .focus line.yJudge {
 	stroke: steelblue;
 	stroke-dasharray: 3 3;
@@ -148,9 +150,11 @@ circle {
 .line.lineDNSLookup {
 	stroke: green;
 }
+
 .focus circle.yDNSLookup {
 	stroke: green;
 }
+
 .focus line.yDNSLookup {
 	stroke: green;
 	stroke-dasharray: 3 3;
@@ -161,9 +165,11 @@ circle {
 .line.lineTimeToConnect {
 	stroke: gray;
 }
+
 .focus circle.yTimeToConnect {
 	stroke: gray;
 }
+
 .focus line.yTimeToConnect {
 	stroke: gray;
 	stroke-dasharray: 3 3;
@@ -174,9 +180,11 @@ circle {
 .line.lineTimeToFirstByte {
 	stroke: yellow;
 }
+
 .focus circle.yTimeToFirstByte {
 	stroke: yellow;
 }
+
 .focus line.yTimeToFirstByte {
 	stroke: yellow;
 	stroke-dasharray: 3 3;
@@ -187,9 +195,11 @@ circle {
 .line.lineRoundtripTime {
 	stroke: pink;
 }
+
 .focus circle.yRoundtripTime {
 	stroke: pink;
 }
+
 .focus line.yRoundtripTime {
 	stroke: pink;
 	stroke-dasharray: 3 3;
@@ -200,9 +210,11 @@ circle {
 .line.lineAggregateuptime {
 	stroke: blue;
 }
+
 .focus circle.yAggregateuptime {
 	stroke: blue;
 }
+
 .focus line.yAggregateuptime {
 	stroke: blue;
 	stroke-dasharray: 3 3;
@@ -213,9 +225,11 @@ circle {
 .line.lineServiceState {
 	stroke: red;
 }
+
 .focus circle.yServiceState {
 	stroke: red;
 }
+
 .focus line.yServiceState {
 	stroke: red;
 	stroke-dasharray: 3 3;
