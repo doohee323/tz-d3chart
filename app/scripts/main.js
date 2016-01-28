@@ -137,8 +137,9 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
         if (type == 'text') {
           if ('#FFFFFF' == convertRGBDecimalToHex(d3.select(".line" + d.key)
               .style("stroke"))) {
-            if(_self.type == _self.config.chart.yAxis.right) {
-              d3.select(".line" + d.key).style("stroke", d.color).style("fill", d.color);
+            if (_self.type == _self.config.chart.yAxis.right) {
+              d3.select(".line" + d.key).style("stroke", d.color).style("fill",
+                  d.color);
             } else {
               d3.select(".line" + d.key).style("stroke", d.color);
             }
@@ -150,8 +151,9 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
               .style("stroke"));
           if (pickColor != '#FFFFFF') {
             d.color = pickColor;
-            if(_self.type == _self.config.chart.yAxis.right) {
-              d3.select(".line" + d.key).style("stroke", '#FFFFFF').style("fill", "white");
+            if (_self.type == _self.config.chart.yAxis.right) {
+              d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
+                  "fill", "white");
             } else {
               d3.select(".line" + d.key).style("stroke", '#FFFFFF');
             }
@@ -548,7 +550,7 @@ var config = {
 
 var uptimeChart = new UptimeChart("#chart", "#graph", config);
 
-d3.json("data.txt", function(error, data) {
+d3.json("data.json", function(error, data) {
   uptimeChart.makeUptimeChart(data);
   d3.json("map.json", function(json) {
     uptimeChart.makeMap(json);
