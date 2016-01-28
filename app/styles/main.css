@@ -131,17 +131,17 @@ circle {
 
 /* judge */
 .line.linejudge {
-	stroke: steelblue;
+	stroke: red;
 	fill-opacity: .1;
 	fill: red;
 }
 
 .focus circle.yjudge {
-	stroke: steelblue;
+	stroke: red;
 }
 
 .focus line.yjudge {
-	stroke: steelblue;
+	stroke: red;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
@@ -193,15 +193,15 @@ circle {
 
 /* tot_ms */
 .line.linetot_ms {
-	stroke: pink;
+	stroke: brown;
 }
 
 .focus circle.ytot_ms {
-	stroke: pink;
+	stroke: brown;
 }
 
 .focus line.ytot_ms {
-	stroke: pink;
+	stroke: brown;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
@@ -223,15 +223,15 @@ circle {
 
 /* state */
 .line.linestate {
-	stroke: red;
+	stroke: steelblue;
 }
 
 .focus circle.ystate {
-	stroke: red;
+	stroke: steelblue;
 }
 
 .focus line.ystate {
-	stroke: red;
+	stroke: steelblue;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }

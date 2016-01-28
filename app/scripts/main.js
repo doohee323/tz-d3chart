@@ -133,29 +133,33 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
       })
 
       var toggle = function(type, d, i) {
+        _self.type = d.key;
         if (type == 'text') {
-          _self.type = d.key;
           if ('#FFFFFF' == convertRGBDecimalToHex(d3.select(".line" + d.key)
               .style("stroke"))) {
-            d3.select(".line" + d.key).style("stroke", d.color);
+            if(_self.type == _self.config.chart.yAxis.right) {
+              d3.select(".line" + d.key).style("stroke", d.color).style("fill", d.color);
+            } else {
+              d3.select(".line" + d.key).style("stroke", d.color);
+            }
             d3.select("circle.y" + d.key).style("stroke", d.color);
             d3.select("line.y" + d.key).style("stroke", d.color);
-            d3.select("text.y" + d.key).style("color", '#000000');
           }
-          _self.redraw();
         } else if (type == 'circle') {
-          _self.type = d.key;
           var pickColor = convertRGBDecimalToHex(d3.select(".line" + d.key)
               .style("stroke"));
           if (pickColor != '#FFFFFF') {
             d.color = pickColor;
-            d3.select(".line" + d.key).style("stroke", '#FFFFFF');
+            if(_self.type == _self.config.chart.yAxis.right) {
+              d3.select(".line" + d.key).style("stroke", '#FFFFFF').style("fill", "white");
+            } else {
+              d3.select(".line" + d.key).style("stroke", '#FFFFFF');
+            }
             d3.select("circle.y" + d.key).style("stroke", '#FFFFFF');
             d3.select("line.y" + d.key).style("stroke", '#FFFFFF');
-            d3.select("text.y" + d.key).style("color", '#FFFFFF');
-            _self.redraw();
           }
         }
+        _self.redraw();
       }
 
       li.selectAll("text").data(items, function(d) {
@@ -258,51 +262,9 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
   }
 
   // /[ line definition ]///////////////////////////
-  this.main_line['nsl_ms'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['nsl_ms'](d['nsl_ms']);
-  });
-  this.main_line['con_ms'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['con_ms'](d['con_ms']);
-  });
-  this.main_line['tfb_ms'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['tfb_ms'](d['tfb_ms']);
-  });
-  this.main_line['tot_ms'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['tot_ms'](d['tot_ms']);
-  });
-  this.main_line['state'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['state'](d['state']);
-  });
-  this.main_line['judge'] = d3.svg.line().interpolate("step").x(function(d) {
-    return _self.main_x(d.date);
-  }).y(function(d) {
-    return _self.main_y['judge'](d['judge']);
-  });
-  this.main_line['aggregate'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['aggregate'](d['aggregate']);
-  });
-
   for ( var key in this.main_y) {
     var type = '';
-    if (key == 'judge') {
+    if (key == this.config.chart.yAxis.right) {
       type = 'step';
     } else {
       type = 'cardinal';
@@ -311,6 +273,12 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
       return _self.mini_x(d.date);
     }).y(function(d) {
       return _self.mini_y[key](d[key]);
+    });
+
+    this.main_line[key] = d3.svg.line().interpolate(type).x(function(d) {
+      return _self.main_x(d.date);
+    }).y(function(d) {
+      return _self.main_y[key](d[key]);
     });
   }
 
@@ -337,19 +305,19 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
   this.main.append("g").attr("class", "x axis").attr("transform",
       "translate(0," + this.main_height + ")").call(main_xAxis);
   // /[ main left y ]///////////////////////////
-  var main_yAxisLeft = d3.svg.axis().scale(this.main_y['tot_ms'])
-      .orient("left");
+  var main_yAxisLeft = d3.svg.axis().scale(
+      this.main_y[this.config.chart.yAxis.left]).orient("left");
   this.main.append("g").attr("class", "y axis axisLeft").call(main_yAxisLeft)
       .append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy",
           ".71em").style("text-anchor", "end").text("( ms )");
 
   // /[ main right y ]///////////////////////////
-  var main_yAxisRight = d3.svg.axis().scale(this.main_y['judge']).orient(
-      "right").ticks(1);
+  var main_yAxisRight = d3.svg.axis().scale(
+      this.main_y[this.config.chart.yAxis.right]).orient("right").ticks(1);
   this.main.append("g").attr("class", "y axis axisRight").attr("transform",
       "translate(" + this.main_width + ", 0)").call(main_yAxisRight).append(
       "text").attr("transform", "rotate(-90)").attr("y", 2).attr("dy", ".71em")
-      .style("text-anchor", "end");
+      .style("text-anchor", "end").text("( ms )");
 
   // /[ this.mini chart ]///////////////////////////
   this.mini.append("g").attr("class", "x axis").attr("transform",
@@ -383,22 +351,30 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
     if (d1.date) {
       var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
       for ( var key in _self.main_y) {
-        focus.select("circle.y" + key).attr(
-            "transform",
-            "translate(" + _self.main_x(d.date) + ","
-                + _self.main_y[key](d[key]) + ")");
-        var formatOutput = key + "-" + formatDate2(d.date) + " - " + d[key]
-            + " ms";
-        focus.select("text.y" + key).attr(
-            "transform",
-            "translate(" + _self.main_x(d.date) + ","
-                + _self.main_y[key](d[key]) + ")").text(formatOutput).style(
-            'font', '10px sans-serif');
-        focus.select(".y" + key).attr(
-            "transform",
-            "translate(" + _self.main_width * -1 + ", "
-                + _self.main_y[key](d[key]) + ")").attr("x2",
-            _self.main_width + _self.main_x(d.date));
+        if ('#FFFFFF' != convertRGBDecimalToHex(d3.select(".line" + key).style(
+            "stroke"))) {
+          focus.select("circle.y" + key).attr(
+              "transform",
+              "translate(" + _self.main_x(d.date) + ","
+                  + _self.main_y[key](d[key]) + ")");
+          var formatOutput = key + "-" + formatDate2(d.date) + " - " + d[key]
+              + " ms";
+          focus.select("text.y" + key).attr(
+              "transform",
+              "translate(" + _self.main_x(d.date) + ","
+                  + _self.main_y[key](d[key]) + ")").text(formatOutput).style(
+              'font', '10px sans-serif');
+          focus.select(".y" + key).attr(
+              "transform",
+              "translate(" + _self.main_width * -1 + ", "
+                  + _self.main_y[key](d[key]) + ")").attr("x2",
+              _self.main_width + _self.main_x(d.date));
+        } else {
+          focus.select("text.y" + key).attr(
+              "transform",
+              "translate(" + _self.main_x(d.date) + ","
+                  + _self.main_y[key](d[key]) + ")").text('');
+        }
       }
       focus.select(".x").attr("transform",
           "translate(" + _self.main_x(d.date) + ",0)");
@@ -539,6 +515,10 @@ var config = {
     w : 950,
     h : 400,
     mh : 350,
+    yAxis : {
+      left : 'tot_ms',
+      right : 'judge'
+    },
     main_margin : {
       top : 20,
       right : 80,
