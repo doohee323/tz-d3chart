@@ -1,38 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////////
-// [ line chart ]
+//[ UptimeChart constructor ]
 /////////////////////////////////////////////////////////////////////////////////
-
-// ///////////////////////////////////////////////////////////////////////////////
-// [ map chart ]
-// ///////////////////////////////////////////////////////////////////////////////
-
-// ///////////////////////////////////////////////////////////////////////////////
-
-var config = {
-  chart : {
-    w : 950,
-    h : 400,
-    mh : 350,
-    main_margin : {
-      top : 20,
-      right : 80,
-      bottom : 100,
-      left : 40
-    },
-    mini_margin : {
-      top : 300,
-      right : 80,
-      bottom : 20,
-      left : 40
-    }
-  },
-  map : {
-    w : 1200,
-    h : 400,
-    scale : 1.
-  }
-}
-
 var UptimeChart = function(chartElem, mapElem, config) {
   var _self = this;
   this.chartElem = chartElem;
@@ -132,7 +100,6 @@ var UptimeChart = function(chartElem, mapElem, config) {
         return d.value.color;
       })
 
-      // Reposition and resize the box
       var lbbox = li[0][0].getBBox();
       lb.attr("x", (lbbox.x - legendPadding)).attr("y",
           (lbbox.y - legendPadding)).attr("height",
@@ -183,6 +150,9 @@ var UptimeChart = function(chartElem, mapElem, config) {
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+//[ line chart ]
+/////////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeUptimeChart = function(data) {
   var _self = this;
   this.svg = d3.select(this.chartElem).append("svg").attr("width",
@@ -422,6 +392,9 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
   }, 1000)
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+//[ map chart ]
+/////////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeMap = function(json) {
   var _self = this;
   this.svg = d3.select(this.mapElem).insert("svg").attr("width", this.map.w)
@@ -473,6 +446,9 @@ UptimeChart.prototype.makeMap = function(json) {
   });
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+//[ redraw by brush ]
+/////////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.redraw = function(startTime, endTime) {
   var _self = this;
   var json = [];
@@ -510,6 +486,34 @@ UptimeChart.prototype.redraw = function(startTime, endTime) {
     return Math.round(_self.getTotal(json, d.city));
   });
 }
+
+/// [configuration] //////////////////////////////////////////////////////////////////////////////
+var config = {
+  chart : {
+    w : 950,
+    h : 400,
+    mh : 350,
+    main_margin : {
+      top : 20,
+      right : 80,
+      bottom : 100,
+      left : 40
+    },
+    mini_margin : {
+      top : 300,
+      right : 80,
+      bottom : 20,
+      left : 40
+    }
+  },
+  map : {
+    w : 1200,
+    h : 400,
+    scale : 1.
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////
 
 var uptimeChart = new UptimeChart("#chart", "#graph", config);
 
