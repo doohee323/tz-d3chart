@@ -114,7 +114,7 @@ body {
 
 .legend rect {
 	fill: white;
-	stroke: black;
+	stroke: gray;
 	opacity: 0.9;
 }
 
@@ -129,18 +129,18 @@ circle {
 	stroke: #fff;
 }
 
-/* Judge */
-.line.lineJudge {
+/* judge */
+.line.linejudge {
 	stroke: steelblue;
 	fill-opacity: .1;
 	fill: red;
 }
 
-.focus circle.yJudge {
+.focus circle.yjudge {
 	stroke: steelblue;
 }
 
-.focus line.yJudge {
+.focus line.yjudge {
 	stroke: steelblue;
 	stroke-dasharray: 3 3;
 	opacity: .5;
@@ -206,16 +206,16 @@ circle {
 	opacity: .5;
 }
 
-/* Aggregate_uptime */
-.line.lineAggregate_uptime {
+/* aggregate */
+.line.lineaggregate {
 	stroke: blue;
 }
 
-.focus circle.yAggregate_uptime {
+.focus circle.yaggregate {
 	stroke: blue;
 }
 
-.focus line.yAggregate_uptime {
+.focus line.yaggregate {
 	stroke: blue;
 	stroke-dasharray: 3 3;
 	opacity: .5;

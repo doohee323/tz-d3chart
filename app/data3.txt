@@ -7,7 +7,7 @@
     "TimeToFirstByte": 88,
     "RoundtripTime": 88,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 100
   },
   {
@@ -18,7 +18,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 0,
+    "judge": 0,
     "Aggregateuptime": 16.1
   },
   {
@@ -29,7 +29,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 16.1
   },
   {
@@ -40,7 +40,7 @@
     "TimeToFirstByte": 18,
     "RoundtripTime": 18,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -51,7 +51,7 @@
     "TimeToFirstByte": 24,
     "RoundtripTime": 24,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 22.7
   },
   {
@@ -62,7 +62,7 @@
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 0,
+    "judge": 0,
     "Aggregateuptime": 17.2
   },
   {
@@ -73,7 +73,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -84,7 +84,7 @@
     "TimeToFirstByte": 33,
     "RoundtripTime": 33,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 33.3
   },
   {
@@ -95,7 +95,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 0,
+    "judge": 0,
     "Aggregateuptime": 16.5
   },
   {
@@ -106,7 +106,7 @@
     "TimeToFirstByte": 21,
     "RoundtripTime": 21,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 17.9
   },
   {
@@ -117,7 +117,7 @@
     "TimeToFirstByte": 28,
     "RoundtripTime": 28,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 27.8
   },
   {
@@ -128,7 +128,7 @@
     "TimeToFirstByte": 27,
     "RoundtripTime": 27,
     "ServiceState": 1,
-    "Judge": 0,
+    "judge": 0,
     "Aggregateuptime": 26.7
   },
   {
@@ -139,7 +139,7 @@
     "TimeToFirstByte": 63,
     "RoundtripTime": 63,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 70
   },
   {
@@ -150,7 +150,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -161,7 +161,7 @@
     "TimeToFirstByte": 24,
     "RoundtripTime": 24,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 22
   },
   {
@@ -172,7 +172,7 @@
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -183,7 +183,7 @@
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 17.2
   },
   {
@@ -194,7 +194,7 @@
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 16.1
   },
   {
@@ -205,7 +205,7 @@
     "TimeToFirstByte": 18,
     "RoundtripTime": 18,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.4
   },
   {
@@ -216,7 +216,7 @@
     "TimeToFirstByte": 21,
     "RoundtripTime": 23,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 20.1
   },
   {
@@ -227,7 +227,7 @@
     "TimeToFirstByte": 12,
     "RoundtripTime": 12,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 8.4
   },
   {
@@ -238,7 +238,7 @@
     "TimeToFirstByte": 13,
     "RoundtripTime": 13,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 8.8
   },
   {
@@ -249,7 +249,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 16.8
   },
   {
@@ -260,7 +260,7 @@
     "TimeToFirstByte": 18,
     "RoundtripTime": 18,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15
   },
   {
@@ -271,7 +271,7 @@
     "TimeToFirstByte": 18,
     "RoundtripTime": 18,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.4
   },
   {
@@ -282,7 +282,7 @@
     "TimeToFirstByte": 18,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15
   },
   {
@@ -293,7 +293,7 @@
     "TimeToFirstByte": 17,
     "RoundtripTime": 18,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15
   },
   {
@@ -304,7 +304,7 @@
     "TimeToFirstByte": 21,
     "RoundtripTime": 24,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 20.5
   },
   {
@@ -315,7 +315,7 @@
     "TimeToFirstByte": 82,
     "RoundtripTime": 83,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 55.7
   },
   {
@@ -326,7 +326,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -337,7 +337,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 16.1
   },
   {
@@ -348,7 +348,7 @@
     "TimeToFirstByte": 18,
     "RoundtripTime": 18,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.4
   },
   {
@@ -359,7 +359,7 @@
     "TimeToFirstByte": 15,
     "RoundtripTime": 16,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 11.7
   },
   {
@@ -370,7 +370,7 @@
     "TimeToFirstByte": 14,
     "RoundtripTime": 15,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 10.3
   },
   {
@@ -381,13 +381,13 @@
     "TimeToFirstByte": 16,
     "RoundtripTime": 16,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 13.2
   },
   {
     "date": "2016-01-23T01:11:00.000Z",
     "target": "ServiceState",
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 0
   },
   {
@@ -398,7 +398,7 @@
     "TimeToFirstByte": 13,
     "RoundtripTime": 13,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 9.2
   },
   {
@@ -409,7 +409,7 @@
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 16.1
   },
   {
@@ -420,7 +420,7 @@
     "TimeToFirstByte": 18,
     "RoundtripTime": 18,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -431,7 +431,7 @@
     "TimeToFirstByte": 26,
     "RoundtripTime": 27,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 22.7
   },
   {
@@ -442,7 +442,7 @@
     "TimeToFirstByte": 15,
     "RoundtripTime": 15,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 11.7
   },
   {
@@ -453,7 +453,7 @@
     "TimeToFirstByte": 14,
     "RoundtripTime": 14,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 9.9
   },
   {
@@ -464,7 +464,7 @@
     "TimeToFirstByte": 15,
     "RoundtripTime": 16,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 11.4
   },
   {
@@ -475,7 +475,7 @@
     "TimeToFirstByte": 14,
     "RoundtripTime": 15,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 10.3
   },
   {
@@ -486,7 +486,7 @@
     "TimeToFirstByte": 21,
     "RoundtripTime": 24,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 17.6
   },
   {
@@ -497,7 +497,7 @@
     "TimeToFirstByte": 14,
     "RoundtripTime": 14,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 9.9
   },
   {
@@ -508,7 +508,7 @@
     "TimeToFirstByte": 13,
     "RoundtripTime": 13,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 8.4
   },
   {
@@ -519,7 +519,7 @@
     "TimeToFirstByte": 17,
     "RoundtripTime": 17,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 13.9
   },
   {
@@ -530,7 +530,7 @@
     "TimeToFirstByte": 61,
     "RoundtripTime": 62,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 68.5
   },
   {
@@ -541,7 +541,7 @@
     "TimeToFirstByte": 21,
     "RoundtripTime": 22,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 19.8
   },
   {
@@ -552,7 +552,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 19,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -563,7 +563,7 @@
     "TimeToFirstByte": 22,
     "RoundtripTime": 23,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 18.3
   },
   {
@@ -574,7 +574,7 @@
     "TimeToFirstByte": 22,
     "RoundtripTime": 23,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 20.5
   },
   {
@@ -585,7 +585,7 @@
     "TimeToFirstByte": 22,
     "RoundtripTime": 23,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 20.5
   },
   {
@@ -596,7 +596,7 @@
     "TimeToFirstByte": 19,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 16.8
   },
   {
@@ -607,7 +607,7 @@
     "TimeToFirstByte": 17,
     "RoundtripTime": 17,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 13.9
   },
   {
@@ -618,7 +618,7 @@
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -629,7 +629,7 @@
     "TimeToFirstByte": 20,
     "RoundtripTime": 20,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 15.8
   },
   {
@@ -640,7 +640,7 @@
     "TimeToFirstByte": 22,
     "RoundtripTime": 22,
     "ServiceState": 1,
-    "Judge": 1,
+    "judge": 1,
     "Aggregateuptime": 20.5
   }
 ]
