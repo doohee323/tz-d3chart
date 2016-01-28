@@ -178,15 +178,15 @@ circle {
 
 /* tfb_ms */
 .line.linetfb_ms {
-	stroke: yellow;
+	stroke: gold;
 }
 
 .focus circle.ytfb_ms {
-	stroke: yellow;
+	stroke: gold;
 }
 
 .focus line.ytfb_ms {
-	stroke: yellow;
+	stroke: gold;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }

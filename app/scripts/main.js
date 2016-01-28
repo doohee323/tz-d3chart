@@ -205,7 +205,11 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
       'brushstart', brushstart).on('brushend', brushend);
 
   data.forEach(function(d) {
-    d.date = _self.parseDate(d.date);
+  try {
+      var dt = _self.parseDate(d.date);
+      d.date = dt;
+  } catch (e) {
+  }
     for ( var key in data[0]) {
       if (key != 'date') {
         // if (key == 'Judge' || key == 'nsl_ms') {
