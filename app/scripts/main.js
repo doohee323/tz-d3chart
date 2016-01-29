@@ -31,22 +31,22 @@ var UptimeChart = function(chartElem, mapElem, config) {
   this.labels;
 
   this.mapData = new Array();
-  this.scale = 1. / config.map.scale;
+  this.circle_scale = 1. / config.map.circle_scale;
 
   this.getSize = function(d, city) {
-    var size = Math.round(this.getTotal(d, city) * this.scale);
+    var size = Math.round(this.getTotal(d, city) * this.circle_scale);
     if (size >= 10) {
       size = 30;
     } else if (size >= 3) {
-      size = 10;
+      size = 20;
     } else if (size < 3) {
-      size = 5;
+      size = 10;
     }
     return size;
   }
 
   this.getColor = function(d, city) {
-    var size = Math.round(this.getTotal(d, city) * this.scale);
+    var size = Math.round(this.getTotal(d, city) * this.circle_scale);
     if (size >= 10) {
       return "red";
     } else if (size >= 3) {
@@ -318,7 +318,7 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
       this.main_y[this.config.chart.yAxis.right]).orient("right").ticks(1);
   this.main.append("g").attr("class", "y axis axisRight").attr("transform",
       "translate(" + this.main_width + ", 0)").call(main_yAxisRight).append(
-      "text").attr("transform", "rotate(-90)").attr("y", 2).attr("dy", ".71em")
+      "text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em")
       .style("text-anchor", "end").text("( ms )");
 
   // /[ this.mini chart ]///////////////////////////
@@ -407,19 +407,19 @@ UptimeChart.prototype.makeMap = function(json) {
   this.states = this.svg.append("g").attr("id", "states");
   this.circles = this.svg.append("g").attr("id", "circles");
   this.labels = this.svg.append("g").attr("id", "labels");
-  var xy = d3.geo.equirectangular().scale(150);
+  var xy = d3.geo.equirectangular().scale(this.config.map.scale);
   var path = d3.geo.path().projection(xy);
 
-  d3.json("countries.json", function(collection) {
-    _self.states.selectAll("path").data(collection.features).enter().append(
-        "path").attr("d", path).on(
-        "mouseover",
-        function(d) {
-          d3.select(this).style("fill", "#6C0").append("title").text(
-              d.properties.name);
-        }).on("mouseout", function(d) {
-      d3.select(this).style("fill", "#ccc");
-    })
+  d3.json("countries.json", function(data) {
+    _self.states.selectAll("path").data(data.features).enter().append("path")
+        .attr("d", path).on(
+            "mouseover",
+            function(d) {
+              d3.select(this).style("fill", "#6C0").append("title").text(
+                  d.properties.name);
+            }).on("mouseout", function(d) {
+          d3.select(this).style("fill", "#ccc");
+        })
   });
 
   this.mapData = json;
@@ -430,12 +430,25 @@ UptimeChart.prototype.makeMap = function(json) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("r", function(d) {
     return _self.getSize(d);
-    // }).attr("title", function(d) {
-    // return d["city"] + ": " + Math.round(d["2016-01-23T00:38:00.000Z"]);
-  }).on("mouseover", function(d) {
-    d3.select(this).style("fill", "#FC0");
-  }).on("mouseout", function(d) {
+  }).on(
+      "mouseover",
+      function(d, i) {
+        d3.select(this).style("fill", "#FC0");
+        var html = '<div style="width: 250px;">';
+        html += '<div>* Site: ' + d["city"];
+        html += '</div>';
+        html += '<div>* Total: ' + Math.round(_self.getTotal(d))
+            + ' (ms)</div>';
+        html += '</div>';
+        var g = d3.select(this); // The node
+        var div = d3.select("body").append("div")
+            .attr('pointer-events', 'none').attr("class", "tooltip").style(
+                "opacity", 1).html(html)
+            .style("left", (d3.event.x + 20 + "px")).style("top",
+                (d3.event.y + 200 + "px"));
+      }).on("mouseout", function(d) {
     d3.select(this).style("fill", "steelblue");
+    d3.select("body").select('div.tooltip').remove();
   }).style("fill", function(d) {
     return _self.getColor(d);
   });
@@ -446,9 +459,9 @@ UptimeChart.prototype.makeMap = function(json) {
       }).attr("y", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("dy", "0.3em").attr("text-anchor", "middle").style('font',
-      '10px sans-serif').text(function(d) {
+      '10px sans-serif').text(function(d, i) {
     return Math.round(_self.getTotal(d));
-  });
+  }).attr("d", path)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -542,15 +555,15 @@ var config = {
   map : {
     w : 1200,
     h : 400,
-    scale : 1.
+    circle_scale : 1.,
+    scale : 150
   }
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
 
-var uptimeChart = new UptimeChart("#chart", "#graph", config);
-
 d3.json("data.json", function(error, data) {
+  var uptimeChart = new UptimeChart("#chart", "#graph", config);
   uptimeChart.makeUptimeChart(data);
   d3.json("map.json", function(json) {
     uptimeChart.makeMap(json);
