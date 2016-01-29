@@ -72,7 +72,7 @@ var UptimeChart = function(chartElem, mapElem, config) {
     }
     return total;
   }
-  
+
   this.convertRGBDecimalToHex = function(rgb) {
     var regex = /rgb *\( *([0-9]{1,3}) *, *([0-9]{1,3}) *, *([0-9]{1,3}) *\)/;
     var values = regex.exec(rgb);
@@ -86,12 +86,44 @@ var UptimeChart = function(chartElem, mapElem, config) {
         + (g + 0x10000).toString(16).substring(3).toUpperCase()
         + (b + 0x10000).toString(16).substring(3).toUpperCase();
   }
+
+  this.makeCombo = function(ds, id, cb) {
+    id = '#' + id;
+    if ($(id + " option").length > 0)
+      return;
+    var select = $(id);
+    var options;
+    if (select.prop) {
+      options = select.prop('options');
+    } else {
+      options = select.attr('options');
+    }
+    $('option', select).remove();
+    options[options.length] = new Option('all', '*');
+    $.each(ds, function(key, obj) {
+      if (key != 'date') {
+        options[options.length] = new Option(key, key);
+      }
+    });
+    select.change(function(e) {
+      cb.call($('#gmetrices').val());
+    });
+  }
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
 // [ line chart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeUptimeChart = function(data) {
+UptimeChart.prototype.makeChart = function(data) {
+
+  var metrices = {};
+  for ( var key in data[0]) {
+    metrices[key] = key;
+  }
+  this.makeCombo(metrices, this.config.chart.combo.id, function(val) {
+    debugger;
+  });
+
   var _self = this;
   this.svg = d3.select(this.chartElem).append("svg").attr(
       "width",
@@ -149,8 +181,8 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
       var toggle = function(type, d, i) {
         _self.type = d.key;
         if (type == 'text') {
-          if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(".line" + d.key)
-              .style("stroke"))) {
+          if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
+              ".line" + d.key).style("stroke"))) {
             if (_self.type == _self.config.chart.yAxis.right) {
               d3.select(".line" + d.key).style("stroke", d.color).style("fill",
                   d.color);
@@ -161,8 +193,8 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
             d3.select("line.y" + d.key).style("stroke", d.color);
           }
         } else if (type == 'circle') {
-          var pickColor = _self.convertRGBDecimalToHex(d3.select(".line" + d.key)
-              .style("stroke"));
+          var pickColor = _self.convertRGBDecimalToHex(d3.select(
+              ".line" + d.key).style("stroke"));
           if (pickColor != '#FFFFFF') {
             d.color = pickColor;
             if (_self.type == _self.config.chart.yAxis.right) {
@@ -292,11 +324,11 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
     });
 
     // it doesn't work for brushing
-//    this.main_line[key] = d3.svg.line().interpolate(type).x(function(d) {
-//      return _self.main_x(d.date);
-//    }).y(function(d) {
-//      return _self.main_y[key](d[key]);
-//    });
+    // this.main_line[key] = d3.svg.line().interpolate(type).x(function(d) {
+    // return _self.main_x(d.date);
+    // }).y(function(d) {
+    // return _self.main_y[key](d[key]);
+    // });
   }
 
   // I need to enumerate instead of above fancy way.
@@ -459,6 +491,15 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
 // [ map chart ]
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeMap = function(json) {
+
+  var locs = {};
+  for (var i = 0; i < json.length; i++) {
+    locs[json[i].city] = json[i].city;
+  }
+  this.makeCombo(locs, this.config.map.combo.id, function(val) {
+    debugger;
+  });
+
   var _self = this;
   this.svg = d3.select(this.mapElem).insert("svg").attr("width",
       this.config.map.w).attr("height", this.config.map.h);
@@ -501,8 +542,8 @@ UptimeChart.prototype.makeMap = function(json) {
         var g = d3.select(this); // The node
         var div = d3.select("body").append("div")
             .attr('pointer-events', 'none').attr("class", "tooltip").style(
-                "opacity", 1).html(html)
-            .style("left", (d3.event.x + _self.config.map.tooltip.x + "px")).style("top",
+                "opacity", 1).html(html).style("left",
+                (d3.event.x + _self.config.map.tooltip.x + "px")).style("top",
                 (d3.event.y + _self.config.map.tooltip.y + "px"));
       }).on("mouseout", function(d) {
     d3.select(this).style("fill", "steelblue");
@@ -608,6 +649,9 @@ var config = {
       x : 40,
       y : 350,
       w : 10
+    },
+    combo : {
+      id : 'gmetrices'
     }
   },
   map : {
@@ -615,9 +659,12 @@ var config = {
     h : 400,
     circle_scale : 1.,
     scale : 150,
-    tooltip: {
-      x: 20,
-      y: 160
+    tooltip : {
+      x : 20,
+      y : 160
+    },
+    combo : {
+      id : 'glocs'
     }
   }
 }
@@ -626,10 +673,8 @@ var config = {
 
 d3.json("data.json", function(error, data) {
   var uptimeChart = new UptimeChart("#chart", "#graph", config);
-  uptimeChart.makeUptimeChart(data);
+  uptimeChart.makeChart(data);
   d3.json("map.json", function(json) {
     uptimeChart.makeMap(json);
   });
 });
-
-
