@@ -72,6 +72,20 @@ var UptimeChart = function(chartElem, mapElem, config) {
     }
     return total;
   }
+  
+  this.convertRGBDecimalToHex = function(rgb) {
+    var regex = /rgb *\( *([0-9]{1,3}) *, *([0-9]{1,3}) *, *([0-9]{1,3}) *\)/;
+    var values = regex.exec(rgb);
+    if (values.length != 4) {
+      return rgb; // fall back to what was given.
+    }
+    var r = Math.round(parseFloat(values[1]));
+    var g = Math.round(parseFloat(values[2]));
+    var b = Math.round(parseFloat(values[3]));
+    return "#" + (r + 0x10000).toString(16).substring(3).toUpperCase()
+        + (g + 0x10000).toString(16).substring(3).toUpperCase()
+        + (b + 0x10000).toString(16).substring(3).toUpperCase();
+  }
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -135,7 +149,7 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
       var toggle = function(type, d, i) {
         _self.type = d.key;
         if (type == 'text') {
-          if ('#FFFFFF' == convertRGBDecimalToHex(d3.select(".line" + d.key)
+          if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(".line" + d.key)
               .style("stroke"))) {
             if (_self.type == _self.config.chart.yAxis.right) {
               d3.select(".line" + d.key).style("stroke", d.color).style("fill",
@@ -147,7 +161,7 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
             d3.select("line.y" + d.key).style("stroke", d.color);
           }
         } else if (type == 'circle') {
-          var pickColor = convertRGBDecimalToHex(d3.select(".line" + d.key)
+          var pickColor = _self.convertRGBDecimalToHex(d3.select(".line" + d.key)
               .style("stroke"));
           if (pickColor != '#FFFFFF') {
             d.color = pickColor;
@@ -397,7 +411,7 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
     if (d1.date) {
       var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
       for ( var key in _self.main_y) {
-        if ('#FFFFFF' != convertRGBDecimalToHex(d3.select(".line" + key).style(
+        if ('#FFFFFF' != _self.convertRGBDecimalToHex(d3.select(".line" + key).style(
             "stroke"))) {
           focus.select("circle.y" + key).attr(
               "transform",
@@ -488,8 +502,8 @@ UptimeChart.prototype.makeMap = function(json) {
         var div = d3.select("body").append("div")
             .attr('pointer-events', 'none').attr("class", "tooltip").style(
                 "opacity", 1).html(html)
-            .style("left", (d3.event.x + 20 + "px")).style("top",
-                (d3.event.y + 200 + "px"));
+            .style("left", (d3.event.x + _self.config.map.tooltip.x + "px")).style("top",
+                (d3.event.y + _self.config.map.tooltip.y + "px"));
       }).on("mouseout", function(d) {
     d3.select(this).style("fill", "steelblue");
     d3.select("body").select('div.tooltip').remove();
@@ -600,7 +614,11 @@ var config = {
     w : 1200,
     h : 400,
     circle_scale : 1.,
-    scale : 150
+    scale : 150,
+    tooltip: {
+      x: 20,
+      y: 160
+    }
   }
 }
 
@@ -614,16 +632,4 @@ d3.json("data.json", function(error, data) {
   });
 });
 
-function convertRGBDecimalToHex(rgb) {
-  var regex = /rgb *\( *([0-9]{1,3}) *, *([0-9]{1,3}) *, *([0-9]{1,3}) *\)/;
-  var values = regex.exec(rgb);
-  if (values.length != 4) {
-    return rgb; // fall back to what was given.
-  }
-  var r = Math.round(parseFloat(values[1]));
-  var g = Math.round(parseFloat(values[2]));
-  var b = Math.round(parseFloat(values[3]));
-  return "#" + (r + 0x10000).toString(16).substring(3).toUpperCase()
-      + (g + 0x10000).toString(16).substring(3).toUpperCase()
-      + (b + 0x10000).toString(16).substring(3).toUpperCase();
-}
+
