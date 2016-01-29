@@ -277,13 +277,57 @@ UptimeChart.prototype.makeUptimeChart = function(data) {
       return _self.mini_y[key](d[key]);
     });
 
-    this.main_line[key] = d3.svg.line().interpolate(type).x(function(d) {
-      return _self.main_x(d.date);
-    }).y(function(d) {
-      return _self.main_y[key](d[key]);
-    });
+    // it doesn't work for brushing
+//    this.main_line[key] = d3.svg.line().interpolate(type).x(function(d) {
+//      return _self.main_x(d.date);
+//    }).y(function(d) {
+//      return _self.main_y[key](d[key]);
+//    });
   }
 
+  // I need to enumerate instead of above fancy way.
+  this.main_line['nsl_ms'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return _self.main_x(d.date);
+      }).y(function(d) {
+    return _self.main_y['nsl_ms'](d['nsl_ms']);
+  });
+  this.main_line['con_ms'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return _self.main_x(d.date);
+      }).y(function(d) {
+    return _self.main_y['con_ms'](d['con_ms']);
+  });
+  this.main_line['tfb_ms'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return _self.main_x(d.date);
+      }).y(function(d) {
+    return _self.main_y['tfb_ms'](d['tfb_ms']);
+  });
+  this.main_line['tot_ms'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return _self.main_x(d.date);
+      }).y(function(d) {
+    return _self.main_y['tot_ms'](d['tot_ms']);
+  });
+  this.main_line['state'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return _self.main_x(d.date);
+      }).y(function(d) {
+    return _self.main_y['state'](d['state']);
+  });
+  this.main_line['judge'] = d3.svg.line().interpolate("step").x(function(d) {
+    return _self.main_x(d.date);
+  }).y(function(d) {
+    return _self.main_y['judge'](d['judge']);
+  });
+  this.main_line['aggregate'] = d3.svg.line().interpolate("cardinal").x(
+      function(d) {
+        return _self.main_x(d.date);
+      }).y(function(d) {
+    return _self.main_y['aggregate'](d['aggregate']);
+  });
+  
   this.main_x.domain([ data[0].date, data[data.length - 1].date ]);
   this.mini_x.domain(this.main_x.domain());
 
