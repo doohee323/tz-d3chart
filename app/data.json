@@ -16,7 +16,7 @@
     "tfb_ms": 274,
     "tot_ms": 274,
     "state": 1,
-    "judge": 1,
+    "judge": 0,
     "aggregate": 5.5
   },
   {
@@ -26,7 +26,7 @@
     "tfb_ms": 273,
     "tot_ms": 274,
     "state": 1,
-    "judge": 1,
+    "judge": 0,
     "aggregate": 5.4
   },
   {
@@ -96,7 +96,7 @@
     "tfb_ms": 274,
     "tot_ms": 274,
     "state": 1,
-    "judge": 1,
+    "judge": 0,
     "aggregate": 5.5
   },
   {
@@ -106,7 +106,7 @@
     "tfb_ms": 273,
     "tot_ms": 274,
     "state": 1,
-    "judge": 1,
+    "judge": 0,
     "aggregate": 5.4
   },
   {
