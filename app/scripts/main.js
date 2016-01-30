@@ -106,8 +106,17 @@ var UptimeChart = function(chartElem, mapElem, config) {
       }
     });
     select.change(function(e) {
-      cb.call($('#gmetrices').val());
+      cb.call(e, $(id).val());
     });
+  }
+
+  this.init = function() {
+    _self.main_y = {};
+    _self.mini_y = {};
+    _self.main_line = {};
+    _self.mini_line = {};
+    _self.main, _self.mini, _self.svg;
+    _self.startTime, _self.endTime, _self.type;
   }
 }
 
@@ -115,15 +124,40 @@ var UptimeChart = function(chartElem, mapElem, config) {
 // [ line chart ]
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeChart = function(data) {
+  var _self = this;
+  this.data = data;
 
   var metrices = {};
   for ( var key in data[0]) {
-    metrices[key] = key;
+    if (key != _self.config.chart.yAxis.right) {
+      metrices[key] = key;
+    }
   }
   this.makeCombo(metrices, this.config.chart.combo.id, function(val) {
-    debugger;
+    if (val == '*') {
+      data2 = _self.data;
+    } else {
+      var data2 = new Array();
+      for (var i = 0; i < data.length; i++) {
+        var tmp = {};
+        for ( var key in data[i]) {
+          if (key == 'date' || key == val
+              || key == _self.config.chart.yAxis.right) {
+            tmp[key] = data[i][key];
+          }
+        }
+        data2[data2.length] = tmp;
+      }
+    }
+    d3.select("svg").remove();
+    _self.init();
+    _self.drawChart(data2, val);
   });
 
+  this.drawChart(data, '*');
+}
+
+UptimeChart.prototype.drawChart = function(data, metric) {
   var _self = this;
   this.svg = d3.select(this.chartElem).append("svg").attr(
       "width",
@@ -332,48 +366,57 @@ UptimeChart.prototype.makeChart = function(data) {
   }
 
   // I need to enumerate instead of above fancy way.
-  this.main_line['nsl_ms'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['nsl_ms'](d['nsl_ms']);
-  });
-  this.main_line['con_ms'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['con_ms'](d['con_ms']);
-  });
-  this.main_line['tfb_ms'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['tfb_ms'](d['tfb_ms']);
-  });
-  this.main_line['tot_ms'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['tot_ms'](d['tot_ms']);
-  });
-  this.main_line['state'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['state'](d['state']);
-  });
+  if (metric != '*') {
+    this.main_line[metric] = d3.svg.line().interpolate("cardinal").x(
+        function(d) {
+          return _self.main_x(d.date);
+        }).y(function(d) {
+      return _self.main_y[metric](d[metric]);
+    });
+  } else {
+    this.main_line['nsl_ms'] = d3.svg.line().interpolate("cardinal").x(
+        function(d) {
+          return _self.main_x(d.date);
+        }).y(function(d) {
+      return _self.main_y['nsl_ms'](d['nsl_ms']);
+    });
+    this.main_line['con_ms'] = d3.svg.line().interpolate("cardinal").x(
+        function(d) {
+          return _self.main_x(d.date);
+        }).y(function(d) {
+      return _self.main_y['con_ms'](d['con_ms']);
+    });
+    this.main_line['tfb_ms'] = d3.svg.line().interpolate("cardinal").x(
+        function(d) {
+          return _self.main_x(d.date);
+        }).y(function(d) {
+      return _self.main_y['tfb_ms'](d['tfb_ms']);
+    });
+    this.main_line['tot_ms'] = d3.svg.line().interpolate("cardinal").x(
+        function(d) {
+          return _self.main_x(d.date);
+        }).y(function(d) {
+      return _self.main_y['tot_ms'](d['tot_ms']);
+    });
+    this.main_line['state'] = d3.svg.line().interpolate("cardinal").x(
+        function(d) {
+          return _self.main_x(d.date);
+        }).y(function(d) {
+      return _self.main_y['state'](d['state']);
+    });
+    this.main_line['aggregate'] = d3.svg.line().interpolate("cardinal").x(
+        function(d) {
+          return _self.main_x(d.date);
+        }).y(function(d) {
+      return _self.main_y['aggregate'](d['aggregate']);
+    });
+  }
   this.main_line['judge'] = d3.svg.line().interpolate("step").x(function(d) {
     return _self.main_x(d.date);
   }).y(function(d) {
     return _self.main_y['judge'](d['judge']);
   });
-  this.main_line['aggregate'] = d3.svg.line().interpolate("cardinal").x(
-      function(d) {
-        return _self.main_x(d.date);
-      }).y(function(d) {
-    return _self.main_y['aggregate'](d['aggregate']);
-  });
-  
+
   this.main_x.domain([ data[0].date, data[data.length - 1].date ]);
   this.mini_x.domain(this.main_x.domain());
 
@@ -397,8 +440,13 @@ UptimeChart.prototype.makeChart = function(data) {
   this.main.append("g").attr("class", "x axis").attr("transform",
       "translate(0," + this.main_height + ")").call(main_xAxis);
   // /[ main left y ]///////////////////////////
-  var main_yAxisLeft = d3.svg.axis().scale(
-      this.main_y[this.config.chart.yAxis.left]).orient("left");
+  if (metric != '*') {
+    var main_yAxisLeft = d3.svg.axis().scale(this.main_y[metric])
+        .orient("left");
+  } else {
+    var main_yAxisLeft = d3.svg.axis().scale(
+        this.main_y[this.config.chart.yAxis.left]).orient("left");
+  }
   this.main.append("g").attr("class", "y axis axisLeft").call(main_yAxisLeft)
       .append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy",
           ".71em").style("text-anchor", "end").text("( ms )");
@@ -443,8 +491,9 @@ UptimeChart.prototype.makeChart = function(data) {
     if (d1.date) {
       var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
       for ( var key in _self.main_y) {
-        if ('#FFFFFF' != _self.convertRGBDecimalToHex(d3.select(".line" + key).style(
-            "stroke"))) {
+        if (key != _self.config.chart.yAxis.right
+            && '#FFFFFF' != _self.convertRGBDecimalToHex(d3.select(
+                ".line" + key).style("stroke"))) {
           focus.select("circle.y" + key).attr(
               "transform",
               "translate(" + _self.main_x(d.date) + ","
@@ -490,19 +539,40 @@ UptimeChart.prototype.makeChart = function(data) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ map chart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeMap = function(json) {
+UptimeChart.prototype.makeMap = function(data) {
+  var _self = this;
+  this.data = data;
 
   var locs = {};
-  for (var i = 0; i < json.length; i++) {
-    locs[json[i].city] = json[i].city;
+  for (var i = 0; i < data.length; i++) {
+    locs[data[i].city] = data[i].city;
   }
   this.makeCombo(locs, this.config.map.combo.id, function(val) {
-    debugger;
+    if (val == '*') {
+      data2 = _self.data;
+    } else {
+      var data2 = new Array();
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].city == val) {
+          data2[data2.length] = data[i];
+        }
+      }
+    }
+    d3.select("[id='map']").remove();
+    _self.init();
+    _self.drawMap(data2, val);
   });
 
+  this.drawMap(data, '*');
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// [ draw map ]
+// ///////////////////////////////////////////////////////////////////////////////
+UptimeChart.prototype.drawMap = function(data, loc) {
   var _self = this;
-  this.svg = d3.select(this.mapElem).insert("svg").attr("width",
-      this.config.map.w).attr("height", this.config.map.h);
+  this.svg = d3.select(this.mapElem).append("svg").attr('id', 'map').attr(
+      "width", this.config.map.w).attr("height", this.config.map.h);
   this.states = this.svg.append("g").attr("id", "states");
   this.circles = this.svg.append("g").attr("id", "circles");
   this.labels = this.svg.append("g").attr("id", "labels");
@@ -521,8 +591,8 @@ UptimeChart.prototype.makeMap = function(json) {
         })
   });
 
-  this.mapData = json;
-  this.circles.selectAll("circle").data(json).enter().append("circle").attr(
+  this.mapData = data;
+  this.circles.selectAll("circle").data(data).enter().append("circle").attr(
       "cx", function(d, i) {
         return xy([ +d["longitude"], +d["latitude"] ])[0];
       }).attr("cy", function(d, i) {
@@ -552,7 +622,7 @@ UptimeChart.prototype.makeMap = function(json) {
     return _self.getColor(d);
   });
 
-  this.labels.selectAll("labels").data(json).enter().append("text").attr("x",
+  this.labels.selectAll("labels").data(data).enter().append("text").attr("x",
       function(d, i) {
         return xy([ +d["longitude"], +d["latitude"] ])[0];
       }).attr("y", function(d, i) {
