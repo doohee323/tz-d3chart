@@ -440,11 +440,11 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   this.main.append("g").attr("class", "x axis").attr("transform",
       "translate(0," + this.main_height + ")").call(main_xAxis);
   // /[ main left y ]///////////////////////////
+  var main_yAxisLeft;
   if (metric != '*') {
-    var main_yAxisLeft = d3.svg.axis().scale(this.main_y[metric])
-        .orient("left");
+    main_yAxisLeft = d3.svg.axis().scale(this.main_y[metric]).orient("left");
   } else {
-    var main_yAxisLeft = d3.svg.axis().scale(
+    main_yAxisLeft = d3.svg.axis().scale(
         this.main_y[this.config.chart.yAxis.left]).orient("left");
   }
   this.main.append("g").attr("class", "y axis axisLeft").call(main_yAxisLeft)
@@ -541,7 +541,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeMap = function(data) {
   var _self = this;
-  this.data = data;
+  this.map_data = data;
 
   var locs = {};
   for (var i = 0; i < data.length; i++) {
@@ -549,7 +549,7 @@ UptimeChart.prototype.makeMap = function(data) {
   }
   this.makeCombo(locs, this.config.map.combo.id, function(val) {
     if (val == '*') {
-      data2 = _self.data;
+      data2 = _self.map_data;
     } else {
       var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
@@ -747,4 +747,102 @@ d3.json("data.json", function(error, data) {
   d3.json("map.json", function(json) {
     uptimeChart.makeMap(json);
   });
+});
+
+var map = new google.maps.Map(d3.select("#googleMap").node(), {
+  zoom : 2,
+  center : new google.maps.LatLng(10, -350),
+  mapTypeId : google.maps.MapTypeId.TERRAIN
+});
+
+d3.json("stations.json", function(data) {
+  var overlay = new google.maps.OverlayView();
+
+  overlay.onAdd = function() {
+    var layer = d3.select(this.getPanes().overlayLayer).append("div").attr(
+        "class", "stations");
+
+    var radius = 50;
+    overlay.draw = function() {
+      var projection = this.getProjection(), padding = 10;
+
+      var marker = layer.selectAll("svg").data(d3.entries(data))
+          .each(transform).enter().append("svg:svg").each(transform).attr(
+              "class", "marker");
+
+      var markerLink = layer.selectAll(".links").data(d3.entries(data)).each(
+          pathTransform).enter().append("svg:svg").attr("class", "links").each(
+          pathTransform);
+
+      marker.append("svg:circle").attr("r", 4.5).attr("cx", padding).attr("cy",
+          padding);
+
+      marker.append("svg:text").attr("x", padding + 7).attr("y", padding).attr(
+          "dy", ".31em").text(function(d) {
+        return d.key;
+      });
+
+      function transform(d) {
+        d = d.value;
+        d = new google.maps.LatLng(d.latitude, d.longitude);
+        d = projection.fromLatLngToDivPixel(d);
+        return d3.select(this).style("left", (d.x - padding) + "px").style(
+            "top", (d.y - padding) + "px");
+      }
+
+      function pathTransform(d) {
+        d = d.value;
+        var t, b, l, r, w, h, currentSvg;
+        var d1 = new Object();
+        var d2 = new Object();
+        $(this).empty();
+
+        d1.x = d.source.x;
+        d1.y = d.source.y;
+        d2.x = d.target.x;
+        d2.y = d.target.y;
+
+        if (d1.y < d2.y) {
+          t = d1.y;
+          b = d2.y;
+        } else {
+          t = d2.y;
+          b = d1.y;
+        }
+        if (d1.x < d2.x) {
+          l = d1.x;
+          r = d2.x;
+        } else {
+          l = d2.x;
+          r = d1.x;
+        }
+        currentSvg = d3.select(this).style("z-index", "1").style("left",
+            (l + 2 * radius) + "px").style("top", (t + 2 * radius) + "px")
+            .style("width", (r - l + 2 * radius) + "px").style("height",
+                (b - t + 2 * radius) + "px");
+
+        var x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+        if ((d1.y < d2.y) && (d1.x < d2.x)) {
+          x2 = r - l;
+          y2 = b - t;
+        } else if ((d1.x > d2.x) && (d1.y > d2.y)) {
+          x2 = r - l;
+          y2 = b - t;
+        } else if ((d1.y < d2.y) && (d1.x > d2.x)) {
+          x1 = r - l;
+          y2 = b - t;
+        } else if ((d1.x < d2.x) && (d1.y > d2.y)) {
+          x1 = r - l;
+          y2 = b - t;
+        }
+        currentSvg.append("svg:line").style("stroke-width", 2).style("stroke",
+            "black").attr("x1", x1).attr("y1", y1).attr("x2", x2)
+            .attr("y2", y2);
+
+        return currentSvg;
+      }
+    };
+  };
+
+  overlay.setMap(map);
 });
