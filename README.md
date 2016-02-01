@@ -9,6 +9,8 @@ multi-line and geographic D3 chart.
 	3. clicking each legend's node, toggle the main chart's lines.
 	4. left / right y axis
 	5. show description for chart's line and map's circle 
+	6. google map api (marker / circle / infowindow)
+	7. data filtering with a select box
 	
 ```
 

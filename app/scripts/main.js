@@ -634,6 +634,133 @@ UptimeChart.prototype.drawMap = function(data, loc) {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
+// [ gmap chart ]
+// ///////////////////////////////////////////////////////////////////////////////
+UptimeChart.prototype.makeGMap = function(data) {
+  var _self = this;
+  this.gmap_data = data;
+
+  var locs = {};
+  for (var i = 0; i < data.length; i++) {
+    locs[data[i].city] = data[i].city;
+  }
+  this.makeCombo(locs, this.config.gmap.combo.id, function(val) {
+    if (val == '*') {
+      data2 = _self.gmap_data;
+    } else {
+      var data2 = new Array();
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].city == val) {
+          data2[data2.length] = data[i];
+        }
+      }
+    }
+    d3.select("[id='gmap']").remove();
+    _self.init();
+    _self.drawGMap(data2, val);
+  });
+
+  this.drawGMap(data, '*');
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// [ draw gmap ]
+// ///////////////////////////////////////////////////////////////////////////////
+UptimeChart.prototype.drawGMap = function(data, loc) {
+  var _self = this;
+
+  var map = new google.maps.Map(d3.select("#googleMap").node(), {
+    zoom : 2,
+    center : new google.maps.LatLng(10, -350),
+    mapTypeId : google.maps.MapTypeId.ROADMAP
+  });
+
+  var overlay = new google.maps.OverlayView();
+
+  overlay.onAdd = function() {
+    var layer = d3.select(this.getPanes().overlayLayer).append("div").attr(
+        'id', 'gmap').attr("class", "stations");
+
+    overlay.draw = function() {
+      var marker2 = layer.selectAll("svg").data(d3.entries(data)).each(
+          transform).enter().append("svg:svg").each(transform);
+
+      function transform(d) {
+        d = d.value;
+        if (100 == parseFloat(d.latitude))
+          return;
+
+        var marker = new google.maps.Marker({
+          position : {
+            lat : parseFloat(d.latitude),
+            lng : parseFloat(d.longitude)
+          },
+          map : map,
+          label : d.city,
+          title : d.city
+        });
+
+        var contentString = '<div id="content">' + '<div id="siteNotice">'
+            + '</div>' + '<h1 id="firstHeading" class="firstHeading">' + d.city
+            + '</h1>' + '<div id="bodyContent">' + '<p><b>' + d.city
+            + '</b> is a large Site.</p>'
+            + '<a href="http://www.google.com">http://www.google.com</a> '
+            + '(last visited June 22, 2016).</p>' + '</div>' + '</div>';
+
+        var infowindow = new google.maps.InfoWindow({
+          content : contentString,
+          maxWidth : 200
+        });
+        marker.addListener('mouseover', function() {
+          infowindow.open(map, marker);
+        });
+//        marker.addListener('mouseout', function() {
+//          infowindow.close();
+//        });
+
+        var cityCircle = new google.maps.Circle({
+          strokeColor : '#FF0000',
+          strokeOpacity : 0.8,
+          strokeWeight : 2,
+          fillColor : '#FF0000',
+          fillOpacity : 0.35,
+          map : map,
+          label : d.city,
+          center : {
+            lat : parseFloat(d.latitude),
+            lng : parseFloat(d.longitude)
+          },
+          radius : Math.sqrt(100000000) * 100
+        });
+
+        var marker2 = new google.maps.Marker({
+          position : {
+            lat : parseFloat(d.latitude),
+            lng : parseFloat(d.longitude)
+          },
+          map : map,
+          icon : {
+            url : 'favicon.ico',
+            size : new google.maps.Size(40, 35),
+            origin : new google.maps.Point(0, 0),
+            anchor : new google.maps.Point(0, 32)
+          },
+          shape : {
+            coords : [ 1, 1, 1, 20, 18, 20, 18, 1 ],
+            type : 'poly'
+          },
+          title : d.city,
+          zIndex : 0
+        });
+
+      }
+    };
+  };
+
+  overlay.setMap(map);
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
 // [ redraw by brush ]
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.redraw = function(startTime, endTime) {
@@ -734,6 +861,19 @@ var config = {
       y : 160
     },
     combo : {
+      id : 'locs'
+    }
+  },
+  gmap : {
+    w : 1200,
+    h : 400,
+    circle_scale : 1.,
+    scale : 150,
+    tooltip : {
+      x : 20,
+      y : 160
+    },
+    combo : {
       id : 'glocs'
     }
   }
@@ -747,102 +887,7 @@ d3.json("data.json", function(error, data) {
   d3.json("map.json", function(json) {
     uptimeChart.makeMap(json);
   });
-});
-
-var map = new google.maps.Map(d3.select("#googleMap").node(), {
-  zoom : 2,
-  center : new google.maps.LatLng(10, -350),
-  mapTypeId : google.maps.MapTypeId.TERRAIN
-});
-
-d3.json("stations.json", function(data) {
-  var overlay = new google.maps.OverlayView();
-
-  overlay.onAdd = function() {
-    var layer = d3.select(this.getPanes().overlayLayer).append("div").attr(
-        "class", "stations");
-
-    var radius = 50;
-    overlay.draw = function() {
-      var projection = this.getProjection(), padding = 10;
-
-      var marker = layer.selectAll("svg").data(d3.entries(data))
-          .each(transform).enter().append("svg:svg").each(transform).attr(
-              "class", "marker");
-
-      var markerLink = layer.selectAll(".links").data(d3.entries(data)).each(
-          pathTransform).enter().append("svg:svg").attr("class", "links").each(
-          pathTransform);
-
-      marker.append("svg:circle").attr("r", 4.5).attr("cx", padding).attr("cy",
-          padding);
-
-      marker.append("svg:text").attr("x", padding + 7).attr("y", padding).attr(
-          "dy", ".31em").text(function(d) {
-        return d.key;
-      });
-
-      function transform(d) {
-        d = d.value;
-        d = new google.maps.LatLng(d.latitude, d.longitude);
-        d = projection.fromLatLngToDivPixel(d);
-        return d3.select(this).style("left", (d.x - padding) + "px").style(
-            "top", (d.y - padding) + "px");
-      }
-
-      function pathTransform(d) {
-        d = d.value;
-        var t, b, l, r, w, h, currentSvg;
-        var d1 = new Object();
-        var d2 = new Object();
-        $(this).empty();
-
-        d1.x = d.source.x;
-        d1.y = d.source.y;
-        d2.x = d.target.x;
-        d2.y = d.target.y;
-
-        if (d1.y < d2.y) {
-          t = d1.y;
-          b = d2.y;
-        } else {
-          t = d2.y;
-          b = d1.y;
-        }
-        if (d1.x < d2.x) {
-          l = d1.x;
-          r = d2.x;
-        } else {
-          l = d2.x;
-          r = d1.x;
-        }
-        currentSvg = d3.select(this).style("z-index", "1").style("left",
-            (l + 2 * radius) + "px").style("top", (t + 2 * radius) + "px")
-            .style("width", (r - l + 2 * radius) + "px").style("height",
-                (b - t + 2 * radius) + "px");
-
-        var x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-        if ((d1.y < d2.y) && (d1.x < d2.x)) {
-          x2 = r - l;
-          y2 = b - t;
-        } else if ((d1.x > d2.x) && (d1.y > d2.y)) {
-          x2 = r - l;
-          y2 = b - t;
-        } else if ((d1.y < d2.y) && (d1.x > d2.x)) {
-          x1 = r - l;
-          y2 = b - t;
-        } else if ((d1.x < d2.x) && (d1.y > d2.y)) {
-          x1 = r - l;
-          y2 = b - t;
-        }
-        currentSvg.append("svg:line").style("stroke-width", 2).style("stroke",
-            "black").attr("x1", x1).attr("y1", y1).attr("x2", x2)
-            .attr("y2", y2);
-
-        return currentSvg;
-      }
-    };
-  };
-
-  overlay.setMap(map);
+  d3.json("map.json", function(json) {
+    uptimeChart.makeGMap(json);
+  });
 });
