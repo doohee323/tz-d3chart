@@ -33,8 +33,8 @@ var UptimeChart = function(chartElem, mapElem, config) {
   this.mapData = new Array();
   this.circle_scale = 1. / config.map.circle_scale;
 
-  this.getSize = function(d, city) {
-    var size = Math.round(this.getTotal(d, city) * this.circle_scale);
+  this.getSize = function(d, loc) {
+    var size = Math.round(this.getTotal(d, loc) * this.circle_scale);
     if (size >= 10) {
       size = 30;
     } else if (size >= 3) {
@@ -45,8 +45,8 @@ var UptimeChart = function(chartElem, mapElem, config) {
     return size;
   }
 
-  this.getColor = function(d, city) {
-    var size = Math.round(this.getTotal(d, city) * this.circle_scale);
+  this.getColor = function(d, loc) {
+    var size = Math.round(this.getTotal(d, loc) * this.circle_scale);
     if (size >= 10) {
       return "red";
     } else if (size >= 3) {
@@ -55,10 +55,10 @@ var UptimeChart = function(chartElem, mapElem, config) {
     return "green";
   }
 
-  this.getTotal = function(d, city) {
-    if (city) {
+  this.getTotal = function(d, loc) {
+    if (loc) {
       for (var i = 0; i < d.length; i++) {
-        if (d[i].city == city) {
+        if (d[i].loc == loc) {
           d = d[i];
           break;
         }
@@ -66,7 +66,7 @@ var UptimeChart = function(chartElem, mapElem, config) {
     }
     var total = 0;
     for ( var key in d) {
-      if (key != 'city' && key != 'latitude' && key != 'longitude') {
+      if (key != 'loc' && key != 'latitude' && key != 'longitude') {
         total += parseFloat(d[key]);
       }
     }
@@ -87,6 +87,16 @@ var UptimeChart = function(chartElem, mapElem, config) {
         + (b + 0x10000).toString(16).substring(3).toUpperCase();
   }
 
+  this.getLabelFullName = function(akey) {
+    var mapping = this.config.mapping;
+    for ( var key in mapping) {
+      if (key == akey) {
+        return mapping[key];
+      }
+    }
+    return akey;
+  }
+
   this.makeCombo = function(ds, id, cb) {
     id = '#' + id;
     if ($(id + " option").length > 0)
@@ -101,15 +111,173 @@ var UptimeChart = function(chartElem, mapElem, config) {
       }
       $('option', select).remove();
       options[options.length] = new Option('all', '*');
+      $.each(ds,
+          function(key, obj) {
+            if (key != 'date') {
+              options[options.length] = new Option(_self.getLabelFullName(key),
+                  key);
+            }
+          });
+      select.change(function(e) {
+        cb.call(e, $(id).val());
+      });
+    }
+  }
+
+  this.makeCombo2 = function(ds, id, cb) {
+    id = '#' + id;
+    if ($(id + " option").length > 0)
+      return;
+    var select = $(id);
+    if (select.length > 0) {
+      var options;
+      if (select.prop) {
+        options = select.prop('options');
+      } else {
+        options = select.attr('options');
+      }
+      $('option', select).remove();
+      options[options.length] = new Option('all', '*');
       $.each(ds, function(key, obj) {
-        if (key != 'date') {
-          options[options.length] = new Option(key, key);
-        }
+        options[options.length] = new Option(_self.getLabelFullName(obj.loc),
+            obj.loc);
       });
       select.change(function(e) {
         cb.call(e, $(id).val());
       });
     }
+  }
+
+  // make mapData for chart from maxtrix, locs
+  this.makeMapData = function(resultset, type) {
+    var data = resultset.data.metrix;
+    var locs = resultset.meta.locs;
+
+    var mapData = new Array();
+    for (var i = 0; i < locs.length; i++) {
+      var loc = locs[i].loc;
+      var row = {};
+      row.loc = loc;
+      row.latitude = locs[i].latitude;
+      row.longitude = locs[i].longitude;
+      for (var j = 0; j < data.length; j++) {
+        if (data[j].target == loc + '.' + type) {
+          var datapoints = data[j].datapoints;
+          for (var p = 0; p < datapoints.length; p++) {
+            var dt = new Date(datapoints[p][1] * 1000);
+            dt = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt
+                .getDate(), dt.getHours(), dt.getMinutes()));
+            var t = dt.toISOString();
+            if (datapoints[p][0]) {
+              row[t] = datapoints[p][0];
+            } else {
+              row[t] = 0;
+            }
+          }
+        }
+      }
+      if (Object.keys(row).length > 3) {
+        mapData.push(row);
+      }
+    }
+
+    for (var i = 0; i < locs.length; i++) {
+      var loc = locs[i].loc;
+      var bExist = false;
+      for (var j = 0; j < mapData.length; j++) {
+        if (mapData[j].loc == loc) {
+          bExist = true;
+          break;
+        }
+      }
+      if (!bExist) {
+        var row = {};
+        row.loc = loc;
+        row.latitude = locs[i].latitude == null ? 100 : locs[i].latitude;
+        row.longitude = locs[i].longitude == null ? 100 : locs[i].longitude;
+        for ( var key in mapData[0]) {
+          if (key != 'loc' && key != 'latitude' && key != 'longitude') {
+            row[key] = 0;
+          }
+        }
+        mapData.push(row);
+      }
+    }
+    return mapData;
+  }
+
+  // make chartData for chart
+  this.makeChartData = function(resultset) {
+    var max = 0;
+    var locMetrix = resultset.data.metrix;
+    var metrix = resultset.data.avgMetrix;
+    var judge = resultset.data.judge;
+    var active = resultset.data.active[0];
+    var include = resultset.data.include[0];
+    var metrices = resultset.meta.metrices;
+    var locs = resultset.meta.locs;
+    var chartData = new Array();
+
+    for (var q = 0; q < metrix[0].datapoints.length - 1; q++) {
+      var avail = 0;
+      var sum = 0;
+      var jsonRow = {
+        date : new Date(metrix[0].datapoints[q][1] * 1000)
+      };
+      for (var i = 0; i < metrix.length; i++) {
+        var target = metrix[i].target;
+        if (!metrix[i].description) {
+          metrix[i].description = new Array();
+        }
+        if (!metrix[i].description[q]) {
+          metrix[i].description[q] = {};
+        }
+        if (active != null) {
+          // availability = #2 / (#1 + #3)
+          var v1 = active.datapoints[q][0];
+          var v2 = metrix[i].datapoints[q][0] != null ? metrix[i].datapoints[q][0]
+              : 0;
+          var v3 = include.datapoints[q][0];
+          if (v1) {
+            metrix[i].description[q].v1 = Number((v1).toFixed(1));
+          }
+          metrix[i].description[q].v2 = v2;
+          metrix[i].description[q].v3 = v3;
+          avail = Math.floor((v2 / (v1 + v3)));
+          if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
+            avail = 0;
+          }
+          jsonRow[target] = v2;
+        } else {
+          console.log('active is null');
+        }
+        sum += avail;
+      } // for i
+      if (judge && active != null) {
+        if (!judge[0].datapoints[q][0] || judge[0].datapoints[q][0] == 0) {
+          jsonRow['judge'] = 0;
+        } else {
+          jsonRow['judge'] = judge[0].datapoints[q][0];
+        }
+      }
+      if (sum > max) {
+        max = sum;
+      }
+      jsonRow['aggregate'] = sum;
+      chartData.push(jsonRow);
+    } // for q
+
+    for (var i = 0; i < chartData.length; i++) {
+      var uptime = chartData[i]['aggregate'];
+      var uptime_per = uptime / max * 100;
+      if (uptime_per) {
+        uptime_per = Number((uptime_per).toFixed(1));
+      } else {
+        uptime_per = 0;
+      }
+      chartData[i]['aggregate'] = uptime_per;
+    }
+    return chartData;
   }
 
   this.init = function() {
@@ -125,7 +293,9 @@ var UptimeChart = function(chartElem, mapElem, config) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ line chart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeChart = function(data) {
+UptimeChart.prototype.makeChart = function(resultset) {
+  var data = this.makeChartData(resultset);
+
   var _self = this;
   this.data = data;
 
@@ -274,7 +444,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
         var col = i * _self.config.chart.legend.width + 1;
         return col + "em";
       }).text(function(d, i) {
-        return d.key;
+        return _self.getLabelFullName(d.key);
       }).on("click", function(d, i) {
         toggle('text', d, i);
       }).style("cursor", "pointer");
@@ -290,7 +460,6 @@ UptimeChart.prototype.drawChart = function(data, metric) {
         var col = i * _self.config.chart.legend.width;
         return col + "em";
       }).attr("r", "0.8em").style("fill", function(d) {
-        console.log(d.value.color);
         return d.value.color;
       }).on("click", function(d, i) {
         toggle('circle', d, i);
@@ -462,8 +631,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   // /[ main chart ]///////////////////////////
   for ( var key in this.main_y) {
     this.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-        "class", "line line" + key).attr("d",
-         this.main_line[key]).attr(
+        "class", "line line" + key).attr("d", this.main_line[key]).attr(
         "data-legend", function(d) {
           return key;
         });
@@ -536,8 +704,8 @@ UptimeChart.prototype.drawChart = function(data, metric) {
               "transform",
               "translate(" + _self.main_x(d.date) + ","
                   + _self.main_y[key](d[key]) + ")");
-          var formatOutput = key + "-" + formatDate2(d.date) + " - " + d[key]
-              + " ms";
+          var formatOutput = _self.getLabelFullName(key) + " - "
+              + formatDate2(d.date) + " - " + d[key] + " ms";
           focus.select("text.y" + key).attr(
               "transform",
               "translate(" + _self.main_x(d.date) + ","
@@ -577,21 +745,21 @@ UptimeChart.prototype.drawChart = function(data, metric) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ map chart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeMap = function(data) {
+UptimeChart.prototype.makeMap = function(resultset, locs) {
   var _self = this;
-  this.map_data = data;
+  var data = resultset.data.metrix;
+  var locs = resultset.meta.locs;
+  this.map_data = this.makeMapData(resultset, 'state');
 
-  var locs = {};
-  for (var i = 0; i < data.length; i++) {
-    locs[data[i].city] = data[i].city;
-  }
-  this.makeCombo(locs, this.config.map.combo.id, function(val) {
+  this.makeCombo2(locs, this.config.map.combo.id, function(val) {
     if (val == '*') {
       data2 = _self.map_data;
     } else {
+      var type = $('#' + _self.config.chart.combo.id).val();
+      var data = _self.makeMapData(resultset, type);
       var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
-        if (data[i].city == val) {
+        if (data[i].loc == val) {
           data2[data2.length] = data[i];
         }
       }
@@ -601,7 +769,7 @@ UptimeChart.prototype.makeMap = function(data) {
     _self.drawMap(data2, val);
   });
 
-  this.drawMap(data, _self.config.map.combo.init);
+  this.drawMap(this.map_data, _self.config.map.combo.init);
   $('#' + this.config.map.combo.id).val(_self.config.map.combo.init);
 }
 
@@ -643,7 +811,7 @@ UptimeChart.prototype.drawMap = function(data, loc) {
       function(d, i) {
         d3.select(this).style("fill", "#FC0");
         var html = '<div style="width: 250px;">';
-        html += '<div>* Site: ' + d["city"];
+        html += '<div>* Site: ' + d["loc"];
         html += '</div>';
         html += '<div>* Total: ' + Math.round(_self.getTotal(d))
             + ' (ms)</div>';
@@ -681,7 +849,7 @@ UptimeChart.prototype.makeGMap = function(data) {
 
   var locs = {};
   for (var i = 0; i < data.length; i++) {
-    locs[data[i].city] = data[i].city;
+    locs[data[i].loc] = data[i].loc;
   }
   this.makeCombo(locs, this.config.gmap.combo.id, function(val) {
     if (val == '*') {
@@ -689,7 +857,7 @@ UptimeChart.prototype.makeGMap = function(data) {
     } else {
       var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
-        if (data[i].city == val) {
+        if (data[i].loc == val) {
           data2[data2.length] = data[i];
         }
       }
@@ -742,13 +910,13 @@ UptimeChart.prototype.drawGMap = function(data, loc) {
             lng : parseFloat(d.longitude)
           },
           map : map,
-          label : d.city,
-          title : d.city
+          label : d.loc,
+          title : d.loc
         });
 
         var contentString = '<div id="content">' + '<div id="siteNotice">'
-            + '</div>' + '<h1 id="firstHeading" class="firstHeading">' + d.city
-            + '</h1>' + '<div id="bodyContent">' + '<p><b>' + d.city
+            + '</div>' + '<h1 id="firstHeading" class="firstHeading">' + d.loc
+            + '</h1>' + '<div id="bodyContent">' + '<p><b>' + d.loc
             + '</b> is a large Site.</p>'
             + '<a href="http://www.google.com">http://www.google.com</a> '
             + '(last visited June 22, 2016).</p>' + '</div>' + '</div>';
@@ -764,14 +932,14 @@ UptimeChart.prototype.drawGMap = function(data, loc) {
         // infowindow.close();
         // });
 
-        var cityCircle = new google.maps.Circle({
+        var locCircle = new google.maps.Circle({
           strokeColor : '#FF0000',
           strokeOpacity : 0.8,
           strokeWeight : 2,
           fillColor : '#FF0000',
           fillOpacity : 0.35,
           map : map,
-          label : d.city,
+          label : d.loc,
           center : {
             lat : parseFloat(d.latitude),
             lng : parseFloat(d.longitude)
@@ -792,7 +960,7 @@ UptimeChart.prototype.drawGMap = function(data, loc) {
             origin : new google.maps.Point(0, 0),
             anchor : new google.maps.Point(32, 32)
           },
-          title : d.city,
+          title : d.loc,
           zIndex : 0
         });
 
@@ -814,7 +982,7 @@ UptimeChart.prototype.redraw = function(startTime, endTime) {
     for (var i = 0; i < this.mapData.length; i++) {
       var obj = {};
       for ( var key in this.mapData[i]) {
-        if (key == 'city' || key == 'latitude' || key == 'longitude') {
+        if (key == 'loc' || key == 'latitude' || key == 'longitude') {
           obj[key] = this.mapData[i][key];
         } else {
           if (new Date(key) >= new Date(startTime)
@@ -831,7 +999,7 @@ UptimeChart.prototype.redraw = function(startTime, endTime) {
     for (var i = 0; i < this.mapData.length; i++) {
       var obj = {};
       for ( var key in this.mapData[i]) {
-        if (key == 'city' || key == 'latitude' || key == 'longitude') {
+        if (key == 'loc' || key == 'latitude' || key == 'longitude') {
           obj[key] = this.mapData[i][key];
         } else {
           if (new Date(key) >= new Date(startTime)
@@ -848,92 +1016,99 @@ UptimeChart.prototype.redraw = function(startTime, endTime) {
 
   this.circles.selectAll("circle").transition().duration(1000).ease("linear")
       .attr("r", function(d) {
-        return _self.getSize(json, d.city);
+        return _self.getSize(json, d.loc);
       }).attr("title", function(d) {
-        return d["city"] + ": " + Math.round(_self.getTotal(json, d.city));
+        return d["loc"] + ": " + Math.round(_self.getTotal(json, d.loc));
       });
 
   this.circles.selectAll("circle").style("fill", function(d) {
-    return _self.getColor(json, d.city);
+    return _self.getColor(json, d.loc);
   });
 
   this.labels.selectAll("text").text(function(d) {
-    return Math.round(_self.getTotal(json, d.city));
+    return Math.round(_self.getTotal(json, d.loc));
   });
 }
 
 // / [configuration]
 // //////////////////////////////////////////////////////////////////////////////
 var config = {
-  chart : {
-    yAxis : {
-      left : 'tot_ms',
-      right : 'judge'
+  "chart" : {
+    "yAxis" : {
+      "left" : "tot_ms",
+      "right" : "judge"
     },
-    main_margin : {
-      width : 950,
-      height : 300,
-      top : 20,
-      right : 80,
-      bottom : 100,
-      left : 40
+    "main_margin" : {
+      "width" : 950,
+      "height" : 300,
+      "top" : 20,
+      "right" : 80,
+      "bottom" : 100,
+      "left" : 40
     },
-    mini_margin : {
-      top : 230,
-      bottom : 20,
-      height : 280,
-      right : 80,
-      left : 40
+    "mini_margin" : {
+      "top" : 230,
+      "bottom" : 20,
+      "height" : 280,
+      "right" : 80,
+      "left" : 40
     },
-    legend : {
-      x : 40,
-      y : 280,
-      width : 10
+    "combo" : {
+      "id" : "gmetrices",
+      "init" : "aggregate"
     },
-    combo : {
-      id : 'gmetrices',
-      init : 'aggregate'
+    "legend" : {
+      "x" : 40,
+      "y" : 280,
+      "width" : 10
     }
   },
-  map : {
-    height : 400,
-    width : 1200,
-    circle_scale : 1.,
-    scale : 150,
-    tooltip : {
-      x : 20,
-      y : 160
+  "map" : {
+    "height" : 400,
+    "width" : 1200,
+    "circle_scale" : 1,
+    "scale" : 150,
+    "tooltip" : {
+      "x" : 20,
+      "y" : 160
     },
-    combo : {
-      id : 'locs',
-      init : '*'
+    "combo" : {
+      "id" : "locs",
+      "init" : "*"
     }
   },
-  gmap : {
-    height : 300,
-    width : 1200,
-    circle_scale : 1.,
-    scale : 150,
-    tooltip : {
-      x : 20,
-      y : 160
+  "gmap" : {
+    "height" : 300,
+    "width" : 1000,
+    "circle_scale" : 1,
+    "scale" : 150,
+    "tooltip" : {
+      "x" : 20,
+      "y" : 160
     },
-    combo : {
-      id : 'glocs',
-      init : '*'
+    "combo" : {
+      "id" : "glocs",
+      "init" : "*"
     }
+  },
+  "mapping" : {
+    "state" : "Service State",
+    "aggregate" : "aggregate",
+    "tot_ms" : "Response Time", // Roundtrip Time
+    "tfb_ms" : "Wait Time", // Time To 1st Byte
+    "con_ms" : "Connect Time", // Time To Connect
+    "nsl_ms" : "DNS Time", // DNS Lookup
+    "judge" : "judge"
   }
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-
-d3.json("data.json", function(error, data) {
+d3.json("data.json", function(error, resultset) {
   var uptimeChart = new UptimeChart("#chart", "#graph", config);
-  uptimeChart.makeChart(data);
-  d3.json("map.json", function(json) {
-    uptimeChart.makeMap(json);
-  });
-  d3.json("map.json", function(json) {
-    uptimeChart.makeGMap(json);
-  });
+  uptimeChart.makeChart(resultset);
+  uptimeChart.makeMap(resultset);
+  // d3.json("map.json", function(json) {
+  // $('#googleMap').width(config.gmap.width).height(config.gmap.height);
+  // uptimeChart.makeGMap(json);
+  // });
 });
