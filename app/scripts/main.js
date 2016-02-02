@@ -359,118 +359,136 @@ UptimeChart.prototype.drawChart = function(data, metric) {
       d3.time.format("%H:%M")).orient("bottom");
 
   d3.legend = function(g) {
-    g.each(function() {
-      var g = d3.select(this), items = {};
-      this.svg = d3.select(_self.chartElem);
-      var legendPadding = g.attr("data-style-padding") || 10;
-      var lb = g.selectAll(".legend-box").data([ true ]);
-      var li = g.selectAll(".legend-items").data([ true ]);
+    g
+        .each(function() {
+          var g = d3.select(this), items = {};
+          this.svg = d3.select(_self.chartElem);
+          var legendPadding = g.attr("data-style-padding") || 10;
+          var lb = g.selectAll(".legend-box").data([ true ]);
+          var li = g.selectAll(".legend-items").data([ true ]);
 
-      lb.enter().append("rect").classed("legend-box", true);
-      li.enter().append("g").classed("legend-items", true);
+          lb.enter().append("rect").classed("legend-box", true);
+          li.enter().append("g").classed("legend-items", true);
 
-      this.svg.selectAll("[data-legend]").each(
-          function() {
-            var self = d3.select(this);
-            items[self.attr("data-legend")] = {
-              pos : self.attr("data-legend-pos") || this.getBBox().y,
-              color : self.attr("data-legend-color") != undefined ? self
-                  .attr("data-legend-color")
-                  : self.style("fill") != 'none' ? self.style("fill") : self
-                      .style("stroke")
-            }
+          this.svg
+              .selectAll("[data-legend]")
+              .each(
+                  function() {
+                    if (metric == '*') {
+                      var self = d3.select(this);
+                      items[self.attr("data-legend")] = {
+                        pos : self.attr("data-legend-pos") || this.getBBox().y,
+                        color : self.attr("data-legend-color") != undefined ? self
+                            .attr("data-legend-color")
+                            : self.style("fill") != 'none' ? self.style("fill")
+                                : self.style("stroke")
+                      }
+                    } else {
+                      var self = d3.select(this);
+                      if (self.attr("data-legend") == metric
+                          || self.attr("data-legend") == _self.config.chart.yAxis.right) {
+                        items[self.attr("data-legend")] = {
+                          pos : self.attr("data-legend-pos")
+                              || this.getBBox().y,
+                          color : self.attr("data-legend-color") != undefined ? self
+                              .attr("data-legend-color")
+                              : self.style("fill") != 'none' ? self
+                                  .style("fill") : self.style("stroke")
+                        }
+                      }
+                    }
+                  })
+          items = d3.entries(items).sort(function(a, b) {
+            return a.value.pos - b.value.pos;
           })
-      items = d3.entries(items).sort(function(a, b) {
-        return a.value.pos - b.value.pos;
-      })
 
-      // set judge first in array
-      var items2 = new Array();
-      items2.push(items.find(function(element, index, array) {
-        if (element.key == _self.config.chart.yAxis.right) {
-          return element;
-        } else {
-          return false;
-        }
-      }));
-      for (var i = 0; i < items.length; i++) {
-        if (items[i].key != _self.config.chart.yAxis.right) {
-          items2.push(items[i]);
-        }
-      }
-      items = items2;
-
-      var toggle = function(type, d, i) {
-        _self.type = d.key;
-        if (type == 'text') {
-          if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
-              ".line" + d.key).style("stroke"))) {
-            if (_self.type == _self.config.chart.yAxis.right) {
-              d3.select(".line" + d.key).style("stroke", d.color).style("fill",
-                  d.color);
+          // set judge first in array
+          var items2 = new Array();
+          items2.push(items.find(function(element, index, array) {
+            if (element.key == _self.config.chart.yAxis.right) {
+              return element;
             } else {
-              d3.select(".line" + d.key).style("stroke", d.color);
+              return false;
             }
-            d3.select("circle.y" + d.key).style("stroke", d.color);
-            d3.select("line.y" + d.key).style("stroke", d.color);
-          }
-        } else if (type == 'circle') {
-          var pickColor = _self.convertRGBDecimalToHex(d3.select(
-              ".line" + d.key).style("stroke"));
-          if (pickColor != '#FFFFFF') {
-            d.color = pickColor;
-            if (_self.type == _self.config.chart.yAxis.right) {
-              d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
-                  "fill", "white");
-            } else {
-              d3.select(".line" + d.key).style("stroke", '#FFFFFF');
+          }));
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].key != _self.config.chart.yAxis.right) {
+              items2.push(items[i]);
             }
-            d3.select("circle.y" + d.key).style("stroke", '#FFFFFF');
-            d3.select("line.y" + d.key).style("stroke", '#FFFFFF');
           }
-        }
-        _self.redraw();
-      }
+          items = items2;
 
-      li.selectAll("text").data(items, function(d) {
-        return d.key;
-      }).call(function(d) {
-        d.enter().append("text");
-      }).call(function(d) {
-        d.exit().remove();
-      }).attr("y", function(d, i) {
-        return "0.25em";
-      }).attr("x", function(d, i) {
-        var col = i * _self.config.chart.legend.width + 1;
-        return col + "em";
-      }).text(function(d, i) {
-        return _self.getLabelFullName(d.key);
-      }).on("click", function(d, i) {
-        toggle('text', d, i);
-      }).style("cursor", "pointer");
-      li.selectAll("circle").data(items, function(d) {
-        return d.key;
-      }).call(function(d) {
-        d.enter().append("circle");
-      }).call(function(d) {
-        d.exit().remove();
-      }).attr("cy", function(d, i) {
-        return "0em";
-      }).attr("cx", function(d, i) {
-        var col = i * _self.config.chart.legend.width;
-        return col + "em";
-      }).attr("r", "0.8em").style("fill", function(d) {
-        return d.value.color;
-      }).on("click", function(d, i) {
-        toggle('circle', d, i);
-      }).style("cursor", "pointer");
+          var toggle = function(type, d, i) {
+            _self.type = d.key;
+            if (type == 'text') {
+              if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
+                  ".line" + d.key).style("stroke"))) {
+                if (_self.type == _self.config.chart.yAxis.right) {
+                  d3.select(".line" + d.key).style("stroke", d.color).style(
+                      "fill", d.color);
+                } else {
+                  d3.select(".line" + d.key).style("stroke", d.color);
+                }
+                d3.select("circle.y" + d.key).style("stroke", d.color);
+                d3.select("line.y" + d.key).style("stroke", d.color);
+              }
+            } else if (type == 'circle') {
+              var pickColor = _self.convertRGBDecimalToHex(d3.select(
+                  ".line" + d.key).style("stroke"));
+              if (pickColor != '#FFFFFF') {
+                d.color = pickColor;
+                if (_self.type == _self.config.chart.yAxis.right) {
+                  d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
+                      "fill", "white");
+                } else {
+                  d3.select(".line" + d.key).style("stroke", '#FFFFFF');
+                }
+                d3.select("circle.y" + d.key).style("stroke", '#FFFFFF');
+                d3.select("line.y" + d.key).style("stroke", '#FFFFFF');
+              }
+            }
+            _self.redraw();
+          }
 
-      var lbbox = li[0][0].getBBox();
-      lb.attr("x", (lbbox.x - legendPadding)).attr("y",
-          (lbbox.y - legendPadding)).attr("height",
-          (lbbox.height + 2 * legendPadding)).attr("width",
-          (lbbox.width + 2 * legendPadding));
-    })
+          li.selectAll("text").data(items, function(d) {
+            return d.key;
+          }).call(function(d) {
+            d.enter().append("text");
+          }).call(function(d) {
+            d.exit().remove();
+          }).attr("y", function(d, i) {
+            return "0.25em";
+          }).attr("x", function(d, i) {
+            var col = i * _self.config.chart.legend.width + 1;
+            return col + "em";
+          }).text(function(d, i) {
+            return _self.getLabelFullName(d.key);
+          }).on("click", function(d, i) {
+            toggle('text', d, i);
+          }).style("cursor", "pointer");
+          li.selectAll("circle").data(items, function(d) {
+            return d.key;
+          }).call(function(d) {
+            d.enter().append("circle");
+          }).call(function(d) {
+            d.exit().remove();
+          }).attr("cy", function(d, i) {
+            return "0em";
+          }).attr("cx", function(d, i) {
+            var col = i * _self.config.chart.legend.width;
+            return col + "em";
+          }).attr("r", "0.8em").style("fill", function(d) {
+            return d.value.color;
+          }).on("click", function(d, i) {
+            toggle('circle', d, i);
+          }).style("cursor", "pointer");
+
+          var lbbox = li[0][0].getBBox();
+          lb.attr("x", (lbbox.x - legendPadding)).attr("y",
+              (lbbox.y - legendPadding)).attr("height",
+              (lbbox.height + 2 * legendPadding)).attr("width",
+              (lbbox.width + 2 * legendPadding));
+        })
     return g;
   }
 
