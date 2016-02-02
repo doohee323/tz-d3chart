@@ -229,7 +229,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
         }
       }
       items = items2;
-      
+
       var toggle = function(type, d, i) {
         _self.type = d.key;
         if (type == 'text') {
@@ -362,26 +362,40 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   }
 
   // /[ line definition ]///////////////////////////
-  for ( var key in this.main_y) {
-    var type = '';
-    if (key == this.config.chart.yAxis.right) {
-      type = 'step';
-    } else {
-      type = 'cardinal';
+  if (metric == '*') {
+    for ( var key in this.main_y) {
+      if (this.config.chart.yAxis.right != key) {
+        this.mini_line[key] = d3.svg.line().interpolate('cardinal').x(
+            function(d) {
+              return _self.mini_x(d.date);
+            }).y(function(d) {
+          return _self.mini_y[key](d[key]);
+        });
+        // it doesn't work for brushing
+        // this.main_line[key] =
+        // d3.svg.line().interpolate('cardinal').x(function(d) {
+        // return _self.main_x(d.date);
+        // }).y(function(d) {
+        // return _self.main_y[key](d[key]);
+        // });
+      }
     }
-    this.mini_line[key] = d3.svg.line().interpolate(type).x(function(d) {
-      return _self.mini_x(d.date);
-    }).y(function(d) {
-      return _self.mini_y[key](d[key]);
+  } else {
+    this.mini_line[metric] = d3.svg.line().interpolate('cardinal').x(
+        function(d) {
+          return _self.mini_x(d.date);
+        }).y(function(d) {
+      return _self.mini_y[metric](d[metric]);
     });
-
-    // it doesn't work for brushing
-    // this.main_line[key] = d3.svg.line().interpolate(type).x(function(d) {
-    // return _self.main_x(d.date);
-    // }).y(function(d) {
-    // return _self.main_y[key](d[key]);
-    // });
   }
+  this.mini_line[this.config.chart.yAxis.right] = d3.svg.line().interpolate(
+      'step').x(function(d) {
+    return _self.mini_x(d.date);
+  }).y(
+      function(d) {
+        return _self.mini_y[_self.config.chart.yAxis.right]
+            (d[_self.config.chart.yAxis.right]);
+      });
 
   // I need to enumerate instead of above fancy way.
   if (metric != '*') {
@@ -448,7 +462,8 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   // /[ main chart ]///////////////////////////
   for ( var key in this.main_y) {
     this.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-        "class", "line line" + key).attr("d", this.main_line[key]).attr(
+        "class", "line line" + key).attr("d",
+         this.main_line[key]).attr(
         "data-legend", function(d) {
           return key;
         });
@@ -881,10 +896,10 @@ var config = {
     }
   },
   map : {
-    height : 300,
+    height : 400,
     width : 1200,
     circle_scale : 1.,
-    scale : 100,
+    scale : 150,
     tooltip : {
       x : 20,
       y : 160
