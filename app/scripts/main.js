@@ -165,9 +165,7 @@ var UptimeChart = function(chartElem, mapElem, config) {
           var datapoints = data[j].datapoints;
           for (var p = 0; p < datapoints.length; p++) {
             var dt = new Date(datapoints[p][1] * 1000);
-            dt = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt
-                .getDate(), dt.getHours(), dt.getMinutes()));
-            var t = dt.toISOString();
+            var t = _self.toUTCISOString(dt);
             if (datapoints[p][0]) {
               row[t] = datapoints[p][0];
             } else {
@@ -233,7 +231,7 @@ var UptimeChart = function(chartElem, mapElem, config) {
           metrix[i].description[q] = {};
         }
         if (active != null) {
-          // availability = #2 / (#1 + #3)
+          // availability = #2 / (active + include)
           var v1 = active.datapoints[q][0];
           var v2 = metrix[i].datapoints[q][0] != null ? metrix[i].datapoints[q][0]
               : 0;
@@ -281,21 +279,21 @@ var UptimeChart = function(chartElem, mapElem, config) {
   }
 
   // make data for makeDiagram
-  this.makeDiagramData = function(json, startTime, endTime) {
+  this.makeDiagramData = function(json, brushed) {
     var data = new Array();
-    if (startTime && endTime) {
+    if (brushed) {
       for (var i = 0; i < json.length; i++) {
-        var dt = json[i].date;
-        dt = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate(),
-            dt.getHours(), dt.getMinutes()));
-        if (dt >= new Date(startTime) && dt <= new Date(endTime)) {
+        if (json[i].date >= _self.brush.extent()[0]
+            && json[i].date <= _self.brush.extent()[1]) {
           data.push(json[i]);
         }
       }
     } else {
       data = json;
     }
-
+    if (data.length == 0) {
+      data = json;
+    }
     var data2 = new Array();
     var date = 0;
     var nsl_ms = 0;
@@ -327,6 +325,12 @@ var UptimeChart = function(chartElem, mapElem, config) {
     _self.mini_line = {};
     _self.main, _self.mini, _self.svg;
     _self.startTime, _self.endTime, _self.type;
+  }
+
+  this.toUTCISOString = function(st) {
+    st = new Date(Date.UTC(st.getFullYear(), st.getMonth(), st.getDate(), st
+        .getHours(), st.getMinutes()));
+    return st.toISOString();
   }
 }
 
@@ -535,7 +539,8 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   }
 
   var brush2 = function() {
-    _self.main_x.domain(brush.empty() ? _self.mini_x.domain() : brush.extent());
+    _self.main_x.domain(_self.brush.empty() ? _self.mini_x.domain()
+        : _self.brush.extent());
     for ( var key in _self.main_y) {
       _self.main.select(".line" + key).attr("d", _self.main_line[key]);
     }
@@ -543,25 +548,14 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   }
 
   var brushstart = function() {
-    _self.startTime = brush.extent()[0];
+    _self.startTime = _self.brush.extent()[0];
   }
 
   var brushend = function() {
-    var st = _self.startTime;
-    st = new Date(Date.UTC(st.getFullYear(), st.getMonth(), st.getDate(), st
-        .getHours(), st.getMinutes()));
-    st = st.toISOString();
-
-    var et = _self.endTime;
-    et = brush.extent()[1];
-    et = new Date(Date.UTC(et.getFullYear(), et.getMonth(), et.getDate(), et
-        .getHours(), et.getMinutes()));
-    et = et.toISOString();
-
-    _self.redraw(st, et);
+    _self.redraw(true);
   }
 
-  var brush = d3.svg.brush().x(this.mini_x).on("brush", brush2).on(
+  this.brush = d3.svg.brush().x(this.mini_x).on("brush", brush2).on(
       'brushstart', brushstart).on('brushend', brushend);
 
   data.forEach(function(d) {
@@ -728,8 +722,8 @@ UptimeChart.prototype.drawChart = function(data, metric) {
         "d", this.mini_line[key]);
   }
 
-  this.mini.append("g").attr("class", "x brush").call(brush).selectAll("rect")
-      .attr("y", -6).attr("height", this.mini_height + 7);
+  this.mini.append("g").attr("class", "x brush").call(this.brush).selectAll(
+      "rect").attr("y", -6).attr("height", this.mini_height + 7);
 
   // /[ focus ]///////////////////////////
   var focus = this.main.append("g").attr("class", "focus").style("display",
@@ -1034,11 +1028,14 @@ UptimeChart.prototype.drawGMap = function(data, loc) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ redraw by brush ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.redraw = function(startTime, endTime) {
+UptimeChart.prototype.redraw = function(brushed) {
   var _self = this;
   var json = [];
 
-  if (startTime && endTime) {
+  var startTime = _self.toUTCISOString(_self.brush.extent()[0]);
+  var endTime = _self.toUTCISOString(_self.brush.extent()[1]);
+
+  if (brushed) {
     for (var i = 0; i < this.mapData.length; i++) {
       var obj = {};
       for ( var key in this.mapData[i]) {
@@ -1057,7 +1054,7 @@ UptimeChart.prototype.redraw = function(startTime, endTime) {
     json = this.mapData;
   }
 
-  this.drawDiagram(this.makeDiagramData(this.diagram_data, startTime, endTime));
+  this.drawDiagram(this.makeDiagramData(this.diagram_data, true));
 
   if (_self.type) {
     for (var i = 0; i < this.mapData.length; i++) {
@@ -1284,7 +1281,6 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     }
     return lg;
   }
-
   this.drawDiagram(this.makeDiagramData(data));
 }
 
@@ -1383,8 +1379,8 @@ var config = {
     "tfb_ms" : "Wait Time", // Time To 1st Byte
     "tot_ms" : "Response Time", // Roundtrip Time
     "state" : "Service State",
-    "aggregate" : "aggregate",
-    "judge" : "judge"
+    "aggregate" : "Aggregate",
+    "judge" : "Up/Down"
   }
 }
 
