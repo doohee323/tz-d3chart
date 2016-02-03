@@ -1105,24 +1105,24 @@ UptimeChart.prototype.dashboard = function(id, data) {
       bottom : 0,
       left : _self.config.chart.main_margin.left
     };
-    hGDim.w = _self.main_width;
-    hGDim.h = 40 - hGDim.top - hGDim.bottom;
+    hGDim.width = _self.main_width;
+    hGDim.height = 40 - hGDim.top - hGDim.bottom;
 
     var hGsvg = d3.select(id).append("svg").attr("width",
-        hGDim.w + hGDim.left + hGDim.right)
-        .attr("height", hGDim.h + hGDim.top + hGDim.bottom).append("g").attr(
+        hGDim.width + hGDim.left + hGDim.right)
+        .attr("height", hGDim.height + hGDim.top + hGDim.bottom).append("g").attr(
             "transform", "translate(" + hGDim.left + "," + hGDim.top + ")");
 
-    var x = d3.scale.ordinal().rangeRoundBands([ 0, hGDim.w ], 0.1).domain(
+    var x = d3.scale.ordinal().rangeRoundBands([ 0, hGDim.width ], 0.1).domain(
         fD.map(function(d) {
           return d[0];
         }));
 
     hGsvg.append("g").attr("class", "x axis").attr("transform",
-        "translate(0," + hGDim.h + ")").call(
+        "translate(0," + hGDim.height + ")").call(
         d3.svg.axis().scale(x).orient("bottom"));
 
-    var y = d3.scale.linear().range([ hGDim.h, 0 ]).domain(
+    var y = d3.scale.linear().range([ hGDim.height, 0 ]).domain(
         [ 0, d3.max(fD, function(d) {
           return d[1];
         }) ]);
@@ -1134,7 +1134,7 @@ UptimeChart.prototype.dashboard = function(id, data) {
     }).attr("y", function(d) {
       return y(d[1]);
     }).attr("width", x.rangeBand()).attr("height", function(d) {
-      return hGDim.h - y(d[1]);
+      return hGDim.height - y(d[1]);
     }).attr('fill', barColor).on("mouseover", mouseover).on("mouseout",
         mouseout);
 
@@ -1177,7 +1177,7 @@ UptimeChart.prototype.dashboard = function(id, data) {
       bars.select("rect").transition().duration(500).attr("y", function(d) {
         return y(d[1]);
       }).attr("height", function(d) {
-        return hGDim.h - y(d[1]);
+        return hGDim.height - y(d[1]);
       }).attr("fill", color);
 
       bars.select("text").transition().duration(500).text(function(d) {
@@ -1193,14 +1193,13 @@ UptimeChart.prototype.dashboard = function(id, data) {
   function pieChart(pD) {
     var pC = {};
     var pieDim = {
-      w : 170,
-      h : 120
+      width : 170,
+      height : 120
     };
-    pieDim.r = Math.min(pieDim.w, pieDim.h) / 2;
-    var piesvg = d3.select(id).append("svg").attr("width", pieDim.w).attr(
-        "height", pieDim.h).append("g").attr("transform", "translate(120,60)");
-    var arc = d3.svg.arc().outerRadius(pieDim.r - 10).innerRadius(0);
-
+    pieDim.right = Math.min(pieDim.width, pieDim.height) / 2;
+    var piesvg = d3.select(id).append("svg").attr("width", pieDim.width).attr(
+        "height", pieDim.height).append("g").attr("transform", "translate(120,60)");
+    var arc = d3.svg.arc().outerRadius(pieDim.right - 10).innerRadius(0);
     var pie = d3.layout.pie().sort(null).value(function(d) {
       return d.freq;
     });
