@@ -279,6 +279,32 @@ var UptimeChart = function(chartElem, mapElem, config) {
     }
     return chartData;
   }
+  
+  // make data for dashboard
+  this.makeDashBoardData = function(resultset) {
+    var data = _self.makeChartData(resultset);
+    var data2 = new Array();
+    var date = 0;
+    var nsl_ms = 0;
+    var con_ms = 0;
+    var tfb_ms = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (i % 20 == 0 && i > 0) {
+        var tmp = {};
+        tmp.date = data[i].date;
+        tmp.nsl_ms = Math.round(parseFloat(nsl_ms / 20));
+        tmp.con_ms = Math.round(parseFloat(con_ms / 20));
+        tmp.tfb_ms = Math.round(parseFloat(tfb_ms / 20));
+        data2.push(tmp);
+        nsl_ms = 0;
+        con_ms = 0;
+        tfb_ms = 0;
+      }
+      nsl_ms += data[i].nsl_ms;
+      con_ms += data[i].con_ms;
+      tfb_ms += data[i].tfb_ms;
+    }    
+  }
 
   this.init = function() {
     _self.main_y = {};
@@ -1048,6 +1074,215 @@ UptimeChart.prototype.redraw = function(startTime, endTime) {
   });
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+//[ dashboard ]
+/////////////////////////////////////////////////////////////////////////////////
+UptimeChart.prototype.dashboard = function(id, data) {
+  debugger;
+  var fData = this.makeDashBoardData(data);
+  
+  var barColor = 'steelblue';
+  function segColor(c) {
+    return {
+      nsl_ms : "#807dba",
+      con_ms : "#e08214",
+      tfb_ms : "#41ab5d"
+    }[c];
+  }
+
+  // compute tot_ms for each state.
+  fData.forEach(function(d) {
+    d.tot_ms = d.nsl_ms + d.con_ms + d.tfb_ms;
+  });
+
+  // function to handle histogram.
+  function histoGram(fD) {
+    var hG = {}, hGDim = {
+      t : 20,
+      r : 0,
+      b : 0,
+      l : 0
+    };
+    hGDim.w = 800 - hGDim.l - hGDim.r;
+    hGDim.h = 50 - hGDim.t - hGDim.b;
+
+    var hGsvg = d3.select(id).append("svg").attr("width",
+        hGDim.w + hGDim.l + hGDim.r).attr("height",
+        hGDim.h + hGDim.t + hGDim.b).append("g").attr("transform",
+        "translate(" + hGDim.l + "," + hGDim.t + ")");
+
+    var x = d3.scale.ordinal().rangeRoundBands([ 0, hGDim.w ], 0.1).domain(
+        fD.map(function(d) {
+          return d[0];
+        }));
+
+    hGsvg.append("g").attr("class", "x axis").attr("transform",
+        "translate(0," + hGDim.h + ")").call(
+        d3.svg.axis().scale(x).orient("bottom"));
+
+    var y = d3.scale.linear().range([ hGDim.h, 0 ]).domain(
+        [ 0, d3.max(fD, function(d) {
+          return d[1];
+        }) ]);
+
+    var bars = hGsvg.selectAll(".bar").data(fD).enter().append("g").attr(
+        "class", "bar");
+    bars.append("rect").attr("x", function(d) {
+      return x(d[0]);
+    }).attr("y", function(d) {
+      return y(d[1]);
+    }).attr("width", x.rangeBand()).attr("height", function(d) {
+      return hGDim.h - y(d[1]);
+    }).attr('fill', barColor).on("mouseover", mouseover).on("mouseout",
+        mouseout);
+
+    bars.append("text").text(function(d) {
+      return d3.format(",")(d[1])
+    }).attr("x", function(d) {
+      return x(d[0]) + x.rangeBand() / 2;
+    }).attr("y", function(d) {
+      return y(d[1]) + 18;
+    }).attr("text-anchor", "middle").style('fill', 'white');
+
+    function mouseover(d) {
+      var st = fData.filter(function(s) {
+        return s.date == d[0];
+      })[0], nD = d3.keys(st).map(function(s) {
+        return {
+          type : s,
+          freq : st[s]
+        };
+      });
+      pC.update(nD);
+      leg.update(nD);
+    }
+
+    function mouseout(d) {
+      pC.update(tF);
+      leg.update(tF);
+    }
+
+    hG.update = function(nD, color) {
+      y.domain([ 0, d3.max(nD, function(d) {
+        return d[1];
+      }) ]);
+
+      var bars = hGsvg.selectAll(".bar").data(nD);
+      bars.select("rect").transition().duration(500).attr("y", function(d) {
+        return y(d[1]);
+      }).attr("height", function(d) {
+        return hGDim.h - y(d[1]);
+      }).attr("fill", color);
+
+      bars.select("text").transition().duration(500).text(function(d) {
+        return d3.format(",")(d[1])
+      }).attr("y", function(d) {
+        return y(d[1]) + 18;
+      });
+    }
+    return hG;
+  }
+
+  // function to handle pieChart.
+  function pieChart(pD) {
+    var pC = {}, pieDim = {
+      w : 150,
+      h : 150
+    };
+    pieDim.r = Math.min(pieDim.w, pieDim.h) / 2;
+
+    var piesvg = d3.select(id).append("svg").attr("width", pieDim.w).attr(
+        "height", pieDim.h).append("g").attr("transform",
+        "translate(" + pieDim.w / 2 + "," + pieDim.h / 2 + ")");
+    var arc = d3.svg.arc().outerRadius(pieDim.r - 10).innerRadius(0);
+
+    var pie = d3.layout.pie().sort(null).value(function(d) {
+      return d.freq;
+    });
+
+    piesvg.selectAll("path").data(pie(pD)).enter().append("path").attr("d",
+        arc).each(function(d) {
+      this._current = d;
+    }).style("fill", function(d) {
+      return segColor(d.data.type);
+    }).on("mouseover", mouseover).on("mouseout", mouseout);
+
+    pC.update = function(nD) {
+      piesvg.selectAll("path").data(pie(nD)).transition().duration(500)
+          .attrTween("d", arcTween);
+    }
+    function mouseover(d) {
+      hG.update(fData.map(function(v) {
+        return [ v.date, v[d.data.type] ];
+      }), segColor(d.data.type));
+    }
+    function mouseout(d) {
+      hG.update(fData.map(function(v) {
+        return [ v.date, v.tot_ms ];
+      }), barColor);
+    }
+    function arcTween(a) {
+      var i = d3.interpolate(this._current, a);
+      this._current = i(0);
+      return function(t) {
+        return arc(i(t));
+      };
+    }
+    return pC;
+  }
+
+  function legend(lD) {
+    var leg = {};
+    var legend = d3.select(id).append("table").attr('class', 'legend');
+    var tr = legend.append("tbody").selectAll("tr").data(lD).enter().append(
+        "tr");
+    tr.append("td").append("svg").attr("width", '16').attr("height", '16')
+        .append("rect").attr("width", '16').attr("height", '16').attr("fill",
+            function(d) {
+              return segColor(d.type);
+            });
+    tr.append("td").text(function(d) {
+      return d.type;
+    });
+    tr.append("td").attr("class", 'legendFreq').text(function(d) {
+      return d3.format(",")(d.freq);
+    });
+    tr.append("td").attr("class", 'legendPerc').text(function(d) {
+      return getLegend(d, lD);
+    });
+    leg.update = function(nD) {
+      var l = legend.select("tbody").selectAll("tr").data(nD);
+      l.select(".legendFreq").text(function(d) {
+        return d3.format(",")(d.freq);
+      });
+      l.select(".legendPerc").text(function(d) {
+        return getLegend(d, nD);
+      });
+    }
+    function getLegend(d, aD) { // Utility function to compute percentage.
+      return d3.format("%")(d.freq / d3.sum(aD.map(function(v) {
+        return v.freq;
+      })));
+    }
+    return leg;
+  }
+
+  var tF = [ 'nsl_ms', 'con_ms', 'tfb_ms' ].map(function(d) {
+    return {
+      type : d,
+      freq : d3.sum(fData.map(function(t) {
+        return t[d];
+      }))
+    };
+  });
+  var sF = fData.map(function(d) {
+    return [ d.date, d.tot_ms ];
+  });
+  var hG = histoGram(sF); // create the histogram.
+  var pC = pieChart(tF); // create the pie-chart.
+  var leg = legend(tF); // create the legend.
+}
+
 // / [configuration]
 // //////////////////////////////////////////////////////////////////////////////
 var config = {
@@ -1110,12 +1345,12 @@ var config = {
     }
   },
   "mapping" : {
+    "nsl_ms" : "DNS Time", // DNS Lookup
+    "con_ms" : "Connect Time", // Time To Connect
+    "tfb_ms" : "Wait Time", // Time To 1st Byte
+    "tot_ms" : "Response Time", // Roundtrip Time
     "state" : "Service State",
     "aggregate" : "aggregate",
-    "tot_ms" : "Response Time", // Roundtrip Time
-    "tfb_ms" : "Wait Time", // Time To 1st Byte
-    "con_ms" : "Connect Time", // Time To Connect
-    "nsl_ms" : "DNS Time", // DNS Lookup
     "judge" : "judge"
   }
 }
@@ -1123,10 +1358,11 @@ var config = {
 // ///////////////////////////////////////////////////////////////////////////////
 d3.json("data.json", function(error, resultset) {
   var uptimeChart = new UptimeChart("#chart", "#graph", config);
-  uptimeChart.makeChart(resultset);
-  uptimeChart.makeMap(resultset);
-  // d3.json("map.json", function(json) {
-  // $('#googleMap').width(config.gmap.width).height(config.gmap.height);
-  // uptimeChart.makeGMap(json);
-  // });
+//  uptimeChart.makeChart(resultset);
+//  uptimeChart.makeMap(resultset);
+//  d3.json("map.json", function(json) {
+//    $('#googleMap').width(config.gmap.width).height(config.gmap.height);
+//    uptimeChart.makeGMap(json);
+//  });
+  uptimeChart.dashboard('#dashboard', resultset);
 });
