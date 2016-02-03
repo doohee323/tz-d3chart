@@ -1100,18 +1100,18 @@ UptimeChart.prototype.dashboard = function(id, data) {
   function histoGram(fD) {
     var hG = {};
     var hGDim = {
-      t : 0,
-      r : _self.config.chart.main_margin.right,
-      b : 0,
-      l : _self.config.chart.main_margin.left
+      top : 0,
+      right : _self.config.chart.main_margin.right,
+      bottom : 0,
+      left : _self.config.chart.main_margin.left
     };
     hGDim.w = _self.main_width;
-    hGDim.h = 40 - hGDim.t - hGDim.b;
+    hGDim.h = 40 - hGDim.top - hGDim.bottom;
 
     var hGsvg = d3.select(id).append("svg").attr("width",
-        hGDim.w + hGDim.l + hGDim.r)
-        .attr("height", hGDim.h + hGDim.t + hGDim.b).append("g").attr(
-            "transform", "translate(" + hGDim.l + "," + hGDim.t + ")");
+        hGDim.w + hGDim.left + hGDim.right)
+        .attr("height", hGDim.h + hGDim.top + hGDim.bottom).append("g").attr(
+            "transform", "translate(" + hGDim.left + "," + hGDim.top + ")");
 
     var x = d3.scale.ordinal().rangeRoundBands([ 0, hGDim.w ], 0.1).domain(
         fD.map(function(d) {
