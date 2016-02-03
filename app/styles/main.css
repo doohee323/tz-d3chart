@@ -69,11 +69,6 @@ body {
 	font: 10px sans-serif;
 }
 
-/*
-.x.axis path {
-  display: none;
-}
-*/
 .line {
 	stroke: black;
 	fill: none;
@@ -257,19 +252,11 @@ path:hover {
 	opacity: 0.9;
 }
 
-rect:hover {
-	fill: blue;
-}
-
-.axis {
-	font: 10px sans-serif;
-}
-
-.legend tr {
+.legend2 tr {
 	border-bottom: 1px solid grey;
 }
 
-.legend tr:first-child {
+.legend2 tr:first-child {
 	border-top: 1px solid grey;
 }
 
@@ -279,23 +266,19 @@ rect:hover {
 	shape-rendering: crispEdges;
 }
 
-.x.axis path {
-	display: none;
-}
-
-.legend {
-	margin-bottom: 76px;
+.legend2 {
+	margin-bottom: 20px;
 	display: inline-block;
 	border-collapse: collapse;
 	border-spacing: 0px;
+	font: 12px sans-serif;
 }
 
-.legend td {
+.legend2 td {
 	padding: 4px 5px;
-	vertical-align: bottom;
 }
 
-.legendFreq, .legendPerc {
+.legend2Freq, .legend2Perc {
 	align: right;
-	width: 50px;
+	width: 100px;
 }

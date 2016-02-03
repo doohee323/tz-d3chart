@@ -279,7 +279,7 @@ var UptimeChart = function(chartElem, mapElem, config) {
     }
     return chartData;
   }
-  
+
   // make data for dashboard
   this.makeDashBoardData = function(resultset) {
     var data = _self.makeChartData(resultset);
@@ -300,10 +300,11 @@ var UptimeChart = function(chartElem, mapElem, config) {
         con_ms = 0;
         tfb_ms = 0;
       }
-      nsl_ms += data[i].nsl_ms;
-      con_ms += data[i].con_ms;
-      tfb_ms += data[i].tfb_ms;
-    }    
+      nsl_ms += parseFloat(data[i].nsl_ms);
+      con_ms += parseFloat(data[i].con_ms);
+      tfb_ms += parseFloat(data[i].tfb_ms);
+    }
+    return data2;
   }
 
   this.init = function() {
@@ -1074,19 +1075,19 @@ UptimeChart.prototype.redraw = function(startTime, endTime) {
   });
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//[ dashboard ]
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
+// [ dashboard ]
+// ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.dashboard = function(id, data) {
-  debugger;
+  var _self = this;
   var fData = this.makeDashBoardData(data);
-  
+
   var barColor = 'steelblue';
   function segColor(c) {
     return {
-      nsl_ms : "#807dba",
-      con_ms : "#e08214",
-      tfb_ms : "#41ab5d"
+      nsl_ms : "red",
+      con_ms : "blue",
+      tfb_ms : "green"
     }[c];
   }
 
@@ -1097,19 +1098,20 @@ UptimeChart.prototype.dashboard = function(id, data) {
 
   // function to handle histogram.
   function histoGram(fD) {
-    var hG = {}, hGDim = {
-      t : 20,
-      r : 0,
+    var hG = {};
+    var hGDim = {
+      t : 0,
+      r : _self.config.chart.main_margin.right,
       b : 0,
-      l : 0
+      l : _self.config.chart.main_margin.left
     };
-    hGDim.w = 800 - hGDim.l - hGDim.r;
-    hGDim.h = 50 - hGDim.t - hGDim.b;
+    hGDim.w = _self.main_width;
+    hGDim.h = 40 - hGDim.t - hGDim.b;
 
     var hGsvg = d3.select(id).append("svg").attr("width",
-        hGDim.w + hGDim.l + hGDim.r).attr("height",
-        hGDim.h + hGDim.t + hGDim.b).append("g").attr("transform",
-        "translate(" + hGDim.l + "," + hGDim.t + ")");
+        hGDim.w + hGDim.l + hGDim.r)
+        .attr("height", hGDim.h + hGDim.t + hGDim.b).append("g").attr(
+            "transform", "translate(" + hGDim.l + "," + hGDim.t + ")");
 
     var x = d3.scale.ordinal().rangeRoundBands([ 0, hGDim.w ], 0.1).domain(
         fD.map(function(d) {
@@ -1147,12 +1149,16 @@ UptimeChart.prototype.dashboard = function(id, data) {
     function mouseover(d) {
       var st = fData.filter(function(s) {
         return s.date == d[0];
-      })[0], nD = d3.keys(st).map(function(s) {
-        return {
-          type : s,
-          freq : st[s]
-        };
+      })[0];
+      var nD = d3.keys(st).map(function(s) {
+        if (s != 'date') {
+          return {
+            type : s,
+            freq : st[s]
+          };
+        }
       });
+      nD = nD.slice(1, nD.length);
       pC.update(nD);
       leg.update(nD);
     }
@@ -1185,27 +1191,26 @@ UptimeChart.prototype.dashboard = function(id, data) {
 
   // function to handle pieChart.
   function pieChart(pD) {
-    var pC = {}, pieDim = {
-      w : 150,
-      h : 150
+    var pC = {};
+    var pieDim = {
+      w : 170,
+      h : 120
     };
     pieDim.r = Math.min(pieDim.w, pieDim.h) / 2;
-
     var piesvg = d3.select(id).append("svg").attr("width", pieDim.w).attr(
-        "height", pieDim.h).append("g").attr("transform",
-        "translate(" + pieDim.w / 2 + "," + pieDim.h / 2 + ")");
+        "height", pieDim.h).append("g").attr("transform", "translate(120,60)");
     var arc = d3.svg.arc().outerRadius(pieDim.r - 10).innerRadius(0);
 
     var pie = d3.layout.pie().sort(null).value(function(d) {
       return d.freq;
     });
 
-    piesvg.selectAll("path").data(pie(pD)).enter().append("path").attr("d",
-        arc).each(function(d) {
-      this._current = d;
-    }).style("fill", function(d) {
-      return segColor(d.data.type);
-    }).on("mouseover", mouseover).on("mouseout", mouseout);
+    piesvg.selectAll("path").data(pie(pD)).enter().append("path")
+        .attr("d", arc).each(function(d) {
+          this._current = d;
+        }).style("fill", function(d) {
+          return segColor(d.data.type);
+        }).on("mouseover", mouseover).on("mouseout", mouseout);
 
     pC.update = function(nD) {
       piesvg.selectAll("path").data(pie(nD)).transition().duration(500)
@@ -1231,31 +1236,31 @@ UptimeChart.prototype.dashboard = function(id, data) {
     return pC;
   }
 
-  function legend(lD) {
+  function legend2(lD) {
     var leg = {};
-    var legend = d3.select(id).append("table").attr('class', 'legend');
-    var tr = legend.append("tbody").selectAll("tr").data(lD).enter().append(
+    var legend2 = d3.select(id).append("table").attr("style", "margin-left: 150px").attr('class', 'legend2');
+    var tr = legend2.append("tbody").selectAll("tr").data(lD).enter().append(
         "tr");
     tr.append("td").append("svg").attr("width", '16').attr("height", '16')
         .append("rect").attr("width", '16').attr("height", '16').attr("fill",
             function(d) {
               return segColor(d.type);
             });
-    tr.append("td").text(function(d) {
-      return d.type;
+    tr.append("td").attr("class", 'legend2Freq').text(function(d) {
+      return _self.getLabelFullName(d.type) + ":";
     });
-    tr.append("td").attr("class", 'legendFreq').text(function(d) {
+    tr.append("td").attr("class", 'legend2Freq').text(function(d) {
       return d3.format(",")(d.freq);
     });
-    tr.append("td").attr("class", 'legendPerc').text(function(d) {
+    tr.append("td").attr("class", 'legend2Perc').text(function(d) {
       return getLegend(d, lD);
     });
     leg.update = function(nD) {
-      var l = legend.select("tbody").selectAll("tr").data(nD);
-      l.select(".legendFreq").text(function(d) {
+      var l = legend2.select("tbody").selectAll("tr").data(nD);
+      l.select(".legend2Freq").text(function(d) {
         return d3.format(",")(d.freq);
       });
-      l.select(".legendPerc").text(function(d) {
+      l.select(".legend2Perc").text(function(d) {
         return getLegend(d, nD);
       });
     }
@@ -1278,11 +1283,12 @@ UptimeChart.prototype.dashboard = function(id, data) {
   var sF = fData.map(function(d) {
     return [ d.date, d.tot_ms ];
   });
-  var hG = histoGram(sF); // create the histogram.
-  var pC = pieChart(tF); // create the pie-chart.
-  var leg = legend(tF); // create the legend.
+  var hG = histoGram(sF);
+  var pC = pieChart(tF);
+  var leg = legend2(tF);
 }
 
+// //////////////////////////////////////////////////////////////////////////////
 // / [configuration]
 // //////////////////////////////////////////////////////////////////////////////
 var config = {
@@ -1293,17 +1299,17 @@ var config = {
     },
     "main_margin" : {
       "width" : 950,
-      "height" : 300,
-      "top" : 20,
-      "right" : 80,
-      "bottom" : 100,
+      "height" : 250,
+      "top" : 50,
+      "right" : 40,
+      "bottom" : 40,
       "left" : 40
     },
     "mini_margin" : {
       "top" : 230,
-      "bottom" : 20,
-      "height" : 280,
-      "right" : 80,
+      "bottom" : 0,
+      "height" : 250,
+      "right" : 40,
       "left" : 40
     },
     "combo" : {
@@ -1312,7 +1318,7 @@ var config = {
     },
     "legend" : {
       "x" : 40,
-      "y" : 280,
+      "y" : -25,
       "width" : 10
     }
   },
@@ -1358,11 +1364,11 @@ var config = {
 // ///////////////////////////////////////////////////////////////////////////////
 d3.json("data.json", function(error, resultset) {
   var uptimeChart = new UptimeChart("#chart", "#graph", config);
-//  uptimeChart.makeChart(resultset);
-//  uptimeChart.makeMap(resultset);
-//  d3.json("map.json", function(json) {
-//    $('#googleMap').width(config.gmap.width).height(config.gmap.height);
-//    uptimeChart.makeGMap(json);
-//  });
+  uptimeChart.makeChart(resultset);
   uptimeChart.dashboard('#dashboard', resultset);
+  uptimeChart.makeMap(resultset);
+  d3.json("map.json", function(json) {
+    $('#googleMap').width(config.gmap.width).height(config.gmap.height);
+    uptimeChart.makeGMap(json);
+  });
 });
