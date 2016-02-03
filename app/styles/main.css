@@ -278,7 +278,7 @@ path:hover {
 	padding: 4px 5px;
 }
 
-.legend2Freq, .legend2Perc {
+.legend2Name .legend2Freq, .legend2Perc {
 	align: right;
 	width: 100px;
 }
