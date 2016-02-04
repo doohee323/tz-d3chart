@@ -12,7 +12,8 @@
 
 <!-- build:css(.) styles/vendor.css -->
 <!-- bower:css -->
-<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
+<link rel="stylesheet"
+	href="/bower_components/bootstrap/dist/css/bootstrap.css" />
 <!-- endbower -->
 <!-- endbuild -->
 <!-- build:css(.tmp) styles/main.css -->
@@ -24,32 +25,47 @@
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
-
 	<div class="container">
 		<div class="header">
-			<ul class="nav nav-pills pull-right">
-				<li class="active"><a href="#">Home</a></li>
-				<li><a href="#">About</a></li>
-				<li><a href="#">Contact</a></li>
-			</ul>
 			<h3 class="text-muted">prototype_chart_d3</h3>
 		</div>
 
-		<div class="col-lg-12">
-			<div class="combo"> 
-				Metric <select id="gmetrices" style="display:"></select>
+		<div class="row">
+			<form class="form-horizontal">
+				<div class="form-group">
+					<label for="views" class="col-xs-1 control-label">Views:</label>
+					<div class="col-xs-5">
+						<select class="views form-control col-sm-5" placeholder="views"
+							onchange="selectView()">
+							<option value='tot_ms'>Response Time</option>
+							<option value='aggregate'>Availability</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="gmetrices" class="col-xs-1 control-label">Metric:</label>
+					<div class="col-xs-5">
+						<select id="gmetrices" name="gmetrices"
+							class="form-control col-sm-5" placeholder="gmetrices"></select>
+					</div>
+					<label for="locs" class="col-xs-1 control-label">Agent:</label>
+					<div class="col-xs-5">
+						<select id="locs" class="form-control col-sm-5" placeholder="locs"></select>
+					</div>
+				</div>
+			</form>
+			<div class="tot_ms_view">
+				<div id="stackedChart"></div>
+				<div id='diagram'></div>
 			</div>
-			<div class="combo"> 
-				Agent <select id="locs" style="display:"></select>
+			<div class="aggregate_view">
+				<div id="lineChart"></div>
 			</div>
-			<div id="chart"></div>
-			<div id='diagram'></div>
 			<div id="graph"></div>
-			<div id="googleMap"></div>
+			<!--<div id="googleMap"></div> -->
 		</div>
 
-		<div class="footer">
-		</div>
+		<div class="footer"></div>
 	</div>
 
 	<!-- build:js(.) scripts/vendor.js -->
@@ -76,9 +92,9 @@
 	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
 	<!-- 	<script src="http://maps.googleapis.com/maps/api/js"></script> -->
-<!-- 	<script type="text/javascript" -->
-<!-- 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9oB28RSLjXkirKBIvzVBWoLmGNK0pJq0"> -->
-<!-- 	</script> -->
+	<!-- 	<script type="text/javascript" -->
+	<!-- 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9oB28RSLjXkirKBIvzVBWoLmGNK0pJq0"> -->
+	<!-- 	</script> -->
 	<script type="text/javascript"
 		src="http://maps.google.com/maps/api/js?sensor=true"></script>
 

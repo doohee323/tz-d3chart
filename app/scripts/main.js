@@ -1,6 +1,18 @@
-/////////////////////////////////////////////////////////////////////////////////
-//[ UptimeChart constructor ]
-/////////////////////////////////////////////////////////////////////////////////
+function selectView() {
+  if ($('.views').val() == 'tot_ms') {
+    $('.tot_ms_view').show();
+    $('.aggregate_view').hide();
+  } else {
+    $('.aggregate_view').show();
+    $('.tot_ms_view').hide();
+  }
+}
+
+selectView();
+
+// ///////////////////////////////////////////////////////////////////////////////
+// [ UptimeChart constructor ]
+// ///////////////////////////////////////////////////////////////////////////////
 var UptimeChart = function(chartElem, mapElem, config) {
   var _self = this;
   this.chartElem = chartElem;
@@ -13,12 +25,12 @@ var UptimeChart = function(chartElem, mapElem, config) {
   this.startTime, this.endTime, this.type;
   this.config = config;
 
-  this.main_width = config.chart.main_margin.width
-      - config.chart.main_margin.left - config.chart.main_margin.right
-  this.main_height = config.chart.main_margin.height
-      - config.chart.main_margin.top - config.chart.main_margin.bottom;
-  this.mini_height = config.chart.mini_margin.height
-      - config.chart.mini_margin.top - config.chart.mini_margin.bottom;
+  this.main_width = config.lineChart.main_margin.width
+      - config.lineChart.main_margin.left - config.lineChart.main_margin.right
+  this.main_height = config.lineChart.main_margin.height
+      - config.lineChart.main_margin.top - config.lineChart.main_margin.bottom;
+  this.mini_height = config.lineChart.mini_margin.height
+      - config.lineChart.mini_margin.top - config.lineChart.mini_margin.bottom;
 
   this.formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
   this.parseDate = this.formatDate.parse;
@@ -152,9 +164,9 @@ var UptimeChart = function(chartElem, mapElem, config) {
     }
   }
 
-  // make mapData for chart from maxtrix, locs
+  // make mapData for lineChart from maxtrix, locs
   this.makeMapData = function(resultset, type) {
-    var data = resultset.data.metrix;
+    var data = resultset.data.metric;
     var locs = resultset.meta.locs;
 
     var mapData = new Array();
@@ -208,11 +220,11 @@ var UptimeChart = function(chartElem, mapElem, config) {
     return mapData;
   }
 
-  // make chartData for chart
+  // make chartData for Chart
   this.makeChartData = function(resultset) {
     var max = 0;
-    var locMetrix = resultset.data.metrix;
-    var metrix = resultset.data.avgMetrix;
+    var locMetric = resultset.data.metric;
+    var metric = resultset.data.avgMetric;
     var judge = resultset.data.judge;
     var active = resultset.data.active[0];
     var include = resultset.data.include[0];
@@ -220,32 +232,32 @@ var UptimeChart = function(chartElem, mapElem, config) {
     var locs = resultset.meta.locs;
     var chartData = new Array();
 
-    for (var q = 0; q < metrix[0].datapoints.length - 1; q++) {
+    for (var q = 0; q < metric[0].datapoints.length - 1; q++) {
       var avail = 0;
       var sum = 0;
       var jsonRow = {
-        date : new Date(metrix[0].datapoints[q][1] * 1000)
+        date : new Date(metric[0].datapoints[q][1] * 1000)
       };
-      for (var i = 0; i < metrix.length; i++) {
-        var target = metrix[i].target;
-        if (!metrix[i].description) {
-          metrix[i].description = new Array();
+      for (var i = 0; i < metric.length; i++) {
+        var target = metric[i].target;
+        if (!metric[i].description) {
+          metric[i].description = new Array();
         }
-        if (!metrix[i].description[q]) {
-          metrix[i].description[q] = {};
+        if (!metric[i].description[q]) {
+          metric[i].description[q] = {};
         }
         if (active != null) {
-          // availability = metrix(#2) / (active(#1) + include(#3))
+          // availability = metric(#2) / (active(#1) + include(#3))
           var v1 = active.datapoints[q][0];
-          var v2 = metrix[i].datapoints[q][0] != null ? metrix[i].datapoints[q][0]
+          var v2 = metric[i].datapoints[q][0] != null ? metric[i].datapoints[q][0]
               : 0;
           var v3 = include.datapoints[q][0];
           if (v1) {
             v1 = Number((v1).toFixed(1));
           }
-          metrix[i].description[q].v1 = v1;
-          metrix[i].description[q].v2 = v2;
-          metrix[i].description[q].v3 = v3;
+          metric[i].description[q].v1 = v1;
+          metric[i].description[q].v2 = v2;
+          metric[i].description[q].v3 = v3;
           avail = Math.floor((v2 / (v1 + v3)));
           if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
             avail = 0;
@@ -269,7 +281,7 @@ var UptimeChart = function(chartElem, mapElem, config) {
       jsonRow['aggregate'] = sum;
       chartData.push(jsonRow);
     } // for q
-    this.metrix = metrix;
+    this.metric = metric;
     this.aggregate_max = max;
 
     for (var i = 0; i < chartData.length; i++) {
@@ -357,13 +369,12 @@ var UptimeChart = function(chartElem, mapElem, config) {
       return false;
     }
   }
-
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-// [ line chart ]
+// [ make lineChart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeChart = function(resultset, cb) {
+UptimeChart.prototype.makeLineChart = function(resultset, cb) {
   var data = this.makeChartData(resultset);
 
   var _self = this;
@@ -371,11 +382,11 @@ UptimeChart.prototype.makeChart = function(resultset, cb) {
 
   var metrices = {};
   for ( var key in data[0]) {
-    if (key != _self.config.chart.yAxis.right) {
+    if (key != _self.config.lineChart.yAxis.right) {
       metrices[key] = key;
     }
   }
-  this.makeCombo(metrices, this.config.chart.combo.id, function(val) {
+  this.makeCombo(metrices, this.config.lineChart.combo.id, function(val) {
     if (val == '*') {
       data2 = _self.data;
     } else {
@@ -384,7 +395,7 @@ UptimeChart.prototype.makeChart = function(resultset, cb) {
         var tmp = {};
         for ( var key in data[i]) {
           if (key == 'date' || key == val
-              || key == _self.config.chart.yAxis.right) {
+              || key == _self.config.lineChart.yAxis.right) {
             tmp[key] = data[i][key];
           }
         }
@@ -396,8 +407,9 @@ UptimeChart.prototype.makeChart = function(resultset, cb) {
     _self.drawChart(data2, val);
   });
 
-  this.drawChart(data, _self.config.chart.combo.init);
-  $('#' + this.config.chart.combo.id).val(_self.config.chart.combo.init);
+  this.drawChart(data, _self.config.lineChart.combo.init);
+  $('#' + this.config.lineChart.combo.id)
+      .val(_self.config.lineChart.combo.init);
 
   cb.call(null, data);
 }
@@ -406,25 +418,24 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   var _self = this;
   this.svg = d3.select(this.chartElem).append("svg").attr(
       "width",
-      this.main_width + this.config.chart.main_margin.left
-          + this.config.chart.main_margin.right).attr(
+      this.main_width + this.config.lineChart.main_margin.left
+          + this.config.lineChart.main_margin.right).attr(
       "height",
-      this.main_height + this.config.chart.main_margin.top
-          + this.config.chart.main_margin.bottom + this.mini_height);
+      this.main_height + this.config.lineChart.main_margin.top
+          + this.config.lineChart.main_margin.bottom + this.mini_height);
 
   this.svg.append("defs").append("clipPath").attr("id", "clip").append("rect")
       .attr("width", this.main_width).attr("height", this.main_height);
 
   this.main = this.svg.append("g").attr(
       "transform",
-      "translate(" + this.config.chart.main_margin.left + ","
-          + this.config.chart.main_margin.top + ")");
+      "translate(" + this.config.lineChart.main_margin.left + ","
+          + this.config.lineChart.main_margin.top + ")");
 
   this.mini = this.svg.append("g").attr(
       "transform",
-      "translate(" + this.config.chart.mini_margin.left + ","
-          + this.config.chart.mini_margin.top + ")");
-
+      "translate(" + this.config.lineChart.mini_margin.left + ","
+          + this.config.lineChart.mini_margin.top + ")");
   var main_xAxis = d3.svg.axis().scale(this.main_x).tickFormat(
       d3.time.format("%H:%M")).orient("bottom");
   var mini_xAxis = d3.svg.axis().scale(this.mini_x).tickFormat(
@@ -458,7 +469,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
                     } else {
                       var self = d3.select(this);
                       if (self.attr("data-legend") == metric
-                          || self.attr("data-legend") == _self.config.chart.yAxis.right) {
+                          || self.attr("data-legend") == _self.config.lineChart.yAxis.right) {
                         items[self.attr("data-legend")] = {
                           pos : self.attr("data-legend-pos")
                               || this.getBBox().y,
@@ -477,14 +488,14 @@ UptimeChart.prototype.drawChart = function(data, metric) {
           // set judge first in array
           var items2 = new Array();
           items2.push(items.find(function(element, index, array) {
-            if (element.key == _self.config.chart.yAxis.right) {
+            if (element.key == _self.config.lineChart.yAxis.right) {
               return element;
             } else {
               return false;
             }
           }));
           for (var i = 0; i < items.length; i++) {
-            if (items[i].key != _self.config.chart.yAxis.right) {
+            if (items[i].key != _self.config.lineChart.yAxis.right) {
               items2.push(items[i]);
             }
           }
@@ -495,7 +506,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
             if (type == 'text') {
               if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
                   ".line" + d.key).style("stroke"))) {
-                if (_self.type == _self.config.chart.yAxis.right
+                if (_self.type == _self.config.lineChart.yAxis.right
                     || _self.type == 'state') {
                   d3.select(".line" + d.key).style("stroke", d.color).style(
                       "fill", d.color);
@@ -510,7 +521,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
                   ".line" + d.key).style("stroke"));
               if (pickColor != '#FFFFFF') {
                 d.color = pickColor;
-                if (_self.type == _self.config.chart.yAxis.right
+                if (_self.type == _self.config.lineChart.yAxis.right
                     || _self.type == 'state') {
                   d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
                       "fill", "white");
@@ -533,7 +544,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
           }).attr("y", function(d, i) {
             return "0.25em";
           }).attr("x", function(d, i) {
-            var col = i * _self.config.chart.legend.width + 1;
+            var col = i * _self.config.lineChart.legend.width + 1;
             return col + "em";
           }).text(function(d, i) {
             return _self.getLabelFullName(d.key);
@@ -549,7 +560,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
           }).attr("cy", function(d, i) {
             return "0em";
           }).attr("cx", function(d, i) {
-            var col = i * _self.config.chart.legend.width;
+            var col = i * _self.config.lineChart.legend.width;
             return col + "em";
           }).attr("r", "0.8em").style("fill", function(d) {
             return d.value.color;
@@ -615,7 +626,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   // /[ line definition ]///////////////////////////
   if (metric == '*') {
     for ( var key in this.main_y) {
-      if (this.config.chart.yAxis.right != key) {
+      if (this.config.lineChart.yAxis.right != key) {
         this.mini_line[key] = d3.svg.line().interpolate('cardinal').x(
             function(d) {
               return _self.mini_x(d.date);
@@ -642,14 +653,14 @@ UptimeChart.prototype.drawChart = function(data, metric) {
       return _self.mini_y[metric](d[metric]);
     });
   }
-  this.mini_line[this.config.chart.yAxis.right] = d3.svg.line().interpolate(
-      'step').x(function(d) {
-    return _self.mini_x(d.date);
-  }).y(
-      function(d) {
-        return _self.mini_y[_self.config.chart.yAxis.right]
-            (d[_self.config.chart.yAxis.right]);
-      });
+  this.mini_line[this.config.lineChart.yAxis.right] = d3.svg.line()
+      .interpolate('step').x(function(d) {
+        return _self.mini_x(d.date);
+      }).y(
+          function(d) {
+            return _self.mini_y[_self.config.lineChart.yAxis.right]
+                (d[_self.config.lineChart.yAxis.right]);
+          });
 
   // I need to enumerate instead of above fancy way.
   if (metric != '*') {
@@ -715,7 +726,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
     this.mini_y[key].domain(this.main_y[key].domain());
   }
 
-  // /[ main chart ]///////////////////////////
+  // /[ main lineChart ]///////////////////////////
   for ( var key in this.main_y) {
     this.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
         "class", "line line" + key).attr("d", this.main_line[key]).attr(
@@ -733,7 +744,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
     main_yAxisLeft = d3.svg.axis().scale(this.main_y[metric]).orient("left");
   } else {
     main_yAxisLeft = d3.svg.axis().scale(
-        this.main_y[this.config.chart.yAxis.left]).orient("left");
+        this.main_y[this.config.lineChart.yAxis.left]).orient("left");
   }
   this.main.append("g").attr("class", "y axis axisLeft").call(main_yAxisLeft)
       .append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy",
@@ -741,13 +752,13 @@ UptimeChart.prototype.drawChart = function(data, metric) {
 
   // /[ main right y ]///////////////////////////
   var main_yAxisRight = d3.svg.axis().scale(
-      this.main_y[this.config.chart.yAxis.right]).orient("right").ticks(1);
+      this.main_y[this.config.lineChart.yAxis.right]).orient("right").ticks(1);
   this.main.append("g").attr("class", "y axis axisRight").attr("transform",
       "translate(" + this.main_width + ", 0)").call(main_yAxisRight).append(
       "text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em")
       .style("text-anchor", "end").text("( ms )");
 
-  // /[ this.mini chart ]///////////////////////////
+  // /[ this.mini lineChart ]///////////////////////////
   this.mini.append("g").attr("class", "x axis").attr("transform",
       "translate(0," + this.mini_height + ")").call(main_xAxis);
   for ( var key in this.main_y) {
@@ -774,7 +785,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   var formatDate2 = d3.time.format("%H:%M:%S");
 
   var mousemove = function() {
-    var type = $('#' + _self.config.chart.combo.id).val();
+    var type = $('#' + _self.config.lineChart.combo.id).val();
     if (type == '*')
       return;
     var x0 = _self.main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0, 1), d0 = data[i - 1];
@@ -784,7 +795,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
       for ( var key in _self.main_y) {
         if (key != type)
           continue;
-        if (key != _self.config.chart.yAxis.right
+        if (key != _self.config.lineChart.yAxis.right
             && '#FFFFFF' != _self.convertRGBDecimalToHex(d3.select(
                 ".line" + key).style("stroke"))) {
           focus.select("circle.y" + key).attr(
@@ -794,26 +805,26 @@ UptimeChart.prototype.drawChart = function(data, metric) {
           if (key == 'aggregate') {
             var descript = '[availability] \n';
             var sum = 0;
-            for (var i = 0; i < _self.metrix.length; i++) {
-              var type = _self.metrix[i].target;
+            for (var i = 0; i < _self.metric.length; i++) {
+              var type = _self.metric[i].target;
               var j = 0;
-              for (j = 0; j < _self.metrix[i].datapoints.length; j++) {
-                if (new Date(_self.metrix[i].datapoints[j][1] * 1000)
+              for (j = 0; j < _self.metric[i].datapoints.length; j++) {
+                if (new Date(_self.metric[i].datapoints[j][1] * 1000)
                     .toString() == d.date.toString()) {
                   break;
                 }
               }
               if (j > 0) {
-                // availability = metrix(#2) / (active(#1) + include(#3))
-                var active = _self.metrix[i].description[j].v1;
-                var metrix = _self.metrix[i].description[j].v2;
-                var include = _self.metrix[i].description[j].v3;
-                var avail = Math.floor((metrix / (active + include)));
+                // availability = metric(#2) / (active(#1) + include(#3))
+                var active = _self.metric[i].description[j].v1;
+                var metric = _self.metric[i].description[j].v2;
+                var include = _self.metric[i].description[j].v3;
+                var avail = Math.floor((metric / (active + include)));
                 if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
                   avail = 0;
                 }
                 sum += avail;
-                descript += ' - ' + type + ' : ' + avail + ' = ' + metrix
+                descript += ' - ' + type + ' : ' + avail + ' = ' + metric
                     + ' / (' + active + ' + ' + include + ') \n';
               }
             }
@@ -865,7 +876,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
 
   // /[ legend ]///////////////////////////
   var legend = this.main.append("g").attr("class", "legend").attr("transform",
-      "translate(40, " + this.config.chart.legend.y + ")").call(d3.legend);
+      "translate(40, " + this.config.lineChart.legend.y + ")").call(d3.legend);
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -873,7 +884,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeMap = function(resultset, locs) {
   var _self = this;
-  var data = resultset.data.metrix;
+  var data = resultset.data.metric;
   var locs = resultset.meta.locs;
   this.map_data = this.makeMapData(resultset, 'state');
 
@@ -881,7 +892,7 @@ UptimeChart.prototype.makeMap = function(resultset, locs) {
     if (val == '*') {
       data2 = _self.map_data;
     } else {
-      var type = $('#' + _self.config.chart.combo.id).val();
+      var type = $('#' + _self.config.lineChart.combo.id).val();
       var data = _self.makeMapData(resultset, type);
       var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
@@ -1162,7 +1173,7 @@ UptimeChart.prototype.redraw = function() {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-// [ makeDiagram ]
+// [ make Diagram ]
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeDiagram = function(id, data) {
   var _self = this;
@@ -1183,9 +1194,9 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     var hg = {};
     var hgDim = {
       top : 30,
-      right : _self.config.chart.main_margin.right,
+      right : _self.config.lineChart.main_margin.right,
       bottom : 0,
-      left : _self.config.chart.main_margin.left
+      left : _self.config.lineChart.main_margin.left
     };
     hgDim.width = _self.main_width;
     hgDim.height = 50 - hgDim.top - hgDim.bottom;
@@ -1397,15 +1408,131 @@ UptimeChart.prototype.drawDiagram = function(data) {
   _self.lg = _self.legend2(_self.tf);
 }
 
+// ///////////////////////////////////////////////////////////////////////////////
+// [ make StackedChart ]
+// ///////////////////////////////////////////////////////////////////////////////
+UptimeChart.prototype.makeStackedChart = function(id, data) {
+  var _self = this;
+
+  var width = config.stackedChart.margin.width
+      - config.stackedChart.margin.left - config.stackedChart.margin.right
+  var height = config.stackedChart.margin.height
+      - config.stackedChart.margin.top - config.stackedChart.margin.bottom;
+
+  var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .1);
+  var y = d3.scale.linear().rangeRound([ height, 0 ]);
+  var color = d3.scale.ordinal().range([ "#308fef", "#6b486b", "#ff8c00" ]);
+
+  var xAxis = d3.svg.axis().scale(x).tickFormat(d3.time.format("%H:%M"))
+      .orient("bottom");
+  var yAxis = d3.svg.axis().scale(y).orient("left")
+      .tickFormat(d3.format(".2s"));
+  var svg = d3.select(id).append("svg").attr(
+      "width",
+      width + config.stackedChart.margin.left
+          + config.stackedChart.margin.right).attr(
+      "height",
+      height + config.stackedChart.margin.top
+          + config.stackedChart.margin.bottom).append("g").attr(
+      "transform",
+      "translate(" + config.stackedChart.margin.left + ","
+          + config.stackedChart.margin.top + ")");
+
+  data = this.makeStackedData(data);
+  color.domain(d3.keys(data[0]).filter(function(key) {
+    return key !== "date";
+  }));
+  data.forEach(function(d) {
+    var y0 = 0;
+    d.types = color.domain().map(function(key) {
+      return {
+        key : key,
+        y0 : y0,
+        y1 : y0 += +d[key]
+      };
+    });
+    d.total = d.types[d.types.length - 1].y1;
+  });
+
+  x.domain(data.map(function(d) {
+    return d.date;
+  }));
+  y.domain([ 0, d3.max(data, function(d) {
+    return d.total;
+  }) ]);
+
+  svg.append("g").attr("class", "x axis").attr("transform",
+      "translate(0," + height + ")").call(xAxis);
+
+  svg.append("g").attr("class", "y axis").call(yAxis).append("text").attr(
+      "transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
+      "text-anchor", "end").text("(ms)");
+
+  var date = svg.selectAll(".date").data(data).enter().append("g").attr(
+      "class", "g").attr("transform", function(d) {
+    return "translate(" + x(d.date) + ",0)";
+  });
+
+  date.selectAll("rect").data(function(d) {
+    return d.types;
+  }).enter().append("rect").attr("width", x.rangeBand()).attr("y", function(d) {
+    return y(d.y1);
+  }).attr("height", function(d) {
+    return y(d.y0) - y(d.y1);
+  }).style("fill", function(d) {
+    return color(d.key);
+  });
+
+  var legend = svg.selectAll(".legend").data(color.domain().slice().reverse())
+      .enter().append("g").attr("class", "legend").attr("transform",
+          function(d, i) {
+            return "translate(0," + i * 20 + ")";
+          });
+
+  legend.append("rect").attr("x", width - 18).attr("width", 18).attr("height",
+      18).style("fill", color);
+
+  legend.append("text").attr("x", width - 24).attr("y", 9).attr("dy", ".35em")
+      .style("text-anchor", "end").text(function(d) {
+        return _self.getLabelFullName(d);
+      });
+}
+
+UptimeChart.prototype.makeStackedData = function(input) {
+  var data = new Array();
+  input.forEach(function(d) {
+    var tmp = {};
+    tmp.date = d.date;
+    tmp.nsl_ms = d.nsl_ms;
+    tmp.con_ms = d.con_ms;
+    tmp.tfb_ms = d.tfb_ms;
+    data.push(tmp);
+  });
+
+  data.forEach(function(d) {
+    d.date = +d.date;
+    d.nsl_ms = +d.nsl_ms;
+    d.con_ms = +d.con_ms;
+    d.tfb_ms = +d.tfb_ms;
+  });
+
+  input = new Array();
+  data.forEach(function(d) {
+    var tmp = {};
+    tmp.date = new Date(d.date * 1000);
+    tmp.nsl_ms = d.nsl_ms;
+    tmp.con_ms = d.con_ms;
+    tmp.tfb_ms = d.tfb_ms;
+    input.push(tmp);
+  });
+  return input;
+}
+
 // //////////////////////////////////////////////////////////////////////////////
 // / [configuration]
 // //////////////////////////////////////////////////////////////////////////////
 var config = {
-  "chart" : {
-    "yAxis" : {
-      "left" : "tot_ms",
-      "right" : "judge"
-    },
+  "lineChart" : {
     "main_margin" : {
       "width" : 950,
       "height" : 250,
@@ -1421,9 +1548,28 @@ var config = {
       "right" : 40,
       "left" : 40
     },
+    "yAxis" : {
+      "left" : "tot_ms",
+      "right" : "judge"
+    },
     "combo" : {
       "id" : "gmetrices",
       "init" : "aggregate"
+    },
+    "legend" : {
+      "x" : 40,
+      "y" : -25,
+      "width" : 10
+    }
+  },
+  "stackedChart" : {
+    "margin" : {
+      "width" : 950,
+      "height" : 250,
+      "top" : 20,
+      "right" : 20,
+      "bottom" : 30,
+      "left" : 60
     },
     "legend" : {
       "x" : 40,
@@ -1477,9 +1623,10 @@ var config = {
 
 // ///////////////////////////////////////////////////////////////////////////////
 d3.json("data.json", function(error, json) {
-  var uptimeChart = new UptimeChart("#chart", "#graph", config);
-  uptimeChart.makeChart(json, function(data) {
+  var uptimeChart = new UptimeChart("#lineChart", "#graph", config);
+  uptimeChart.makeLineChart(json, function(data) {
     uptimeChart.makeDiagram('#diagram', data);
+    uptimeChart.makeStackedChart('#stackedChart', data);
   });
   uptimeChart.makeMap(json);
   // d3.json("map.json", function(json) {

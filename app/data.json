@@ -526,7 +526,7 @@
         ]
       }
     ],
-    "avgMetrix": [
+    "avgMetric": [
       {
         "target": "nsl_ms",
         "datapoints": [
@@ -2953,7 +2953,7 @@
         ]
       }
     ],
-    "metrix": [
+    "metric": [
       {
         "target": "dhc5.nsl_ms",
         "datapoints": [
