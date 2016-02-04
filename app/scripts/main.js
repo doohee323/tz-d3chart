@@ -259,11 +259,12 @@ var UptimeChart = function(config) {
   }
 
   this.isBrushed = function() {
-    if (_self.main_x.domain().toString() != _self.mini_x.domain().toString()) {
-      return true;
-    } else {
-      return false;
-    }
+    // if (_self.main_x.domain().toString() != _self.mini_x.domain().toString())
+    // {
+    // return true;
+    // } else {
+    return false;
+    // }
   }
 }
 
@@ -274,20 +275,15 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
   var _self = this;
 
   this.main_y = {};
-  this.mini_y = {};
   this.main_line = {};
-  this.mini_line = {};
-  this.main, this.mini, this.svg;
+  this.main, this.svg;
 
   this.main_width = config.lineChart.main_margin.width
       - config.lineChart.main_margin.left - config.lineChart.main_margin.right
   this.main_height = config.lineChart.main_margin.height
       - config.lineChart.main_margin.top - config.lineChart.main_margin.bottom;
-  this.mini_height = config.lineChart.mini_margin.height
-      - config.lineChart.mini_margin.top - config.lineChart.mini_margin.bottom;
 
   this.main_x = d3.time.scale().range([ 0, this.main_width ]);
-  this.mini_x = d3.time.scale().range([ 0, this.main_width ]);
 
   this.chartElem = chartElem;
   var data = this.makeChartData(resultset);
@@ -371,7 +367,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
           + this.config.lineChart.main_margin.right).attr(
       "height",
       this.main_height + this.config.lineChart.main_margin.top
-          + this.config.lineChart.main_margin.bottom + this.mini_height);
+          + this.config.lineChart.main_margin.bottom);
 
   this.svg.append("defs").append("clipPath").attr("id", "clip").append("rect")
       .attr("width", this.main_width).attr("height", this.main_height);
@@ -381,13 +377,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
       "translate(" + this.config.lineChart.main_margin.left + ","
           + this.config.lineChart.main_margin.top + ")");
 
-  this.mini = this.svg.append("g").attr(
-      "transform",
-      "translate(" + this.config.lineChart.mini_margin.left + ","
-          + this.config.lineChart.mini_margin.top + ")");
-  var main_xAxis = d3.svg.axis().scale(this.main_x).tickFormat(
-      d3.time.format("%H:%M")).orient("bottom");
-  var mini_xAxis = d3.svg.axis().scale(this.mini_x).tickFormat(
+  this.main_xAxis = d3.svg.axis().scale(this.main_x).tickFormat(
       d3.time.format("%H:%M")).orient("bottom");
 
   d3.legend = function(g) {
@@ -526,25 +516,6 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
     return g;
   }
 
-  var brush2 = function() {
-    _self.main_x.domain(_self.brush.empty() ? _self.mini_x.domain()
-        : _self.brush.extent());
-    for ( var key in _self.main_y) {
-      _self.main.select(".line" + key).attr("d", _self.main_line[key]);
-    }
-    _self.main.select(".x.axis").call(main_xAxis);
-  }
-
-  var brushstart = function() {
-  }
-
-  var brushend = function() {
-    _self.redraw();
-  }
-
-  this.brush = d3.svg.brush().x(this.mini_x).on("brush", brush2).on(
-      'brushstart', brushstart).on('brushend', brushend);
-
   data.forEach(function(d) {
     try {
       var dt = _self.parseDate(d.date);
@@ -567,49 +538,10 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
     if (key != 'date') {
       // if (key == 'judge' || key == 'nsl_ms') {
       this.main_y[key] = d3.scale.sqrt().range([ this.main_height, 0 ]);
-      this.mini_y[key] = d3.scale.sqrt().range([ this.mini_height, 0 ]);
     }
   }
 
   // /[ line definition ]///////////////////////////
-  if (metric == '*') {
-    for ( var key in this.main_y) {
-      if (this.config.lineChart.yAxis.right != key) {
-        this.mini_line[key] = d3.svg.line().interpolate('cardinal').x(
-            function(d) {
-              return _self.mini_x(d.date);
-            }).y(function(d) {
-          return _self.mini_y[key](d[key]);
-        });
-        // it doesn't work for brushing
-        // this.main_line[key] =
-        // d3.svg.line().interpolate('cardinal').x(function(d) {
-        // return _self.main_x(d.date);
-        // }).y(function(d) {
-        // return _self.main_y[key](d[key]);
-        // });
-      }
-    }
-  } else {
-    var type = 'cardinal';
-    if (metric == 'state') {
-      type = 'step';
-    }
-    this.mini_line[metric] = d3.svg.line().interpolate(type).x(function(d) {
-      return _self.mini_x(d.date);
-    }).y(function(d) {
-      return _self.mini_y[metric](d[metric]);
-    });
-  }
-  this.mini_line[this.config.lineChart.yAxis.right] = d3.svg.line()
-      .interpolate('step').x(function(d) {
-        return _self.mini_x(d.date);
-      }).y(
-          function(d) {
-            return _self.mini_y[_self.config.lineChart.yAxis.right]
-                (d[_self.config.lineChart.yAxis.right]);
-          });
-
   // I need to enumerate instead of above fancy way.
   if (metric != '*') {
     var type = 'cardinal';
@@ -665,13 +597,11 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
   });
 
   this.main_x.domain([ data[0].date, data[data.length - 1].date ]);
-  this.mini_x.domain(this.main_x.domain());
 
   for ( var key in this.main_y) {
     this.main_y[key].domain(d3.extent(data, function(d) {
       return d[key];
     }));
-    this.mini_y[key].domain(this.main_y[key].domain());
   }
 
   // /[ main lineChart ]///////////////////////////
@@ -685,7 +615,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
 
   // /[ main left x ]///////////////////////////
   this.main.append("g").attr("class", "x axis").attr("transform",
-      "translate(0," + this.main_height + ")").call(main_xAxis);
+      "translate(0," + this.main_height + ")").call(_self.main_xAxis);
   // /[ main left y ]///////////////////////////
   var main_yAxisLeft;
   if (metric != '*') {
@@ -705,17 +635,6 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
       "translate(" + this.main_width + ", 0)").call(main_yAxisRight).append(
       "text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em")
       .style("text-anchor", "end").text("( ms )");
-
-  // /[ this.mini lineChart ]///////////////////////////
-  this.mini.append("g").attr("class", "x axis").attr("transform",
-      "translate(0," + this.mini_height + ")").call(main_xAxis);
-  for ( var key in this.main_y) {
-    this.mini.append("path").datum(data).attr("class", "line line" + key).attr(
-        "d", this.mini_line[key]);
-  }
-
-  this.mini.append("g").attr("class", "x brush").call(this.brush).selectAll(
-      "rect").attr("y", -6).attr("height", this.mini_height + 7);
 
   // /[ focus ]///////////////////////////
   var focus = this.main.append("g").attr("class", "focus").style("display",
@@ -825,6 +744,162 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
   // /[ legend ]///////////////////////////
   var legend = this.main.append("g").attr("class", "legend").attr("transform",
       "translate(40, " + this.config.lineChart.legend.y + ")").call(d3.legend);
+}
+
+UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
+  var _self = this;
+
+  this.mini_y = {};
+  this.mini_line = {};
+  this.mini;
+
+  this.mini_height = config.lineChart.mini_margin.height
+      - config.lineChart.mini_margin.top - config.lineChart.mini_margin.bottom;
+  this.mini_x = d3.time.scale().range([ 0, this.main_width ]);
+
+  this.chartElem = chartElem;
+  var data = this.makeChartData(resultset);
+  this.data = data;
+
+  var metrices = {};
+  for ( var key in data[0]) {
+    if (key != _self.config.lineChart.yAxis.right) {
+      metrices[key] = key;
+    }
+  }
+
+  this.drawMiniLineChart(data, _self.config.lineChart.combo.init);
+  $('#' + this.config.lineChart.combo.id)
+      .val(_self.config.lineChart.combo.init);
+
+  cb.call(null, data);
+
+  this.lineChartInit = function() {
+    _self.main_y = {};
+    _self.mini_y = {};
+    _self.main_line = {};
+    _self.mini_line = {};
+    _self.main, _self.mini, _self.svg;
+    _self.metric_data;
+  }
+}
+
+UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
+  var _self = this;
+  this.svg = d3.select(this.chartElem).append("svg").attr(
+      "width",
+      this.main_width + this.config.lineChart.mini_margin.left
+          + this.config.lineChart.mini_margin.right).attr(
+      "height",
+      this.config.lineChart.mini_margin.top
+          + this.config.lineChart.mini_margin.bottom + this.mini_height);
+
+  this.svg.append("defs").append("clipPath").attr("id", "clip").append("rect")
+      .attr("width", this.main_width).attr("height", this.mini_height);
+
+  this.mini = this.svg.append("g").attr(
+      "transform",
+      "translate(" + this.config.lineChart.mini_margin.left + ","
+          + this.config.lineChart.mini_margin.top + ")");
+  var mini_xAxis = d3.svg.axis().scale(this.mini_x).tickFormat(
+      d3.time.format("%H:%M")).orient("bottom");
+
+  var brush2 = function() {
+    _self.main_x.domain(_self.brush.empty() ? _self.mini_x.domain()
+        : _self.brush.extent());
+    for ( var key in _self.main_y) {
+      _self.main.select(".line" + key).attr("d", _self.main_line[key]);
+    }
+    _self.main.select(".x.axis").call(_self.main_xAxis);
+  }
+
+  var brushstart = function() {
+  }
+
+  var brushend = function() {
+    _self.redraw();
+  }
+
+  this.brush = d3.svg.brush().x(this.mini_x).on("brush", brush2).on(
+      'brushstart', brushstart).on('brushend', brushend);
+
+  data.forEach(function(d) {
+    try {
+      var dt = _self.parseDate(d.date);
+      d.date = dt;
+    } catch (e) {
+    }
+    for ( var key in data[0]) {
+      if (key != 'date') {
+        // if (key == 'judge' || key == 'nsl_ms') {
+        d[key] = +d[key];
+      }
+    }
+  });
+
+  data.sort(function(a, b) {
+    return a.date - b.date;
+  });
+
+  for ( var key in data[0]) {
+    if (key != 'date') {
+      // if (key == 'judge' || key == 'nsl_ms') {
+      this.mini_y[key] = d3.scale.sqrt().range([ this.mini_height, 0 ]);
+    }
+  }
+
+  // /[ line definition ]///////////////////////////
+  if (metric == '*') {
+    for ( var key in this.main_y) {
+      if (this.config.lineChart.yAxis.right != key) {
+        this.mini_line[key] = d3.svg.line().interpolate('cardinal').x(
+            function(d) {
+              return _self.mini_x(d.date);
+            }).y(function(d) {
+          return _self.mini_y[key](d[key]);
+        });
+        // it doesn't work for brushing
+        // this.main_line[key] =
+        // d3.svg.line().interpolate('cardinal').x(function(d) {
+        // return _self.main_x(d.date);
+        // }).y(function(d) {
+        // return _self.main_y[key](d[key]);
+        // });
+      }
+    }
+  } else {
+    var type = 'cardinal';
+    if (metric == 'state') {
+      type = 'step';
+    }
+    this.mini_line[metric] = d3.svg.line().interpolate(type).x(function(d) {
+      return _self.mini_x(d.date);
+    }).y(function(d) {
+      return _self.mini_y[metric](d[metric]);
+    });
+  }
+  this.mini_line[this.config.lineChart.yAxis.right] = d3.svg.line()
+      .interpolate('step').x(function(d) {
+        return _self.mini_x(d.date);
+      }).y(
+          function(d) {
+            return _self.mini_y[_self.config.lineChart.yAxis.right]
+                (d[_self.config.lineChart.yAxis.right]);
+          });
+
+  this.mini_x.domain(this.main_x.domain());
+
+  for ( var key in this.main_y) {
+    this.mini_y[key].domain(this.main_y[key].domain());
+  }
+
+  // /[ this.mini lineChart ]///////////////////////////
+  this.mini.append("g").attr("class", "x axis").attr("transform",
+      "translate(0," + this.mini_height + ")").call(_self.main_xAxis);
+  for ( var key in this.main_y) {
+    this.mini.append("path").datum(data).attr("class", "line line" + key).attr(
+        "d", this.mini_line[key]);
+  }
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -1534,13 +1609,13 @@ var config = {
       "height" : 250,
       "top" : 50,
       "right" : 40,
-      "bottom" : 40,
+      "bottom" : 20,
       "left" : 40
     },
     "mini_margin" : {
-      "top" : 230,
-      "bottom" : 0,
-      "height" : 250,
+      "top" : 0,
+      "bottom" : 20,
+      "height" : 40,
       "right" : 40,
       "left" : 40
     },
@@ -1623,6 +1698,8 @@ d3.json("data.json", function(error, json) {
   uptimeChart.makeLineChart("#lineChart", json, function(data) {
     uptimeChart.makeDiagram('#diagram', data);
     uptimeChart.makeStackedChart('#stackedChart', data);
+  });
+  uptimeChart.makeMiniLineChart("#minilineChart", json, function(data) {
   });
   uptimeChart.makeMap("#graph", json);
   // d3.json("map.json", function(json) {
