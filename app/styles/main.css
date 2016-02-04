@@ -59,6 +59,20 @@ body {
 	}
 }
 
+div {
+	font: 11px sans-serif;
+}
+
+text {
+	font: 11px sans-serif;
+}
+
+div.combo {
+	display: inline-block;
+	width: 200px;
+	margin: 1em;
+}
+
 .axis path, .axis line {
 	fill: none;
 	stroke: #000;
@@ -109,7 +123,7 @@ body {
 
 .legend rect {
 	fill: white;
-	stroke: gray;
+	/* 	stroke: gray; */
 	opacity: 0.9;
 }
 
@@ -235,9 +249,22 @@ div.tooltip {
 	position: absolute;
 	text-align: left;
 	width: 100px;
-	height: 50px;
+	height: 70px;
 	padding: 8px;
-	font: 10px sans-serif;
+	font: 11px sans-serif;
+	background: #FFFFFF;
+	border: solid 1px #aaa;
+	border-radius: 8px;
+	pointer-events: none;
+}
+
+div.tooltip2 {
+	position: absolute;
+	text-align: left;
+	width: 250px;
+	height: 150px;
+	padding: 8px;
+	font: 11px sans-serif;
 	background: #FFFFFF;
 	border: solid 1px #aaa;
 	border-radius: 8px;
@@ -271,7 +298,7 @@ path:hover {
 	display: inline-block;
 	border-collapse: collapse;
 	border-spacing: 0px;
-	font: 12px sans-serif;
+	font: 11px sans-serif;
 }
 
 .legend2 td {
@@ -281,4 +308,23 @@ path:hover {
 .legend2Name .legend2Freq, .legend2Perc {
 	align: right;
 	width: 100px;
+}
+
+#diagram {
+	width: 800px;
+}
+
+span {
+	width: 400px;
+	height: 100px;
+}
+
+.flt {
+	margin-top: 10px;
+	float: left;
+}
+
+.frt {
+	margin-top: 20px;
+	float: right;
 }

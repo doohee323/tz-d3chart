@@ -231,14 +231,15 @@ var UptimeChart = function(chartElem, mapElem, config) {
           metrix[i].description[q] = {};
         }
         if (active != null) {
-          // availability = #2 / (active + include)
+          // availability = metrix(#2) / (active(#1) + include(#3))
           var v1 = active.datapoints[q][0];
           var v2 = metrix[i].datapoints[q][0] != null ? metrix[i].datapoints[q][0]
               : 0;
           var v3 = include.datapoints[q][0];
           if (v1) {
-            metrix[i].description[q].v1 = Number((v1).toFixed(1));
+            v1 = Number((v1).toFixed(1));
           }
+          metrix[i].description[q].v1 = v1;
           metrix[i].description[q].v2 = v2;
           metrix[i].description[q].v3 = v3;
           avail = Math.floor((v2 / (v1 + v3)));
@@ -264,6 +265,8 @@ var UptimeChart = function(chartElem, mapElem, config) {
       jsonRow['aggregate'] = sum;
       chartData.push(jsonRow);
     } // for q
+    this.metrix = metrix;
+    this.aggregate_max = max;
 
     for (var i = 0; i < chartData.length; i++) {
       var uptime = chartData[i]['aggregate'];
@@ -289,10 +292,10 @@ var UptimeChart = function(chartElem, mapElem, config) {
         }
       }
     } else {
-      data = json;
+      data = jQuery.extend(true, [], json);
     }
     if (data.length == 0) {
-      data = json;
+      data = jQuery.extend(true, [], json);
     }
     var data2 = new Array();
     var date = 0;
@@ -316,6 +319,16 @@ var UptimeChart = function(chartElem, mapElem, config) {
       tfb_ms += parseFloat(data[i].tfb_ms);
     }
     return data2;
+  }
+
+  this.tooltip2 = function(txt) {
+    d3.select("body").select('div.tooltip2').remove();
+    txt = '<div>' + txt.split("\n").join("</div>\n<div>") + '</div>';
+    var html = '<div style="width: 250px;">' + txt + '</div>';
+    var tooltip2 = d3.select("body").append("div").attr('pointer-events',
+        'none').attr("class", "tooltip2").style("opacity", 1).html(html).style(
+        "left", (d3.event.x + 10 + "px"))
+        .style("top", (d3.event.y + 50 + "px"));
   }
 
   this.init = function() {
@@ -758,13 +771,51 @@ UptimeChart.prototype.drawChart = function(data, metric) {
               "transform",
               "translate(" + _self.main_x(d.date) + ","
                   + _self.main_y[key](d[key]) + ")");
+          if (key == 'aggregate') {
+            var descript = '[availability] \n';
+            var sum = 0;
+            for (var i = 0; i < _self.metrix.length; i++) {
+              var type = _self.metrix[i].target;
+              var j = 0;
+              for (j = 0; j < _self.metrix[i].datapoints.length; j++) {
+                if (new Date(_self.metrix[i].datapoints[j][1] * 1000)
+                    .toString() == d.date.toString()) {
+                  break;
+                }
+              }
+              if (j > 0) {
+                // availability = metrix(#2) / (active(#1) + include(#3))
+                var active = _self.metrix[i].description[j].v1;
+                var metrix = _self.metrix[i].description[j].v2;
+                var include = _self.metrix[i].description[j].v3;
+                var avail = Math.floor((metrix / (active + include)));
+                if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
+                  avail = 0;
+                }
+                sum += avail;
+                descript += ' - ' + type + ' : ' + avail + ' = ' + metrix
+                    + ' / (' + active + ' + ' + include + ') \n';
+              }
+            }
+            var uptime_per = sum / _self.aggregate_max * 100;
+            if (uptime_per) {
+              uptime_per = Number((uptime_per).toFixed(1));
+            } else {
+              uptime_per = 0;
+            }
+            descript += ' - availability sum: ' + sum + ' \n';
+            descript += ' - availability max: ' + _self.aggregate_max + ' \n';
+            descript = '[' + _self.formatDate(d.date) + '`s aggregate]: '
+                + uptime_per + '\n = ' + sum + ' / ' + _self.aggregate_max
+                + ' * 100 /d[key]: ' + d[key] + '\n' + descript;
+            _self.tooltip2(descript);
+          }
           var formatOutput = _self.getLabelFullName(key) + " - "
               + formatDate2(d.date) + " - " + d[key] + " ms";
           focus.select("text.y" + key).attr(
               "transform",
               "translate(" + _self.main_x(d.date) + ","
-                  + _self.main_y[key](d[key]) + ")").text(formatOutput).style(
-              'font', '10px sans-serif');
+                  + _self.main_y[key](d[key]) + ")").text(formatOutput);
           focus.select(".y" + key).attr(
               "transform",
               "translate(" + _self.main_width * -1 + ", "
@@ -786,14 +837,15 @@ UptimeChart.prototype.drawChart = function(data, metric) {
       this.main_width).attr("height", this.main_height).on("mouseover",
       function() {
         focus.style("display", null);
+        d3.select("body").select('div.tooltip2').remove();
       }).on("mouseout", function() {
     focus.style("display", "none");
+    d3.select("body").select('div.tooltip2').remove();
   }).on("mousemove", mousemove);
 
   // /[ legend ]///////////////////////////
   var legend = this.main.append("g").attr("class", "legend").attr("transform",
-      "translate(40, " + this.config.chart.legend.y + ")").style('font',
-      '10px sans-serif').call(d3.legend);
+      "translate(40, " + this.config.chart.legend.y + ")").call(d3.legend);
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -888,8 +940,7 @@ UptimeChart.prototype.drawMap = function(data, loc) {
         return xy([ +d["longitude"], +d["latitude"] ])[0];
       }).attr("y", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
-  }).attr("dy", "0.3em").attr("text-anchor", "middle").style('font',
-      '10px sans-serif').text(function(d, i) {
+  }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d, i) {
     return Math.round(_self.getTotal(d));
   }).attr("d", path)
 }
@@ -1051,10 +1102,10 @@ UptimeChart.prototype.redraw = function(brushed) {
       json.push(obj);
     }
   } else {
-    json = this.mapData;
+    json = jQuery.extend(true, [], this.mapData);
   }
 
-  this.drawDiagram(this.makeDiagramData(this.diagram_data, true));
+  this.drawDiagram(this.makeDiagramData(this.diagram_data, brushed));
 
   if (_self.type) {
     for (var i = 0; i < this.mapData.length; i++) {
@@ -1111,17 +1162,18 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
   _self.histogram = function(fD) {
     var hg = {};
     var hgDim = {
-      top : 0,
+      top : 30,
       right : _self.config.chart.main_margin.right,
       bottom : 0,
       left : _self.config.chart.main_margin.left
     };
     hgDim.width = _self.main_width;
-    hgDim.height = 40 - hgDim.top - hgDim.bottom;
+    hgDim.height = 50 - hgDim.top - hgDim.bottom;
+    var width = hgDim.width + hgDim.left + hgDim.right;
+    var height = hgDim.height + hgDim.top + hgDim.bottom;
 
     var hgsvg = d3.select(id).append("svg").attr('id', 'hgsvg').attr("width",
-        hgDim.width + hgDim.left + hgDim.right).attr("height",
-        hgDim.height + hgDim.top + hgDim.bottom).append("g").attr("transform",
+        width).attr("height", height).append("g").attr("transform",
         "translate(" + hgDim.left + "," + hgDim.top + ")");
 
     var x = d3.scale.ordinal().rangeRoundBands([ 0, hgDim.width ], 0.1).domain(
@@ -1132,6 +1184,10 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     hgsvg.append("g").attr("class", "x axis").attr("transform",
         "translate(0," + hgDim.height + ")").call(
         d3.svg.axis().scale(x).orient("bottom"));
+
+    hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top / 2)).attr(
+        "text-anchor", "middle").style("text-decoration", "underline").text(
+        "Average Response Time");
 
     var y = d3.scale.linear().range([ hgDim.height, 0 ]).domain(
         [ 0, d3.max(fD, function(d) {
@@ -1154,7 +1210,7 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     }).attr("x", function(d) {
       return x(d[0]) + x.rangeBand() / 2;
     }).attr("y", function(d) {
-      return y(d[1]) + 18;
+      return y(d[1]) + 15;
     }).attr("text-anchor", "middle").style('fill', 'white');
 
     function mouseover(d) {
@@ -1192,7 +1248,7 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
       bars.select("text").transition().duration(500).text(function(d) {
         return d3.format(",")(d[1])
       }).attr("y", function(d) {
-        return y(d[1]) + 18;
+        return y(d[1]) + 15;
       });
     }
     return hg;
@@ -1206,9 +1262,10 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
       height : 120
     };
     pieDim.right = Math.min(pieDim.width, pieDim.height) / 2;
-    var piesvg = d3.select(id).append("svg").attr('id', 'piesvg').attr("width",
-        pieDim.width).attr("height", pieDim.height).append("g").attr(
-        "transform", "translate(120,60)");
+    var piesvg = d3.select(id).append("span").attr('class', 'flt')
+        .append("svg").attr('id', 'piesvg').attr("width", pieDim.width).attr(
+            "height", pieDim.height).append("g").attr("transform",
+            "translate(120,60)");
     var arc = d3.svg.arc().outerRadius(pieDim.right - 10).innerRadius(0);
     var pie = d3.layout.pie().sort(null).value(function(d) {
       return d.freq;
@@ -1247,8 +1304,8 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
 
   _self.legend2 = function(lD) {
     var lg = {};
-    var legend2 = d3.select(id).append("table").attr('id', 'tr').attr("style",
-        "margin-left: 150px").attr('class', 'legend2');
+    var legend2 = d3.select(id).append("span").attr('class', 'frt').attr('id',
+        'tr').append("table").attr('class', 'legend2');
     var tr = legend2.append("tbody").selectAll("tr").data(lD).enter().append(
         "tr");
     tr.append("td").append("svg").attr("width", '16').attr("height", '16')
@@ -1275,12 +1332,18 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
       });
     }
     function getLegend(d, aD) {
-      return d3.format("%")(d.freq / d3.sum(aD.map(function(v) {
+      var val = (d.freq / d3.sum(aD.map(function(v) {
         return v.freq;
       })));
+      if (isNaN(val)) {
+        return d3.format("%")(0);
+      } else {
+        return d3.format("%")(val);
+      }
     }
     return lg;
   }
+
   this.drawDiagram(this.makeDiagramData(data));
 }
 
@@ -1289,6 +1352,7 @@ UptimeChart.prototype.drawDiagram = function(data) {
   d3.select("[id='hgsvg']").remove();
   d3.select("[id='piesvg']").remove();
   d3.select("[id='tr']").remove();
+  d3.selectAll("span").remove();
 
   _self.fData = data;
   _self.fData.forEach(function(d) {
@@ -1337,7 +1401,7 @@ var config = {
     },
     "combo" : {
       "id" : "gmetrices",
-      "init" : "tot_ms"
+      "init" : "aggregate"
     },
     "legend" : {
       "x" : 40,
@@ -1347,12 +1411,12 @@ var config = {
   },
   "map" : {
     "height" : 400,
-    "width" : 1200,
+    "width" : 950,
     "circle_scale" : 1,
     "scale" : 150,
     "tooltip" : {
       "x" : 20,
-      "y" : 160
+      "y" : 260
     },
     "combo" : {
       "id" : "locs",
@@ -1361,7 +1425,7 @@ var config = {
   },
   "gmap" : {
     "height" : 300,
-    "width" : 1000,
+    "width" : 950,
     "circle_scale" : 1,
     "scale" : 150,
     "tooltip" : {
