@@ -888,11 +888,11 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
   var locs = resultset.meta.locs;
   this.mapData = new Array();
 
-  this.map_data = this.makeMapData(resultset, 'state');
+  this.mapData = this.makeMapData(resultset, 'state');
 
   this.makeCombo2(locs, this.config.map.combo.id, function(val) {
     if (val == '*') {
-      data2 = _self.map_data;
+      data2 = _self.mapData;
     } else {
       var type = $('#' + _self.config.lineChart.combo.id).val();
       var data = _self.makeMapData(resultset, type);
@@ -908,7 +908,7 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
     _self.drawMap(data2, val);
   });
 
-  this.drawMap(this.map_data, _self.config.map.combo.init);
+  this.drawMap(this.mapData, _self.config.map.combo.init);
   $('#' + this.config.map.combo.id).val(_self.config.map.combo.init);
 }
 
@@ -936,8 +936,6 @@ UptimeChart.prototype.drawMap = function(data, loc) {
           d3.select(this).style("fill", "#ccc");
         })
   });
-
-  this.mapData = data;
 
   this.circles.selectAll("circle").data(data).enter().append("circle").style(
       "stroke", "black").attr("cx", function(d, i) {
@@ -983,7 +981,7 @@ UptimeChart.prototype.drawMap = function(data, loc) {
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeGMap = function(data) {
   var _self = this;
-  this.gmap_data = data;
+  this.gmapData = data;
 
   var locs = {};
   for (var i = 0; i < data.length; i++) {
@@ -991,7 +989,7 @@ UptimeChart.prototype.makeGMap = function(data) {
   }
   this.makeCombo(locs, this.config.gmap.combo.id, function(val) {
     if (val == '*') {
-      data2 = _self.gmap_data;
+      data2 = _self.gmapData;
     } else {
       var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
