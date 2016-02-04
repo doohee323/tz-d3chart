@@ -13,37 +13,13 @@ selectView();
 // ///////////////////////////////////////////////////////////////////////////////
 // [ UptimeChart constructor ]
 // ///////////////////////////////////////////////////////////////////////////////
-var UptimeChart = function(chartElem, mapElem, config) {
+var UptimeChart = function(config) {
   var _self = this;
-  this.chartElem = chartElem;
-  this.mapElem = mapElem;
-  this.main_y = {};
-  this.mini_y = {};
-  this.main_line = {};
-  this.mini_line = {};
-  this.main, this.mini, this.svg;
   this.startTime, this.endTime, this.type;
   this.config = config;
 
-  this.main_width = config.lineChart.main_margin.width
-      - config.lineChart.main_margin.left - config.lineChart.main_margin.right
-  this.main_height = config.lineChart.main_margin.height
-      - config.lineChart.main_margin.top - config.lineChart.main_margin.bottom;
-  this.mini_height = config.lineChart.mini_margin.height
-      - config.lineChart.mini_margin.top - config.lineChart.mini_margin.bottom;
-
   this.formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
   this.parseDate = this.formatDate.parse;
-
-  this.main_x = d3.time.scale().range([ 0, this.main_width ]);
-  this.mini_x = d3.time.scale().range([ 0, this.main_width ]);
-
-  this.states;
-  this.circles;
-  this.labels;
-
-  this.mapData = new Array();
-  this.circle_scale = config.map.circle_scale;
 
   this.getSize = function(d, loc) {
     var size = Math.round(this.getTotal(d, loc));
@@ -374,10 +350,27 @@ var UptimeChart = function(chartElem, mapElem, config) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make lineChart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeLineChart = function(resultset, cb) {
-  var data = this.makeChartData(resultset);
-
+UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
   var _self = this;
+
+  this.main_y = {};
+  this.mini_y = {};
+  this.main_line = {};
+  this.mini_line = {};
+  this.main, this.mini, this.svg;
+
+  this.main_width = config.lineChart.main_margin.width
+      - config.lineChart.main_margin.left - config.lineChart.main_margin.right
+  this.main_height = config.lineChart.main_margin.height
+      - config.lineChart.main_margin.top - config.lineChart.main_margin.bottom;
+  this.mini_height = config.lineChart.mini_margin.height
+      - config.lineChart.mini_margin.top - config.lineChart.mini_margin.bottom;
+
+  this.main_x = d3.time.scale().range([ 0, this.main_width ]);
+  this.mini_x = d3.time.scale().range([ 0, this.main_width ]);
+
+  this.chartElem = chartElem;
+  var data = this.makeChartData(resultset);
   this.data = data;
 
   var metrices = {};
@@ -882,10 +875,19 @@ UptimeChart.prototype.drawChart = function(data, metric) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ map chart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeMap = function(resultset, locs) {
+UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
   var _self = this;
+  
+  this.states;
+  this.circles;
+  this.labels;
+  this.circle_scale = config.map.circle_scale;
+  this.mapElem = mapElem;
+  
   var data = resultset.data.metric;
   var locs = resultset.meta.locs;
+  this.mapData = new Array();
+
   this.map_data = this.makeMapData(resultset, 'state');
 
   this.makeCombo2(locs, this.config.map.combo.id, function(val) {
@@ -1623,12 +1625,12 @@ var config = {
 
 // ///////////////////////////////////////////////////////////////////////////////
 d3.json("data.json", function(error, json) {
-  var uptimeChart = new UptimeChart("#lineChart", "#graph", config);
-  uptimeChart.makeLineChart(json, function(data) {
+  var uptimeChart = new UptimeChart(config);
+  uptimeChart.makeLineChart("#lineChart", json, function(data) {
     uptimeChart.makeDiagram('#diagram', data);
     uptimeChart.makeStackedChart('#stackedChart', data);
   });
-  uptimeChart.makeMap(json);
+  uptimeChart.makeMap("#graph", json);
   // d3.json("map.json", function(json) {
   // $('#googleMap').width(config.gmap.width).height(config.gmap.height);
   // uptimeChart.makeGMap(json);
