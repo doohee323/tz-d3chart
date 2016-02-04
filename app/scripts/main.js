@@ -21,50 +21,6 @@ var UptimeChart = function(config) {
   this.formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
   this.parseDate = this.formatDate.parse;
 
-  this.getSize = function(d, loc) {
-    var size = Math.round(this.getTotal(d, loc));
-    for ( var key in config.map.circle) {
-      var val = config.map.circle[key];
-      if (size < val) {
-        var s = val * this.circle_scale;
-        if (s < 5) {
-          s = 10;
-        }
-        return s;
-      }
-    }
-    return 50;
-  }
-
-  this.getColor = function(d, loc) {
-    var size = Math.round(this.getTotal(d, loc));
-    for ( var key in config.map.circle) {
-      var val = config.map.circle[key];
-      if (size < val) {
-        return key;
-      }
-    }
-    return "red";
-  }
-
-  this.getTotal = function(d, loc) {
-    if (loc) {
-      for (var i = 0; i < d.length; i++) {
-        if (d[i].loc == loc) {
-          d = d[i];
-          break;
-        }
-      }
-    }
-    var total = 0;
-    for ( var key in d) {
-      if (key != 'loc' && key != 'latitude' && key != 'longitude') {
-        total += parseFloat(d[key]);
-      }
-    }
-    return total;
-  }
-
   this.convertRGBDecimalToHex = function(rgb) {
     var regex = /rgb *\( *([0-9]{1,3}) *, *([0-9]{1,3}) *, *([0-9]{1,3}) *\)/;
     var values = regex.exec(rgb);
@@ -89,34 +45,7 @@ var UptimeChart = function(config) {
     return akey;
   }
 
-  this.makeCombo = function(ds, id, cb) {
-    id = '#' + id;
-    if ($(id + " option").length > 0)
-      return;
-    var select = $(id);
-    if (select.length > 0) {
-      var options;
-      if (select.prop) {
-        options = select.prop('options');
-      } else {
-        options = select.attr('options');
-      }
-      $('option', select).remove();
-      options[options.length] = new Option('all', '*');
-      $.each(ds,
-          function(key, obj) {
-            if (key != 'date') {
-              options[options.length] = new Option(_self.getLabelFullName(key),
-                  key);
-            }
-          });
-      select.change(function(e) {
-        cb.call(e, $(id).val());
-      });
-    }
-  }
-
-  this.makeCombo2 = function(ds, id, cb) {
+  this.makeMapCombo = function(ds, id, cb) {
     id = '#' + id;
     if ($(id + " option").length > 0)
       return;
@@ -323,15 +252,6 @@ var UptimeChart = function(config) {
         .style("top", (d3.event.y + 10 + "px"));
   }
 
-  this.init = function() {
-    _self.main_y = {};
-    _self.mini_y = {};
-    _self.main_line = {};
-    _self.mini_line = {};
-    _self.main, _self.mini, _self.svg;
-    _self.metric_data;
-  }
-
   this.toUTCISOString = function(st) {
     st = new Date(Date.UTC(st.getFullYear(), st.getMonth(), st.getDate(), st
         .getHours(), st.getMinutes()));
@@ -379,6 +299,33 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
       metrices[key] = key;
     }
   }
+  this.makeCombo = function(ds, id, cb) {
+    id = '#' + id;
+    if ($(id + " option").length > 0)
+      return;
+    var select = $(id);
+    if (select.length > 0) {
+      var options;
+      if (select.prop) {
+        options = select.prop('options');
+      } else {
+        options = select.attr('options');
+      }
+      $('option', select).remove();
+      options[options.length] = new Option('all', '*');
+      $.each(ds,
+          function(key, obj) {
+            if (key != 'date') {
+              options[options.length] = new Option(_self.getLabelFullName(key),
+                  key);
+            }
+          });
+      select.change(function(e) {
+        cb.call(e, $(id).val());
+      });
+    }
+  }
+
   this.makeCombo(metrices, this.config.lineChart.combo.id, function(val) {
     if (val == '*') {
       data2 = _self.data;
@@ -396,18 +343,27 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
       }
     }
     d3.select("svg").remove();
-    _self.init();
-    _self.drawChart(data2, val);
+    _self.lineChartInit();
+    _self.drawLineChart(data2, val);
   });
 
-  this.drawChart(data, _self.config.lineChart.combo.init);
+  this.drawLineChart(data, _self.config.lineChart.combo.init);
   $('#' + this.config.lineChart.combo.id)
       .val(_self.config.lineChart.combo.init);
 
   cb.call(null, data);
+
+  this.lineChartInit = function() {
+    _self.main_y = {};
+    _self.mini_y = {};
+    _self.main_line = {};
+    _self.mini_line = {};
+    _self.main, _self.mini, _self.svg;
+    _self.metric_data;
+  }
 }
 
-UptimeChart.prototype.drawChart = function(data, metric) {
+UptimeChart.prototype.drawLineChart = function(data, metric) {
   var _self = this;
   this.svg = d3.select(this.chartElem).append("svg").attr(
       "width",
@@ -885,11 +841,9 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
 
   var data = resultset.data.metric;
   var locs = resultset.meta.locs;
-  this.mapData = new Array();
-
   this.mapData = this.makeMapData(resultset, 'state');
 
-  this.makeCombo2(locs, this.config.map.combo.id, function(val) {
+  this.makeMapCombo(locs, this.config.map.combo.id, function(val) {
     if (val == '*') {
       data2 = _self.mapData;
     } else {
@@ -903,9 +857,53 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
       }
     }
     d3.select("[id='map']").remove();
-    _self.init();
+    _self.lineChartInit();
     _self.drawMap(data2, val);
   });
+
+  this.getCircleSize = function(d, loc) {
+    var size = Math.round(this.getCircleTotal(d, loc));
+    for ( var key in config.map.circle) {
+      var val = config.map.circle[key];
+      if (size < val) {
+        var s = val * this.circle_scale;
+        if (s < 5) {
+          s = 10;
+        }
+        return s;
+      }
+    }
+    return 50;
+  }
+
+  this.getCircleColor = function(d, loc) {
+    var size = Math.round(this.getCircleTotal(d, loc));
+    for ( var key in config.map.circle) {
+      var val = config.map.circle[key];
+      if (size < val) {
+        return key;
+      }
+    }
+    return "red";
+  }
+
+  this.getCircleTotal = function(d, loc) {
+    if (loc) {
+      for (var i = 0; i < d.length; i++) {
+        if (d[i].loc == loc) {
+          d = d[i];
+          break;
+        }
+      }
+    }
+    var total = 0;
+    for ( var key in d) {
+      if (key != 'loc' && key != 'latitude' && key != 'longitude') {
+        total += parseFloat(d[key]);
+      }
+    }
+    return total;
+  }
 
   this.drawMap(this.mapData, _self.config.map.combo.init);
   $('#' + this.config.map.combo.id).val(_self.config.map.combo.init);
@@ -942,7 +940,7 @@ UptimeChart.prototype.drawMap = function(data, loc) {
   }).attr("cy", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("r", function(d) {
-    return _self.getSize(d);
+    return _self.getCircleSize(d);
   }).on(
       "mouseover",
       function(d, i) {
@@ -950,7 +948,7 @@ UptimeChart.prototype.drawMap = function(data, loc) {
         var html = '<div style="width: 250px;">';
         html += '<div>* Site: ' + d["loc"];
         html += '</div>';
-        html += '<div>* Total: ' + Math.round(_self.getTotal(d))
+        html += '<div>* Total: ' + Math.round(_self.getCircleTotal(d))
             + ' (ms)</div>';
         html += '</div>';
         var div = d3.select("body").append("div")
@@ -959,10 +957,10 @@ UptimeChart.prototype.drawMap = function(data, loc) {
                 (d3.event.x + _self.config.map.tooltip.x + "px")).style("top",
                 (d3.event.y + _self.config.map.tooltip.y + "px"));
       }).on("mouseout", function(d) {
-    d3.select(this).style("fill", _self.getColor(d));
+    d3.select(this).style("fill", _self.getCircleColor(d));
     d3.select("body").select('div.tooltip').remove();
   }).style("fill", function(d) {
-    return _self.getColor(d);
+    return _self.getCircleColor(d);
   });
 
   this.labels.selectAll("labels").data(data).enter().append("text").attr("x",
@@ -971,7 +969,7 @@ UptimeChart.prototype.drawMap = function(data, loc) {
       }).attr("y", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d, i) {
-    return Math.round(_self.getTotal(d));
+    return Math.round(_self.getCircleTotal(d));
   }).attr("d", path)
 }
 
@@ -998,11 +996,11 @@ UptimeChart.prototype.makeGMap = function(data) {
       }
     }
     d3.select("[id='gmap']").remove();
-    _self.init();
+    _self.lineChartInit();
     _self.drawGMap(data2, val);
   });
 
-  this.drawGMap(data, _self.config.gmap.combo.init);
+  _self.drawGMap(data, _self.config.gmap.combo.init);
   $('#' + this.config.gmap.combo.id).val(_self.config.gmap.combo.init);
 }
 
@@ -1156,19 +1154,18 @@ UptimeChart.prototype.redraw = function() {
 
   this.circles.selectAll("circle").transition().duration(1000).ease("linear")
       .attr("r", function(d) {
-        return _self.getSize(json, d.loc);
+        return _self.getCircleSize(json, d.loc);
       }).attr("title", function(d) {
-        return d["loc"] + ": " + Math.round(_self.getTotal(json, d.loc));
+        return d["loc"] + ": " + Math.round(_self.getCircleTotal(json, d.loc));
       });
 
   this.circles.selectAll("circle").style("fill", function(d) {
-    return _self.getColor(json, d.loc);
+    return _self.getCircleColor(json, d.loc);
   });
 
   this.labels.selectAll("text").text(function(d) {
-    return Math.round(_self.getTotal(json, d.loc));
+    return Math.round(_self.getCircleTotal(json, d.loc));
   });
-
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
