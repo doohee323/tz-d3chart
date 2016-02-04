@@ -15,7 +15,7 @@ selectView();
 // ///////////////////////////////////////////////////////////////////////////////
 var UptimeChart = function(config) {
   var _self = this;
-  this.startTime, this.endTime, this.type;
+  this.metric_data;
   this.config = config;
 
   this.formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
@@ -141,7 +141,7 @@ var UptimeChart = function(config) {
   }
 
   // make mapData for lineChart from maxtrix, locs
-  this.makeMapData = function(resultset, type) {
+  this.makeMapData = function(resultset, metric) {
     var data = resultset.data.metric;
     var locs = resultset.meta.locs;
 
@@ -153,7 +153,7 @@ var UptimeChart = function(config) {
       row.latitude = locs[i].latitude;
       row.longitude = locs[i].longitude;
       for (var j = 0; j < data.length; j++) {
-        if (data[j].target == loc + '.' + type) {
+        if (data[j].target == loc + '.' + metric) {
           var datapoints = data[j].datapoints;
           for (var p = 0; p < datapoints.length; p++) {
             var dt = new Date(datapoints[p][1] * 1000);
@@ -257,7 +257,7 @@ var UptimeChart = function(config) {
       jsonRow['aggregate'] = sum;
       chartData.push(jsonRow);
     } // for q
-    this.metric = metric;
+    this.metric_data = metric;
     this.aggregate_max = max;
 
     for (var i = 0; i < chartData.length; i++) {
@@ -329,7 +329,7 @@ var UptimeChart = function(config) {
     _self.main_line = {};
     _self.mini_line = {};
     _self.main, _self.mini, _self.svg;
-    _self.startTime, _self.endTime, _self.type;
+    _self.metric_data;
   }
 
   this.toUTCISOString = function(st) {
@@ -494,13 +494,13 @@ UptimeChart.prototype.drawChart = function(data, metric) {
           }
           items = items2;
 
-          var toggle = function(type, d, i) {
-            _self.type = d.key;
-            if (type == 'text') {
+          var toggle = function(metric, d, i) {
+            _self.metric = d.key;
+            if (metric == 'text') {
               if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
                   ".line" + d.key).style("stroke"))) {
-                if (_self.type == _self.config.lineChart.yAxis.right
-                    || _self.type == 'state') {
+                if (_self.metric == _self.config.lineChart.yAxis.right
+                    || _self.metric == 'state') {
                   d3.select(".line" + d.key).style("stroke", d.color).style(
                       "fill", d.color);
                 } else {
@@ -509,13 +509,13 @@ UptimeChart.prototype.drawChart = function(data, metric) {
                 d3.select("circle.y" + d.key).style("stroke", d.color);
                 d3.select("line.y" + d.key).style("stroke", d.color);
               }
-            } else if (type == 'circle') {
+            } else if (metric == 'circle') {
               var pickColor = _self.convertRGBDecimalToHex(d3.select(
                   ".line" + d.key).style("stroke"));
               if (pickColor != '#FFFFFF') {
                 d.color = pickColor;
-                if (_self.type == _self.config.lineChart.yAxis.right
-                    || _self.type == 'state') {
+                if (_self.metric == _self.config.lineChart.yAxis.right
+                    || _self.metric == 'state') {
                   d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
                       "fill", "white");
                 } else {
@@ -580,7 +580,6 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   }
 
   var brushstart = function() {
-    _self.startTime = _self.brush.extent()[0];
   }
 
   var brushend = function() {
@@ -778,15 +777,15 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   var formatDate2 = d3.time.format("%H:%M:%S");
 
   var mousemove = function() {
-    var type = $('#' + _self.config.lineChart.combo.id).val();
-    if (type == '*')
+    var metric = $('#' + _self.config.lineChart.combo.id).val();
+    if (metric == '*')
       return;
     var x0 = _self.main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0, 1), d0 = data[i - 1];
     var d1 = data[i];
     if (d1.date) {
       var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
       for ( var key in _self.main_y) {
-        if (key != type)
+        if (key != metric)
           continue;
         if (key != _self.config.lineChart.yAxis.right
             && '#FFFFFF' != _self.convertRGBDecimalToHex(d3.select(
@@ -798,20 +797,20 @@ UptimeChart.prototype.drawChart = function(data, metric) {
           if (key == 'aggregate') {
             var descript = '[availability] \n';
             var sum = 0;
-            for (var i = 0; i < _self.metric.length; i++) {
-              var type = _self.metric[i].target;
+            for (var i = 0; i < _self.metric_data.length; i++) {
+              var type = _self.metric_data[i].target;
               var j = 0;
-              for (j = 0; j < _self.metric[i].datapoints.length; j++) {
-                if (new Date(_self.metric[i].datapoints[j][1] * 1000)
+              for (j = 0; j < _self.metric_data[i].datapoints.length; j++) {
+                if (new Date(_self.metric_data[i].datapoints[j][1] * 1000)
                     .toString() == d.date.toString()) {
                   break;
                 }
               }
               if (j > 0) {
                 // availability = metric(#2) / (active(#1) + include(#3))
-                var active = _self.metric[i].description[j].v1;
-                var metric = _self.metric[i].description[j].v2;
-                var include = _self.metric[i].description[j].v3;
+                var active = _self.metric_data[i].description[j].v1;
+                var metric = _self.metric_data[i].description[j].v2;
+                var include = _self.metric_data[i].description[j].v3;
                 var avail = Math.floor((metric / (active + include)));
                 if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
                   avail = 0;
@@ -877,13 +876,13 @@ UptimeChart.prototype.drawChart = function(data, metric) {
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
   var _self = this;
-  
+
   this.states;
   this.circles;
   this.labels;
   this.circle_scale = config.map.circle_scale;
   this.mapElem = mapElem;
-  
+
   var data = resultset.data.metric;
   var locs = resultset.meta.locs;
   this.mapData = new Array();
@@ -894,8 +893,8 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
     if (val == '*') {
       data2 = _self.mapData;
     } else {
-      var type = $('#' + _self.config.lineChart.combo.id).val();
-      var data = _self.makeMapData(resultset, type);
+      var metric = $('#' + _self.config.lineChart.combo.id).val();
+      var data = _self.makeMapData(resultset, metric);
       var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
         if (data[i].loc == val) {
@@ -1138,7 +1137,7 @@ UptimeChart.prototype.redraw = function() {
 
   this.drawDiagram(this.makeDiagramData(this.diagram_data));
 
-  if (_self.type) {
+  if (_self.metric) {
     for (var i = 0; i < this.mapData.length; i++) {
       var obj = {};
       for ( var key in this.mapData[i]) {
@@ -1250,7 +1249,7 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
       })[0];
       var nd = d3.keys(st).map(function(s) {
         return {
-          type : s,
+          metric : s,
           freq : st[s]
         };
       });
@@ -1306,9 +1305,9 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
         .attr("d", arc).each(function(d) {
           this._current = d;
         }).style("stroke", function(d) {
-          return segColor(d.data.type);
+          return segColor(d.data.metric);
         }).style("opacity", 0.6).style("fill", function(d) {
-          return segColor(d.data.type);
+          return segColor(d.data.metric);
         }).on("mouseover", mouseover).on("mouseout", mouseout);
 
     pc.update = function(nd) {
@@ -1317,8 +1316,8 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     }
     function mouseover(d) {
       _self.hg.update(_self.fData.map(function(v) {
-        return [ v.date, v[d.data.type] ];
-      }), segColor(d.data.type));
+        return [ v.date, v[d.data.metric] ];
+      }), segColor(d.data.metric));
     }
     function mouseout(d) {
       _self.hg.update(_self.fData.map(function(v) {
@@ -1344,10 +1343,10 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     tr.append("td").append("svg").attr("width", '16').attr("height", '16')
         .append("rect").attr("width", '16').attr("height", '16').style(
             "opacity", 0.6).attr("fill", function(d) {
-          return segColor(d.type);
+          return segColor(d.metric);
         });
     tr.append("td").attr("class", 'legend2Name').text(function(d) {
-      return _self.getLabelFullName(d.type) + ":";
+      return _self.getLabelFullName(d.metric) + ":";
     });
     tr.append("td").attr("class", 'legend2Freq').text(function(d) {
       return d3.format(",")(d.freq);
@@ -1394,7 +1393,7 @@ UptimeChart.prototype.drawDiagram = function(data) {
 
   _self.tf = [ 'nsl_ms', 'con_ms', 'tfb_ms' ].map(function(d) {
     return {
-      type : d,
+      metric : d,
       freq : d3.sum(_self.fData.map(function(t) {
         return t[d];
       }))
@@ -1444,14 +1443,14 @@ UptimeChart.prototype.makeStackedChart = function(id, data) {
   }));
   data.forEach(function(d) {
     var y0 = 0;
-    d.types = color.domain().map(function(key) {
+    d.metrics = color.domain().map(function(key) {
       return {
         key : key,
         y0 : y0,
         y1 : y0 += +d[key]
       };
     });
-    d.total = d.types[d.types.length - 1].y1;
+    d.total = d.metrics[d.metrics.length - 1].y1;
   });
 
   x.domain(data.map(function(d) {
@@ -1474,7 +1473,7 @@ UptimeChart.prototype.makeStackedChart = function(id, data) {
   });
 
   date.selectAll("rect").data(function(d) {
-    return d.types;
+    return d.metrics;
   }).enter().append("rect").attr("width", x.rangeBand()).attr("y", function(d) {
     return y(d.y1);
   }).attr("height", function(d) {
