@@ -31,28 +31,32 @@ var UptimeChart = function(chartElem, mapElem, config) {
   this.labels;
 
   this.mapData = new Array();
-  this.circle_scale = 1. / config.map.circle_scale;
+  this.circle_scale = config.map.circle_scale;
 
   this.getSize = function(d, loc) {
-    var size = Math.round(this.getTotal(d, loc) * this.circle_scale);
-    if (size >= 10) {
-      size = 30;
-    } else if (size >= 3) {
-      size = 20;
-    } else if (size < 3) {
-      size = 10;
+    var size = Math.round(this.getTotal(d, loc));
+    for ( var key in config.map.circle) {
+      var val = config.map.circle[key];
+      if (size < val) {
+        var s = val * this.circle_scale;
+        if (s < 5) {
+          s = 10;
+        }
+        return s;
+      }
     }
-    return size;
+    return 50;
   }
 
   this.getColor = function(d, loc) {
-    var size = Math.round(this.getTotal(d, loc) * this.circle_scale);
-    if (size >= 10) {
-      return "red";
-    } else if (size >= 3) {
-      return "yellow";
+    var size = Math.round(this.getTotal(d, loc));
+    for ( var key in config.map.circle) {
+      var val = config.map.circle[key];
+      if (size < val) {
+        return key;
+      }
     }
-    return "green";
+    return "red";
   }
 
   this.getTotal = function(d, loc) {
@@ -282,9 +286,9 @@ var UptimeChart = function(chartElem, mapElem, config) {
   }
 
   // make data for makeDiagram
-  this.makeDiagramData = function(json, brushed) {
+  this.makeDiagramData = function(json) {
     var data = new Array();
-    if (brushed) {
+    if (_self.isBrushed()) {
       for (var i = 0; i < json.length; i++) {
         if (json[i].date >= _self.brush.extent()[0]
             && json[i].date <= _self.brush.extent()[1]) {
@@ -328,7 +332,7 @@ var UptimeChart = function(chartElem, mapElem, config) {
     var tooltip2 = d3.select("body").append("div").attr('pointer-events',
         'none').attr("class", "tooltip2").style("opacity", 1).html(html).style(
         "left", (d3.event.x + 10 + "px"))
-        .style("top", (d3.event.y + 50 + "px"));
+        .style("top", (d3.event.y + 10 + "px"));
   }
 
   this.init = function() {
@@ -345,6 +349,15 @@ var UptimeChart = function(chartElem, mapElem, config) {
         .getHours(), st.getMinutes()));
     return st.toISOString();
   }
+
+  this.isBrushed = function() {
+    if (_self.main_x.domain().toString() != _self.mini_x.domain().toString()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -565,7 +578,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
   }
 
   var brushend = function() {
-    _self.redraw(true);
+    _self.redraw();
   }
 
   this.brush = d3.svg.brush().x(this.mini_x).on("brush", brush2).on(
@@ -666,7 +679,7 @@ UptimeChart.prototype.drawChart = function(data, metric) {
         }).y(function(d) {
       return _self.main_y['tot_ms'](d['tot_ms']);
     });
-    this.main_line['state'] = d3.svg.line().interpolate("cardinal").x(
+    this.main_line['state'] = d3.svg.line().interpolate("step").x(
         function(d) {
           return _self.main_x(d.date);
         }).y(function(d) {
@@ -905,10 +918,11 @@ UptimeChart.prototype.drawMap = function(data, loc) {
   });
 
   this.mapData = data;
-  this.circles.selectAll("circle").data(data).enter().append("circle").attr(
-      "cx", function(d, i) {
-        return xy([ +d["longitude"], +d["latitude"] ])[0];
-      }).attr("cy", function(d, i) {
+
+  this.circles.selectAll("circle").data(data).enter().append("circle").style(
+      "stroke", "black").attr("cx", function(d, i) {
+    return xy([ +d["longitude"], +d["latitude"] ])[0];
+  }).attr("cy", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("r", function(d) {
     return _self.getSize(d);
@@ -922,14 +936,13 @@ UptimeChart.prototype.drawMap = function(data, loc) {
         html += '<div>* Total: ' + Math.round(_self.getTotal(d))
             + ' (ms)</div>';
         html += '</div>';
-        var g = d3.select(this); // The node
         var div = d3.select("body").append("div")
             .attr('pointer-events', 'none').attr("class", "tooltip").style(
                 "opacity", 1).html(html).style("left",
                 (d3.event.x + _self.config.map.tooltip.x + "px")).style("top",
                 (d3.event.y + _self.config.map.tooltip.y + "px"));
       }).on("mouseout", function(d) {
-    d3.select(this).style("fill", "steelblue");
+    d3.select(this).style("fill", _self.getColor(d));
     d3.select("body").select('div.tooltip').remove();
   }).style("fill", function(d) {
     return _self.getColor(d);
@@ -1079,14 +1092,14 @@ UptimeChart.prototype.drawGMap = function(data, loc) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ redraw by brush ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.redraw = function(brushed) {
+UptimeChart.prototype.redraw = function() {
   var _self = this;
   var json = [];
 
   var startTime = _self.toUTCISOString(_self.brush.extent()[0]);
   var endTime = _self.toUTCISOString(_self.brush.extent()[1]);
 
-  if (brushed) {
+  if (_self.isBrushed()) {
     for (var i = 0; i < this.mapData.length; i++) {
       var obj = {};
       for ( var key in this.mapData[i]) {
@@ -1105,7 +1118,7 @@ UptimeChart.prototype.redraw = function(brushed) {
     json = jQuery.extend(true, [], this.mapData);
   }
 
-  this.drawDiagram(this.makeDiagramData(this.diagram_data, brushed));
+  this.drawDiagram(this.makeDiagramData(this.diagram_data));
 
   if (_self.type) {
     for (var i = 0; i < this.mapData.length; i++) {
@@ -1172,9 +1185,9 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     var width = hgDim.width + hgDim.left + hgDim.right;
     var height = hgDim.height + hgDim.top + hgDim.bottom;
 
-    var hgsvg = d3.select(id).append("svg").attr('id', 'hgsvg').attr("width",
-        width).attr("height", height).append("g").attr("transform",
-        "translate(" + hgDim.left + "," + hgDim.top + ")");
+    var hgsvg = d3.select(id).append("svg").style("opacity", 0.8).attr('id',
+        'hgsvg').attr("width", width).attr("height", height).append("g").attr(
+        "transform", "translate(" + hgDim.left + "," + hgDim.top + ")");
 
     var x = d3.scale.ordinal().rangeRoundBands([ 0, hgDim.width ], 0.1).domain(
         fD.map(function(d) {
@@ -1274,7 +1287,9 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     piesvg.selectAll("path").data(pie(pD)).enter().append("path")
         .attr("d", arc).each(function(d) {
           this._current = d;
-        }).style("fill", function(d) {
+        }).style("stroke", function(d) {
+          return segColor(d.data.type);
+        }).style("opacity", 0.6).style("fill", function(d) {
           return segColor(d.data.type);
         }).on("mouseover", mouseover).on("mouseout", mouseout);
 
@@ -1309,10 +1324,10 @@ UptimeChart.prototype.makeDiagram = function(id, data) {
     var tr = legend2.append("tbody").selectAll("tr").data(lD).enter().append(
         "tr");
     tr.append("td").append("svg").attr("width", '16').attr("height", '16')
-        .append("rect").attr("width", '16').attr("height", '16').attr("fill",
-            function(d) {
-              return segColor(d.type);
-            });
+        .append("rect").attr("width", '16').attr("height", '16').style(
+            "opacity", 0.6).attr("fill", function(d) {
+          return segColor(d.type);
+        });
     tr.append("td").attr("class", 'legend2Name').text(function(d) {
       return _self.getLabelFullName(d.type) + ":";
     });
@@ -1412,7 +1427,12 @@ var config = {
   "map" : {
     "height" : 400,
     "width" : 950,
-    "circle_scale" : 1,
+    "circle_scale" : 0.2,
+    "circle" : {
+      "green" : 20,
+      "yellow" : 100,
+      "red" : 200
+    },
     "scale" : 150,
     "tooltip" : {
       "x" : 20,
@@ -1443,7 +1463,7 @@ var config = {
     "tfb_ms" : "Wait Time", // Time To 1st Byte
     "tot_ms" : "Response Time", // Roundtrip Time
     "state" : "Service State",
-    "aggregate" : "Aggregate",
+    "aggregate" : "Availability",
     "judge" : "Up/Down"
   }
 }
