@@ -233,6 +233,8 @@ circle {
 /* state */
 .line.linestate {
 	stroke: steelblue;
+	fill-opacity: .1;
+	fill: steelblue;
 }
 
 .focus circle.ystate {

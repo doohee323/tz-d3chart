@@ -495,7 +495,8 @@ UptimeChart.prototype.drawChart = function(data, metric) {
             if (type == 'text') {
               if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
                   ".line" + d.key).style("stroke"))) {
-                if (_self.type == _self.config.chart.yAxis.right) {
+                if (_self.type == _self.config.chart.yAxis.right
+                    || _self.type == 'state') {
                   d3.select(".line" + d.key).style("stroke", d.color).style(
                       "fill", d.color);
                 } else {
@@ -509,7 +510,8 @@ UptimeChart.prototype.drawChart = function(data, metric) {
                   ".line" + d.key).style("stroke"));
               if (pickColor != '#FFFFFF') {
                 d.color = pickColor;
-                if (_self.type == _self.config.chart.yAxis.right) {
+                if (_self.type == _self.config.chart.yAxis.right
+                    || _self.type == 'state') {
                   d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
                       "fill", "white");
                 } else {
@@ -630,10 +632,13 @@ UptimeChart.prototype.drawChart = function(data, metric) {
       }
     }
   } else {
-    this.mini_line[metric] = d3.svg.line().interpolate('cardinal').x(
-        function(d) {
-          return _self.mini_x(d.date);
-        }).y(function(d) {
+    var type = 'cardinal';
+    if (metric == 'state') {
+      type = 'step';
+    }
+    this.mini_line[metric] = d3.svg.line().interpolate(type).x(function(d) {
+      return _self.mini_x(d.date);
+    }).y(function(d) {
       return _self.mini_y[metric](d[metric]);
     });
   }
@@ -648,10 +653,13 @@ UptimeChart.prototype.drawChart = function(data, metric) {
 
   // I need to enumerate instead of above fancy way.
   if (metric != '*') {
-    this.main_line[metric] = d3.svg.line().interpolate("cardinal").x(
-        function(d) {
-          return _self.main_x(d.date);
-        }).y(function(d) {
+    var type = 'cardinal';
+    if (metric == 'state') {
+      type = 'step';
+    }
+    this.main_line[metric] = d3.svg.line().interpolate(type).x(function(d) {
+      return _self.main_x(d.date);
+    }).y(function(d) {
       return _self.main_y[metric](d[metric]);
     });
   } else {
@@ -679,10 +687,9 @@ UptimeChart.prototype.drawChart = function(data, metric) {
         }).y(function(d) {
       return _self.main_y['tot_ms'](d['tot_ms']);
     });
-    this.main_line['state'] = d3.svg.line().interpolate("step").x(
-        function(d) {
-          return _self.main_x(d.date);
-        }).y(function(d) {
+    this.main_line['state'] = d3.svg.line().interpolate("step").x(function(d) {
+      return _self.main_x(d.date);
+    }).y(function(d) {
       return _self.main_y['state'](d['state']);
     });
     this.main_line['aggregate'] = d3.svg.line().interpolate("cardinal").x(
