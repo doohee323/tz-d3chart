@@ -787,7 +787,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
           + this.config.lineChart.mini_margin.right).attr(
       "height",
       this.config.lineChart.mini_margin.top
-          + this.config.lineChart.mini_margin.bottom + this.mini_height);
+          + this.config.lineChart.mini_margin.bottom + this.mini_height).style("background-color", '#FE9A2E');
 
   this.MLSvg.append("defs").append("clipPath").attr("id", "clip")
       .append("rect").attr("width", this.main_width).attr("height",
@@ -797,6 +797,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
       "transform",
       "translate(" + this.config.lineChart.mini_margin.left + ","
           + this.config.lineChart.mini_margin.top + ")");
+  
   var mini_xAxis = d3.svg.axis().scale(this.mini_x).tickFormat(
       d3.time.format("%H:%M")).orient("bottom");
 
