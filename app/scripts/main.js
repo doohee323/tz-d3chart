@@ -285,7 +285,7 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
 
   this.main_x = d3.time.scale().range([ 0, this.main_width ]);
 
-  this.chartElem = chartElem;
+  this.mainChartElem = chartElem;
   var data = this.makeChartData(resultset);
   this.data = data;
 
@@ -338,7 +338,6 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
         data2[data2.length] = tmp;
       }
     }
-    d3.select("svg").remove();
     _self.lineChartInit();
     _self.drawLineChart(data2, val);
   });
@@ -361,7 +360,9 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
 
 UptimeChart.prototype.drawLineChart = function(data, metric) {
   var _self = this;
-  this.svg = d3.select(this.chartElem).append("svg").attr(
+  d3.select("[id='" + this.mainChartElem + "']").remove();
+  this.svg = d3.select(this.mainChartElem).append("svg").attr("id",
+      this.mainChartElem).attr(
       "width",
       this.main_width + this.config.lineChart.main_margin.left
           + this.config.lineChart.main_margin.right).attr(
@@ -384,7 +385,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
     g
         .each(function() {
           var g = d3.select(this), items = {};
-          this.svg = d3.select(_self.chartElem);
+          this.svg = d3.select(_self.mainChartElem);
           var legendPadding = g.attr("data-style-padding") || 10;
           var lb = g.selectAll(".legend-box").data([ true ]);
           var li = g.selectAll(".legend-items").data([ true ]);
@@ -471,7 +472,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
                 d3.select("line.y" + d.key).style("stroke", '#FFFFFF');
               }
             }
-            _self.redraw();
+            _self.redrawChart();
           }
 
           li.selectAll("text").data(items, function(d) {
@@ -757,7 +758,7 @@ UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
       - config.lineChart.mini_margin.top - config.lineChart.mini_margin.bottom;
   this.mini_x = d3.time.scale().range([ 0, this.main_width ]);
 
-  this.chartElem = chartElem;
+  this.miniChartElem = chartElem;
   var data = this.makeChartData(resultset);
   this.data = data;
 
@@ -786,7 +787,9 @@ UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
 
 UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
   var _self = this;
-  this.svg = d3.select(this.chartElem).append("svg").attr(
+  d3.select("[id='" + this.miniChartElem + "']").remove();
+  this.svg = d3.select(this.miniChartElem).append("svg").attr("id",
+      this.miniChartElem).attr(
       "width",
       this.main_width + this.config.lineChart.mini_margin.left
           + this.config.lineChart.mini_margin.right).attr(
@@ -817,7 +820,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
   }
 
   var brushend = function() {
-    _self.redraw();
+    _self.redrawChart();
   }
 
   this.brush = d3.svg.brush().x(this.mini_x).on("brush", brush2).on(
@@ -900,6 +903,9 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
     this.mini.append("path").datum(data).attr("class", "line line" + key).attr(
         "d", this.mini_line[key]);
   }
+
+  this.mini.append("g").attr("class", "x brush").call(this.brush).selectAll(
+      "rect").attr("y", -6).attr("height", this.mini_height + 7);
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -931,7 +937,6 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
         }
       }
     }
-    d3.select("[id='map']").remove();
     _self.lineChartInit();
     _self.drawMap(data2, val);
   });
@@ -989,8 +994,10 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.drawMap = function(data, loc) {
   var _self = this;
-  this.svg = d3.select(this.mapElem).append("svg").attr('id', 'map').attr(
-      "width", this.config.map.width).attr("height", this.config.map.height);
+  d3.select("[id='" + this.mapElem + "']").remove();
+  this.svg = d3.select(this.mapElem).append("svg").attr('id', this.mapElem)
+      .attr("width", this.config.map.width).attr("height",
+          this.config.map.height);
   this.states = this.svg.append("g").attr("id", "states");
   this.circles = this.svg.append("g").attr("id", "circles");
   this.labels = this.svg.append("g").attr("id", "labels");
@@ -1051,9 +1058,10 @@ UptimeChart.prototype.drawMap = function(data, loc) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ gmap chart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeGMap = function(data) {
+UptimeChart.prototype.makeGMap = function(gmapElem, data) {
   var _self = this;
   this.gmapData = data;
+  _self.gmapElem = gmapElem;
 
   var locs = {};
   for (var i = 0; i < data.length; i++) {
@@ -1070,7 +1078,6 @@ UptimeChart.prototype.makeGMap = function(data) {
         }
       }
     }
-    d3.select("[id='gmap']").remove();
     _self.lineChartInit();
     _self.drawGMap(data2, val);
   });
@@ -1085,7 +1092,7 @@ UptimeChart.prototype.makeGMap = function(data) {
 UptimeChart.prototype.drawGMap = function(data, loc) {
   var _self = this;
 
-  var map = new google.maps.Map(d3.select("#googleMap").node(), {
+  var map = new google.maps.Map(d3.select(_self.gmapElem).node(), {
     zoom : 2,
     center : new google.maps.LatLng(10, -350),
     mapTypeId : google.maps.MapTypeId.SATELLITE
@@ -1100,8 +1107,9 @@ UptimeChart.prototype.drawGMap = function(data, loc) {
   var overlay = new google.maps.OverlayView();
 
   overlay.onAdd = function() {
+    d3.select("[id='" + _self.gmapElem + "']").remove();
     var layer = d3.select(this.getPanes().overlayLayer).append("div").attr(
-        'id', 'gmap').attr("class", "stations");
+        'id', _self.gmapElem).attr("class", "stations");
 
     overlay.draw = function() {
       var marker2 = layer.selectAll("svg").data(d3.entries(data)).each(
@@ -1180,9 +1188,9 @@ UptimeChart.prototype.drawGMap = function(data, loc) {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-// [ redraw by brush ]
+// [ redrawChart with brushing ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.redraw = function() {
+UptimeChart.prototype.redrawChart = function() {
   var _self = this;
   var json = [];
 
@@ -1704,6 +1712,6 @@ d3.json("data.json", function(error, json) {
   uptimeChart.makeMap("#graph", json);
   // d3.json("map.json", function(json) {
   // $('#googleMap').width(config.gmap.width).height(config.gmap.height);
-  // uptimeChart.makeGMap(json);
+  // uptimeChart.makeGMap("#googleMap", json);
   // });
 });
