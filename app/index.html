@@ -37,8 +37,8 @@
 					<div class="col-xs-5">
 						<select class="views form-control col-sm-5" placeholder="views"
 							onchange="selectView()">
-							<option value='tot_ms'>Response Time</option>
-							<option value='aggregate' selected>Availability</option>
+							<option value='tot_ms' selected>Response Time</option>
+							<option value='aggregate' >Availability</option>
 						</select>
 					</div>
 				</div>
@@ -56,11 +56,12 @@
 			</form>
 			<div class="tot_ms_view">
 				<div id="stackedChart"></div>
-				<div id='diagram'></div>
+				<div id="minilineChart"></div>
+				<div id='histogram'></div>
 			</div>
 			<div class="aggregate_view">
 				<div id="lineChart"></div>
-				<div id="minilineChart"></div>
+				<div id="minilineChart2"></div>
 			</div>
 			<div id="graph"></div>
 			<!--<div id="googleMap"></div> -->

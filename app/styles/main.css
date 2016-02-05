@@ -315,3 +315,18 @@ path:hover {
 #diagram {
 	width: 800px;
 }
+
+span {
+	width: 250px;
+	height: 100px;
+}
+
+.flt {
+	margin-top: 10px;
+	float: left;
+}
+
+.frt {
+	margin-top: 20px;
+	float: right;
+}
