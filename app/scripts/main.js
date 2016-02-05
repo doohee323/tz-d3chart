@@ -266,7 +266,7 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
 
   this.mainChartElem = chartElem;
   var data = this.makeChartData(resultset);
-  this.data = data;
+  this.lineData = data;
 
   var metrices = {};
   for ( var key in data[0]) {
@@ -303,7 +303,7 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
 
   this.makeCombo(metrices, this.config.lineChart.combo.id, function(val) {
     if (val == '*') {
-      data2 = _self.data;
+      data2 = _self.lineData;
     } else {
       var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
@@ -739,7 +739,7 @@ UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
 
   this.miniChartElem = chartElem;
   var data = this.makeChartData(resultset);
-  this.data = data;
+  this.lineData = data;
 
   var metrices = {};
   for ( var key in data[0]) {
@@ -1203,8 +1203,9 @@ UptimeChart.prototype.redrawChart = function() {
     json = jQuery.extend(true, [], this.mapData);
   }
 
-  this.drawHistogram(this.makeHistogramData(this.histogram_data));
-  this.drawStackedChart(this.makeStackedData(this.stacked_data));
+  this.drawStackedChart(this.makeStackedData(this.lineData), function(svg) {
+    this.drawHistogram(this.makeHistogramData(this.lineData), svg);
+  });
 
   if (_self.metric) {
     for (var i = 0; i < this.mapData.length; i++) {
@@ -1242,10 +1243,8 @@ UptimeChart.prototype.redrawChart = function() {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make Histogram ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeHistogram = function(id, data) {
+UptimeChart.prototype.makeHistogram = function(id, hgsvg) {
   var _self = this;
-  _self.id = id;
-  _self.histogram_data = data;
 
   var barColor = 'steelblue';
   function segColor(c) {
@@ -1259,38 +1258,34 @@ UptimeChart.prototype.makeHistogram = function(id, data) {
   // function to handle histogram.
   _self.histogram = function(fD) {
     var hg = {};
-    var hgDim = {
-      top : 30,
-      right : _self.config.lineChart.main_margin.right,
-      bottom : 0,
-      left : _self.config.lineChart.main_margin.left
-    };
-    hgDim.width = _self.main_width;
-    hgDim.height = 50 - hgDim.top - hgDim.bottom;
-    var width = hgDim.width + hgDim.left + hgDim.right;
-    var height = hgDim.height + hgDim.top + hgDim.bottom;
+    var width = _self.main_width;
+    var height = _self.config.histogram.margin.height
+        - _self.config.histogram.margin.top
+        - _self.config.histogram.margin.bottom;
 
-    var hgsvg = d3.select(id).append("svg").style("opacity", 0.8).attr('id',
-        'hgsvg').attr("width", width).attr("height", height).append("g").attr(
-        "transform", "translate(" + hgDim.left + "," + hgDim.top + ")");
+    // var hgsvg = d3.select(id).append("svg").style("opacity", 0.8).attr('id',
+    // 'hgsvg').attr("width", width).attr("height", height).append("g").attr(
+    // "transform", "translate(" + hgDim.left + "," + hgDim.top + ")");
 
-    var x = d3.scale.ordinal().rangeRoundBands([ 0, hgDim.width ], 0.1).domain(
+    var x = d3.scale.ordinal().rangeRoundBands(
+        [ 0, _self.config.histogram.margin.width ], 0.1).domain(
         fD.map(function(d) {
           return d[0];
         }));
 
     hgsvg.append("g").attr("class", "x axis").attr("transform",
-        "translate(0," + hgDim.height + ")").call(
+        "translate(0," + _self.config.histogram.margin.height + ")").call(
         d3.svg.axis().scale(x).orient("bottom"));
 
-    hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top / 2)).attr(
-        "text-anchor", "middle").style("text-decoration", "underline").text(
-        "Average Response Time");
+    // hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top / 2)).attr(
+    // "text-anchor", "middle").style("text-decoration", "underline").text(
+    // "Average Response Time");
 
-    var y = d3.scale.linear().range([ hgDim.height, 0 ]).domain(
-        [ 0, d3.max(fD, function(d) {
-          return d[1];
-        }) ]);
+    var y = d3.scale.linear()
+        .range([ _self.config.histogram.margin.height, 0 ]).domain(
+            [ 0, d3.max(fD, function(d) {
+              return d[1];
+            }) ]);
 
     var bars = hgsvg.selectAll(".bar").data(fD).enter().append("g").attr(
         "class", "bar");
@@ -1299,7 +1294,7 @@ UptimeChart.prototype.makeHistogram = function(id, data) {
     }).attr("y", function(d) {
       return y(d[1]);
     }).attr("width", x.rangeBand()).attr("height", function(d) {
-      return hgDim.height - y(d[1]);
+      return height - y(d[1]);
     }).attr('fill', barColor).style("cursor", "pointer").on("mouseover",
         mouseover).on("mouseout", mouseout);
 
@@ -1340,7 +1335,7 @@ UptimeChart.prototype.makeHistogram = function(id, data) {
       bars.select("rect").transition().duration(500).attr("y", function(d) {
         return y(d[1]);
       }).attr("height", function(d) {
-        return hgDim.height - y(d[1]);
+        return _self.config.histogram.margin.height - y(d[1]);
       }).attr("fill", color);
 
       bars.select("text").transition().duration(500).text(function(d) {
@@ -1444,7 +1439,7 @@ UptimeChart.prototype.makeHistogram = function(id, data) {
     return lg;
   }
 
-  this.drawHistogram(this.makeHistogramData(data));
+  this.drawHistogram(this.makeHistogramData(this.lineData));
 }
 
 UptimeChart.prototype.drawHistogram = function(data) {
@@ -1478,9 +1473,8 @@ UptimeChart.prototype.drawHistogram = function(data) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make StackedChart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeStackedChart = function(id, data) {
+UptimeChart.prototype.makeStackedChart = function(id, data, cb) {
   var _self = this;
-  _self.stacked_data = data;
   this.stackedChartElem = id;
 
   var width = config.stackedChart.margin.width
@@ -1494,10 +1488,12 @@ UptimeChart.prototype.makeStackedChart = function(id, data) {
       [ "#308fef", "#6b486b", "#ff8c00" ]);
 
   data = this.makeStackedData(data);
-  this.drawStackedChart(data);
+  this.drawStackedChart(data, function(svg) {
+    cb.call(null, svg);
+  });
 }
 
-UptimeChart.prototype.drawStackedChart = function(data) {
+UptimeChart.prototype.drawStackedChart = function(data, cb) {
   var _self = this;
 
   var width = config.stackedChart.margin.width
@@ -1514,7 +1510,7 @@ UptimeChart.prototype.drawStackedChart = function(data) {
       .tickFormat(d3.format(".2s"));
 
   d3.select("[id='" + this.stackedChartElem + "']").remove();
-  var svg = d3.select(this.stackedChartElem).append("svg").attr("id",
+  var stSvg = d3.select(this.stackedChartElem).append("svg").attr("id",
       this.stackedChartElem).attr(
       "width",
       width + config.stackedChart.margin.left
@@ -1548,14 +1544,14 @@ UptimeChart.prototype.drawStackedChart = function(data) {
     return d.total;
   }) ]);
 
-  // svg.append("g").attr("class", "x axis").attr("transform",
+  // stSvg.append("g").attr("class", "x axis").attr("transform",
   // "translate(0," + height + ")").call(xAxis);
 
-  svg.append("g").attr("class", "y axis").call(yAxis).append("text").attr(
+  stSvg.append("g").attr("class", "y axis").call(yAxis).append("text").attr(
       "transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
       "text-anchor", "end").text("(ms)");
 
-  var date = svg.selectAll(".date").data(data).enter().append("g").attr(
+  var date = stSvg.selectAll(".date").data(data).enter().append("g").attr(
       "class", "g").attr("transform", function(d) {
     return "translate(" + x(d.date) + ",0)";
   });
@@ -1570,7 +1566,7 @@ UptimeChart.prototype.drawStackedChart = function(data) {
     return _self.stackedColor(d.key);
   });
 
-  var legend = svg.selectAll(".legend").data(
+  var legend = stSvg.selectAll(".legend").data(
       _self.stackedColor.domain().slice().reverse()).enter().append("g").attr(
       "class", "legend").attr("transform", function(d, i) {
     return "translate(" + i * -120 + ", 0)";
@@ -1583,6 +1579,8 @@ UptimeChart.prototype.drawStackedChart = function(data) {
       .style("text-anchor", "end").text(function(d) {
         return _self.getLabelFullName(d);
       });
+
+  cb.call(null, stSvg);
 }
 
 UptimeChart.prototype.makeStackedData = function(json) {
@@ -1665,13 +1663,23 @@ var config = {
       "width" : 10
     }
   },
+  "histogram" : {
+    "margin" : {
+      "width" : 950,
+      "height" : 205,
+      "top" : 130,
+      "right" : 20,
+      "bottom" : 0,
+      "left" : 60
+    }
+  },
   "stackedChart" : {
     "margin" : {
       "width" : 950,
       "height" : 250,
       "top" : 20,
       "right" : 20,
-      "bottom" : 5,
+      "bottom" : 25,
       "left" : 60
     },
     "legend" : {
@@ -1734,8 +1742,9 @@ function selectView() {
         $('.aggregate_view').hide();
         uptimeChart.makeMiniLineChart("#minilineChart", json, function(data) {
         });
-        uptimeChart.makeHistogram('#histogram', data);
-        uptimeChart.makeStackedChart('#stackedChart', data);
+        uptimeChart.makeStackedChart('#stackedChart', data, function(svg) {
+          uptimeChart.makeHistogram('#histogram', svg);
+        });
       } else {
         $('.tot_ms_view').hide();
         $('.aggregate_view').show();
