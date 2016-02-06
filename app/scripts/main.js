@@ -1332,7 +1332,7 @@ UptimeChart.prototype.makeHistogram = function(id, hgsvg) {
 
     var bars = hgsvg.selectAll(".bar").data(fD).enter().append("g").attr(
         "class", "bar");
-    bars.append("rect").style("opacity", 0.6).attr("x", function(d) {
+    bars.append("rect").style("opacity", 0.4).attr("x", function(d) {
       return x(d[0]);
     }).attr("y", function(d) {
       return y(d[1] * ratio);
@@ -1687,14 +1687,15 @@ var config = {
       "width" : 950,
       "height" : 250,
       "top" : 50,
-      "right" : 40,
       "bottom" : 20,
+      "right" : 40,
       "left" : 40
     },
     "mini_margin" : {
+      "width" : 950,
+      "height" : 40,
       "top" : 0,
       "bottom" : 20,
-      "height" : 40,
       "right" : 40,
       "left" : 40
     },
@@ -1712,9 +1713,9 @@ var config = {
       "width" : 950,
       "height" : 175,
       "top" : 130,
-      "right" : 20,
       "bottom" : 0,
-      "left" : 60
+      "right" : 40,
+      "left" : 40
     },
     "ratio" : 0.5,
     "group_size" : 5
@@ -1724,9 +1725,9 @@ var config = {
       "width" : 950,
       "height" : 250,
       "top" : 50,
-      "right" : 20,
       "bottom" : 25,
-      "left" : 60
+      "right" : 40,
+      "left" : 40
     }
   },
   "map" : {
