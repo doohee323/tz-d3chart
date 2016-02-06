@@ -56,6 +56,159 @@ var UptimeChart = function(config) {
     }
   }
 
+  this.makeLegend = function(g, id, metric) {
+    g
+        .each(function() {
+          var g = d3.select(this);
+          var items = {};
+          var legendPadding = g.attr("data-style-padding") || 10;
+          var lb = g.selectAll(".legend-box").data([ true ]);
+          var li = g.selectAll(".legend-items").data([ true ]);
+
+          lb.enter().append("rect").classed("legend-box", true);
+          li.enter().append("g").classed("legend-items", true);
+
+          d3
+              .select(id)
+              .selectAll("[data-legend]")
+              .each(
+                  function() {
+                    var self = d3.select(this);
+                    if (metric == '*') {
+                      items[self.attr("data-legend")] = {
+                        pos : self.attr("data-legend-pos") || this.getBBox().y,
+                        color : self.attr("data-legend-color") != undefined ? self
+                            .attr("data-legend-color")
+                            : self.style("fill") != 'none' ? self.style("fill")
+                                : self.style("stroke")
+                      }
+                    } else {
+                      if (self.attr("data-legend") == metric
+                          || self.attr("data-legend") == _self.config.lineChart.yAxis.right) {
+                        items[self.attr("data-legend")] = {
+                          pos : self.attr("data-legend-pos")
+                              || this.getBBox().y,
+                          color : self.attr("data-legend-color") != undefined ? self
+                              .attr("data-legend-color")
+                              : self.style("fill") != 'none' ? self
+                                  .style("fill") : self.style("stroke")
+                        }
+                      }
+                    }
+                  })
+          items = d3.entries(items).sort(function(a, b) {
+            return a.value.pos - b.value.pos;
+          })
+
+          // set judge first in array
+          var items2 = new Array();
+          var ritem = items.find(function(element, index, array) {
+            if (element.key == _self.config.lineChart.yAxis.right) {
+              return element;
+            } else {
+              return false;
+            }
+          });
+          if (ritem) {
+            items2.push(ritem);
+          }
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].key != _self.config.lineChart.yAxis.right && items[i]) {
+              items2.push(items[i]);
+            }
+          }
+          items = items2;
+
+          var toggle = function(metric, d, i) {
+            _self.metric = d.key;
+            if (metric == 'text') {
+              if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
+                  ".line" + d.key).style("stroke"))) {
+                if (_self.metric == _self.config.lineChart.yAxis.right
+                    || _self.metric == 'state') {
+                  d3.select(".line" + d.key).style("stroke", d.color).style(
+                      "fill", d.color);
+                } else {
+                  d3.select(".line" + d.key).style("stroke", d.color);
+                }
+                d3.select("circle.y" + d.key).style("stroke", d.color);
+                d3.select("line.y" + d.key).style("stroke", d.color);
+              }
+            } else if (metric == 'circle') {
+              var pickColor = _self.convertRGBDecimalToHex(d3.select(
+                  ".line" + d.key).style("stroke"));
+              if (pickColor != '#FFFFFF') {
+                d.color = pickColor;
+                if (_self.metric == _self.config.lineChart.yAxis.right
+                    || _self.metric == 'state') {
+                  d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
+                      "fill", "white");
+                } else {
+                  d3.select(".line" + d.key).style("stroke", '#FFFFFF');
+                }
+                d3.select("circle.y" + d.key).style("stroke", '#FFFFFF');
+                d3.select("line.y" + d.key).style("stroke", '#FFFFFF');
+              }
+            }
+            _self.redrawChart();
+          }
+
+          li.selectAll("text").data(items, function(d) {
+            return d.key;
+          }).call(function(d) {
+            d.enter().append("text");
+          }).call(function(d) {
+            d.exit().remove();
+          }).attr("y", function(d, i) {
+            var y = _self.config.legend.y + 1.2;
+            return y + "em";
+          }).attr("x", function(d, i) {
+            var x = i * _self.config.legend.x + 2;
+            return x + "em";
+          }).text(function(d, i) {
+            return _self.getLabelFullName(d.key);
+          }).on("click", function(d, i) {
+            toggle('text', d, i);
+          }).style("cursor", "pointer");
+
+          li.selectAll("rect").data(items, function(d) {
+            return d.key;
+          }).call(function(d) {
+            d.enter().append("rect");
+          }).call(function(d) {
+            d.exit().remove();
+          }).attr("x", function(d, i) {
+            var x = i * _self.config.legend.x;
+            return x + "em";
+          }).attr("y", function(d, i) {
+            var y = _self.config.legend.y;
+            return y + "em";
+          }).attr("width", _self.config.legend.width).attr("height", _self.config.legend.height)
+          // }).call(function(d) {
+          // d.enter().append("circle");
+          // }).call(function(d) {
+          // d.exit().remove();
+          // }).attr("cy", function(d, i) {
+          // return "0em";
+          // }).attr("cx", function(d, i) {
+          // var col = i * _self.config.legend.x;
+          // return col + "em";
+          // }).attr("r", "0.8em")
+          .style("fill", function(d) {
+            return d.value.color;
+          }).on("click", function(d, i) {
+            toggle('circle', d, i);
+          }).style("cursor", "pointer");
+
+          var lbbox = li[0][0].getBBox();
+          lb.attr("x", (lbbox.x - legendPadding)).attr("y",
+              (lbbox.y - legendPadding)).attr("height",
+              (lbbox.height + 2 * legendPadding)).attr("width",
+              (lbbox.width + 2 * legendPadding));
+        })
+    return g;
+  }
+
   // make mapData for lineChart from maxtrix, locs
   this.makeMapData = function(resultset, metric) {
     var data = resultset.data.metric;
@@ -368,142 +521,6 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
   this.main_xAxis = d3.svg.axis().scale(this.main_x).tickFormat(
       d3.time.format("%H:%M")).orient("bottom");
 
-  d3.legend = function(g) {
-    g
-        .each(function() {
-          var g = d3.select(this), items = {};
-          this.lineSvg = d3.select(_self.mainChartElem);
-          var legendPadding = g.attr("data-style-padding") || 10;
-          var lb = g.selectAll(".legend-box").data([ true ]);
-          var li = g.selectAll(".legend-items").data([ true ]);
-
-          lb.enter().append("rect").classed("legend-box", true);
-          li.enter().append("g").classed("legend-items", true);
-
-          this.lineSvg
-              .selectAll("[data-legend]")
-              .each(
-                  function() {
-                    if (metric == '*') {
-                      var self = d3.select(this);
-                      items[self.attr("data-legend")] = {
-                        pos : self.attr("data-legend-pos") || this.getBBox().y,
-                        color : self.attr("data-legend-color") != undefined ? self
-                            .attr("data-legend-color")
-                            : self.style("fill") != 'none' ? self.style("fill")
-                                : self.style("stroke")
-                      }
-                    } else {
-                      var self = d3.select(this);
-                      if (self.attr("data-legend") == metric
-                          || self.attr("data-legend") == _self.config.lineChart.yAxis.right) {
-                        items[self.attr("data-legend")] = {
-                          pos : self.attr("data-legend-pos")
-                              || this.getBBox().y,
-                          color : self.attr("data-legend-color") != undefined ? self
-                              .attr("data-legend-color")
-                              : self.style("fill") != 'none' ? self
-                                  .style("fill") : self.style("stroke")
-                        }
-                      }
-                    }
-                  })
-          items = d3.entries(items).sort(function(a, b) {
-            return a.value.pos - b.value.pos;
-          })
-
-          // set judge first in array
-          var items2 = new Array();
-          items2.push(items.find(function(element, index, array) {
-            if (element.key == _self.config.lineChart.yAxis.right) {
-              return element;
-            } else {
-              return false;
-            }
-          }));
-          for (var i = 0; i < items.length; i++) {
-            if (items[i].key != _self.config.lineChart.yAxis.right) {
-              items2.push(items[i]);
-            }
-          }
-          items = items2;
-
-          var toggle = function(metric, d, i) {
-            _self.metric = d.key;
-            if (metric == 'text') {
-              if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
-                  ".line" + d.key).style("stroke"))) {
-                if (_self.metric == _self.config.lineChart.yAxis.right
-                    || _self.metric == 'state') {
-                  d3.select(".line" + d.key).style("stroke", d.color).style(
-                      "fill", d.color);
-                } else {
-                  d3.select(".line" + d.key).style("stroke", d.color);
-                }
-                d3.select("circle.y" + d.key).style("stroke", d.color);
-                d3.select("line.y" + d.key).style("stroke", d.color);
-              }
-            } else if (metric == 'circle') {
-              var pickColor = _self.convertRGBDecimalToHex(d3.select(
-                  ".line" + d.key).style("stroke"));
-              if (pickColor != '#FFFFFF') {
-                d.color = pickColor;
-                if (_self.metric == _self.config.lineChart.yAxis.right
-                    || _self.metric == 'state') {
-                  d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
-                      "fill", "white");
-                } else {
-                  d3.select(".line" + d.key).style("stroke", '#FFFFFF');
-                }
-                d3.select("circle.y" + d.key).style("stroke", '#FFFFFF');
-                d3.select("line.y" + d.key).style("stroke", '#FFFFFF');
-              }
-            }
-            _self.redrawChart();
-          }
-
-          li.selectAll("text").data(items, function(d) {
-            return d.key;
-          }).call(function(d) {
-            d.enter().append("text");
-          }).call(function(d) {
-            d.exit().remove();
-          }).attr("y", function(d, i) {
-            return "0.25em";
-          }).attr("x", function(d, i) {
-            var col = i * _self.config.lineChart.legend.width + 1;
-            return col + "em";
-          }).text(function(d, i) {
-            return _self.getLabelFullName(d.key);
-          }).on("click", function(d, i) {
-            toggle('text', d, i);
-          }).style("cursor", "pointer");
-          li.selectAll("circle").data(items, function(d) {
-            return d.key;
-          }).call(function(d) {
-            d.enter().append("circle");
-          }).call(function(d) {
-            d.exit().remove();
-          }).attr("cy", function(d, i) {
-            return "0em";
-          }).attr("cx", function(d, i) {
-            var col = i * _self.config.lineChart.legend.width;
-            return col + "em";
-          }).attr("r", "0.8em").style("fill", function(d) {
-            return d.value.color;
-          }).on("click", function(d, i) {
-            toggle('circle', d, i);
-          }).style("cursor", "pointer");
-
-          var lbbox = li[0][0].getBBox();
-          lb.attr("x", (lbbox.x - legendPadding)).attr("y",
-              (lbbox.y - legendPadding)).attr("height",
-              (lbbox.height + 2 * legendPadding)).attr("width",
-              (lbbox.width + 2 * legendPadding));
-        })
-    return g;
-  }
-
   data.forEach(function(d) {
     try {
       var dt = _self.parseDate(d.date);
@@ -731,7 +748,8 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
 
   // /[ legend ]///////////////////////////
   var legend = this.main.append("g").attr("class", "legend").attr("transform",
-      "translate(40, " + this.config.lineChart.legend.y + ")").call(d3.legend);
+      "translate(40, " + this.config.legend.y + ")").call(
+      this.makeLegend, _self.mainChartElem, metric);
 }
 
 UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
@@ -787,7 +805,8 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
           + this.config.lineChart.mini_margin.right).attr(
       "height",
       this.config.lineChart.mini_margin.top
-          + this.config.lineChart.mini_margin.bottom + this.mini_height).style("background-color", '#FE9A2E');
+          + this.config.lineChart.mini_margin.bottom + this.mini_height).style(
+      "background-color", '#FE9A2E');
 
   this.MLSvg.append("defs").append("clipPath").attr("id", "clip")
       .append("rect").attr("width", this.main_width).attr("height",
@@ -797,7 +816,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
       "transform",
       "translate(" + this.config.lineChart.mini_margin.left + ","
           + this.config.lineChart.mini_margin.top + ")");
-  
+
   var mini_xAxis = d3.svg.axis().scale(this.mini_x).tickFormat(
       d3.time.format("%H:%M")).orient("bottom");
 
@@ -1210,9 +1229,10 @@ UptimeChart.prototype.redrawChart = function() {
   }
 
   if ($('.views').val() == 'tot_ms') { // response time
-    _self.drawStackedChart(_self.makeStackedData(_self.lineData), function(svg) {
-      _self.drawHistogram(_self.makeHistogramData(_self.lineData), svg);
-    });
+    _self.drawStackedChart(_self.makeStackedData(_self.lineData),
+        function(svg) {
+          _self.drawHistogram(_self.makeHistogramData(_self.lineData), svg);
+        });
   }
 
   if (_self.metric) {
@@ -1570,25 +1590,18 @@ UptimeChart.prototype.drawStackedChart = function(data, cb) {
     return d.metrics;
   }).enter().append("rect").attr("width", x.rangeBand()).attr("y", function(d) {
     return y(d.y1);
+  }).attr("data-legend", function(d) {
+    return d.key;
   }).attr("height", function(d) {
     return y(d.y0) - y(d.y1);
   }).style("fill", function(d) {
     return _self.stackedColor(d.key);
   });
 
-  var legend = stSvg.selectAll(".legend").data(
-      _self.stackedColor.domain().slice().reverse()).enter().append("g").attr(
-      "class", "legend").attr("transform", function(d, i) {
-    return "translate(" + i * -120 + ", 0)";
-  });
-
-  legend.append("rect").attr("x", width - 120).attr("width", 18).attr("height",
-      18).style("fill", _self.stackedColor);
-
-  legend.append("text").attr("x", width - 30).attr("y", 9).attr("dy", ".35em")
-      .style("text-anchor", "end").text(function(d) {
-        return _self.getLabelFullName(d);
-      });
+  // /[ legend ]///////////////////////////
+  var legend = stSvg.append("g").attr("class", "legend").attr("transform",
+      "translate(40, " + this.config.legend.y + ")").call(
+      this.makeLegend, _self.stackedChartElem, "*");
 
   cb.call(null, stSvg);
 }
@@ -1666,17 +1679,12 @@ var config = {
     "combo" : {
       "id" : "gmetrices",
       "init" : "aggregate"
-    },
-    "legend" : {
-      "x" : 40,
-      "y" : -25,
-      "width" : 10
     }
   },
   "histogram" : {
     "margin" : {
       "width" : 950,
-      "height" : 205,
+      "height" : 175,
       "top" : 130,
       "right" : 20,
       "bottom" : 0,
@@ -1689,15 +1697,10 @@ var config = {
     "margin" : {
       "width" : 950,
       "height" : 250,
-      "top" : 20,
+      "top" : 50,
       "right" : 20,
       "bottom" : 25,
       "left" : 60
-    },
-    "legend" : {
-      "x" : 40,
-      "y" : -25,
-      "width" : 10
     }
   },
   "map" : {
@@ -1732,6 +1735,12 @@ var config = {
       "id" : "glocs",
       "init" : "*"
     }
+  },
+  "legend" : {
+    "x" : 10,
+    "y" : -3,
+    "width" : 18,
+    "height" : 18
   },
   "mapping" : {
     "nsl_ms" : "DNS Time", // DNS Lookup
