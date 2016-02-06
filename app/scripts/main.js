@@ -183,7 +183,8 @@ var UptimeChart = function(config) {
           }).attr("y", function(d, i) {
             var y = _self.config.legend.y;
             return y + "em";
-          }).attr("width", _self.config.legend.width).attr("height", _self.config.legend.height)
+          }).attr("width", _self.config.legend.width).attr("height",
+              _self.config.legend.height)
           // }).call(function(d) {
           // d.enter().append("circle");
           // }).call(function(d) {
@@ -481,8 +482,20 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
         data2[data2.length] = tmp;
       }
     }
-    _self.lineChartInit();
-    _self.drawLineChart(data2, val);
+    if ($('.views').val() == 'tot_ms') { // response time
+      if ($('#gmetrices').val() !== 'tot_ms') {
+        _self.metric = $('#gmetrices').val();
+      } else {
+        _self.metric = null;
+      }
+      _self.drawStackedChart(_self.makeStackedData(_self.lineData), function(
+          svg) {
+        _self.drawHistogram(_self.makeHistogramData(_self.lineData), svg);
+      });
+    } else {
+      _self.lineChartInit();
+      _self.drawLineChart(data2, val);
+    }
   });
 
   this.drawLineChart(data, _self.config.lineChart.combo.init);
@@ -748,8 +761,8 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
 
   // /[ legend ]///////////////////////////
   var legend = this.main.append("g").attr("class", "legend").attr("transform",
-      "translate(40, " + this.config.legend.y + ")").call(
-      this.makeLegend, _self.mainChartElem, metric);
+      "translate(40, " + this.config.legend.y + ")").call(this.makeLegend,
+      _self.mainChartElem, metric);
 }
 
 UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
@@ -1232,9 +1245,11 @@ UptimeChart.prototype.redrawChart = function() {
     _self.drawStackedChart(_self.makeStackedData(_self.lineData),
         function(svg) {
           _self.drawHistogram(_self.makeHistogramData(_self.lineData), svg);
+          $('#gmetrices').val(_self.metric);
         });
   }
 
+  // map
   if (_self.metric) {
     for (var i = 0; i < this.mapData.length; i++) {
       var obj = {};
@@ -1298,7 +1313,6 @@ UptimeChart.prototype.makeHistogram = function(id, hgsvg) {
 
     var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], 0.1).domain(
         fD.map(function(d) {
-          // return _self.formatDate(d[0]);
           return d[0];
         }));
 
@@ -1600,8 +1614,8 @@ UptimeChart.prototype.drawStackedChart = function(data, cb) {
 
   // /[ legend ]///////////////////////////
   var legend = stSvg.append("g").attr("class", "legend").attr("transform",
-      "translate(40, " + this.config.legend.y + ")").call(
-      this.makeLegend, _self.stackedChartElem, "*");
+      "translate(40, " + this.config.legend.y + ")").call(this.makeLegend,
+      _self.stackedChartElem, "*");
 
   cb.call(null, stSvg);
 }
@@ -1627,26 +1641,38 @@ UptimeChart.prototype.makeStackedData = function(json) {
   data.forEach(function(d) {
     var tmp = {};
     tmp.date = d.date;
-    tmp.nsl_ms = d.nsl_ms;
-    tmp.con_ms = d.con_ms;
-    tmp.tfb_ms = d.tfb_ms;
+    if (_self.metric) {
+      tmp[_self.metric] = d[_self.metric];
+    } else {
+      tmp.nsl_ms = d.nsl_ms;
+      tmp.con_ms = d.con_ms;
+      tmp.tfb_ms = d.tfb_ms;
+    }
     input.push(tmp);
   });
 
   input.forEach(function(d) {
     d.date = +d.date;
-    d.nsl_ms = +d.nsl_ms;
-    d.con_ms = +d.con_ms;
-    d.tfb_ms = +d.tfb_ms;
+    if (_self.metric) {
+      d[_self.metric] = +d[_self.metric];
+    } else {
+      d.nsl_ms = +d.nsl_ms;
+      d.con_ms = +d.con_ms;
+      d.tfb_ms = +d.tfb_ms;
+    }
   });
 
   data = new Array();
   input.forEach(function(d) {
     var tmp = {};
     tmp.date = new Date(d.date * 1000);
-    tmp.nsl_ms = d.nsl_ms;
-    tmp.con_ms = d.con_ms;
-    tmp.tfb_ms = d.tfb_ms;
+    if (_self.metric) {
+      tmp[_self.metric] = d[_self.metric];
+    } else {
+      tmp.nsl_ms = d.nsl_ms;
+      tmp.con_ms = d.con_ms;
+      tmp.tfb_ms = d.tfb_ms;
+    }
     data.push(tmp);
   });
   return data;
@@ -1691,7 +1717,7 @@ var config = {
       "left" : 60
     },
     "ratio" : 0.5,
-    "group_size" : 10
+    "group_size" : 5
   },
   "stackedChart" : {
     "margin" : {
