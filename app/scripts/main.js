@@ -488,9 +488,8 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
       } else {
         _self.metric = null;
       }
-      _self.drawStackedChart(_self.makeStackedData(_self.lineData), function(
-          svg) {
-        _self.drawHistogram(_self.makeHistogramData(_self.lineData), svg);
+      _self.drawStackedChart(_self.makeStackedData(_self.lineData), function() {
+        _self.drawHistogram(_self.makeHistogramData(_self.lineData));
       });
     } else {
       _self.lineChartInit();
@@ -1242,11 +1241,12 @@ UptimeChart.prototype.redrawChart = function() {
   }
 
   if ($('.views').val() == 'tot_ms') { // response time
-    _self.drawStackedChart(_self.makeStackedData(_self.lineData),
-        function(svg) {
-          _self.drawHistogram(_self.makeHistogramData(_self.lineData), svg);
-          $('#gmetrices').val(_self.metric);
-        });
+    _self.drawStackedChart(_self.makeStackedData(_self.lineData), function() {
+      _self.drawHistogram(_self.makeHistogramData(_self.lineData));
+      if (_self.metric) {
+        $('#gmetrices').val(_self.metric);
+      }
+    });
   }
 
   // map
@@ -1266,7 +1266,7 @@ UptimeChart.prototype.redrawChart = function() {
       json.push(obj);
     }
   }
-
+  
   this.circles.selectAll("circle").transition().duration(1000).ease("linear")
       .attr("r", function(d) {
         return _self.getCircleSize(json, d.loc);
@@ -1286,8 +1286,9 @@ UptimeChart.prototype.redrawChart = function() {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make Histogram ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeHistogram = function(id, hgsvg) {
+UptimeChart.prototype.makeHistogram = function(id) {
   var _self = this;
+  // _self.hgsvg = hgsvg1;
 
   var barColor = 'steelblue';
   function segColor(c) {
@@ -1307,21 +1308,30 @@ UptimeChart.prototype.makeHistogram = function(id, hgsvg) {
     var height = _self.config.histogram.margin.height;
     var ratio = _self.config.histogram.ratio;
 
-    // var hgsvg = d3.select(id).append("svg").style("opacity", 0.8).attr('id',
-    // 'hgsvg').attr("width", width).attr("height", height).append("g").attr(
-    // "transform", "translate(" + hgDim.left + "," + hgDim.top + ")");
+    // d3.select("[id='hgsvg']").remove();
+    // var hgsvg = _self.hgsvg.append("svg").attr("id", 'hgsvg').attr(
+    // "width",
+    // width + config.stackedChart.margin.left
+    // + config.stackedChart.margin.right).attr(
+    // "height",
+    // height + config.stackedChart.margin.top
+    // + config.stackedChart.margin.bottom).append("g").attr(
+    // "transform",
+    // "translate(" + config.stackedChart.margin.left + ","
+    // + config.stackedChart.margin.top + ")");
 
     var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], 0.1).domain(
         fD.map(function(d) {
           return d[0];
         }));
 
-    hgsvg.append("g").attr("class", "x axis").attr("transform",
+    _self.hgsvg.append("g").attr("class", "x axis").attr("transform",
         "translate(0," + height + ")").call(
         d3.svg.axis().scale(x).tickFormat(d3.time.format("%H:%M")).orient(
             "bottom"));
 
-    // hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top / 2)).attr(
+    // _self.hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top /
+    // 2)).attr(
     // "text-anchor", "middle").style("text-decoration", "underline").text(
     // "Average Response Time");
 
@@ -1330,7 +1340,7 @@ UptimeChart.prototype.makeHistogram = function(id, hgsvg) {
           return d[1];
         }) ]);
 
-    var bars = hgsvg.selectAll(".bar").data(fD).enter().append("g").attr(
+    var bars = _self.hgsvg.selectAll(".bar").data(fD).enter().append("g").attr(
         "class", "bar");
     bars.append("rect").style("opacity", 0.4).attr("x", function(d) {
       return x(d[0]);
@@ -1374,7 +1384,7 @@ UptimeChart.prototype.makeHistogram = function(id, hgsvg) {
         return d[1];
       }) ]);
 
-      var bars = hgsvg.selectAll(".bar").data(nd);
+      var bars = _self.hgsvg.selectAll(".bar").data(nd);
       bars.select("rect").style("opacity", 0.6).transition().duration(500)
           .attr("y", function(d) {
             return y(d[1] * ratio);
@@ -1488,7 +1498,8 @@ UptimeChart.prototype.makeHistogram = function(id, hgsvg) {
 
 UptimeChart.prototype.drawHistogram = function(data) {
   var _self = this;
-  d3.select("[id='hgsvg']").remove();
+  // d3.select("[id='hgsvg']").remove();
+
   d3.select("[id='piesvg']").remove();
   d3.select("[id='tr']").remove();
   d3.selectAll("span").remove();
@@ -1532,8 +1543,8 @@ UptimeChart.prototype.makeStackedChart = function(id, data, cb) {
       [ "#308fef", "#6b486b", "#ff8c00" ]);
 
   data = this.makeStackedData(data);
-  this.drawStackedChart(data, function(svg) {
-    cb.call(null, svg);
+  this.drawStackedChart(data, function() {
+    cb.call();
   });
 }
 
@@ -1617,7 +1628,8 @@ UptimeChart.prototype.drawStackedChart = function(data, cb) {
       "translate(40, " + this.config.legend.y + ")").call(this.makeLegend,
       _self.stackedChartElem, "*");
 
-  cb.call(null, stSvg);
+  _self.hgsvg = stSvg;
+  cb.call(null);
 }
 
 UptimeChart.prototype.makeStackedData = function(json) {
