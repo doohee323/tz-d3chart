@@ -487,6 +487,8 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
         _self.drawHistogram(_self.makeHistogramData(_self.lineData));
       });
     } else { // aggregate
+      $('.tot_ms_view').hide();
+      $('.aggregate_view').show();
       if (val == '*') {
         data2 = _self.lineData;
       } else {
@@ -504,6 +506,7 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
       }
       _self.lineChartInit();
       _self.drawLineChart(data2, val);
+      _self.drawMiniLineChart(data, _self.config.lineChart.combo.init);
     }
   });
 
