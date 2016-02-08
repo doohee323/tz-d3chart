@@ -436,8 +436,18 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
   // "aggregate" : "Availability",
   // "judge" : "Up/Down"
 
-  var responseTime = '';
-  var availability = 'aggregate';
+  if (d3.selectAll('#lineSvg').length >= 1) {
+    d3.selectAll('#lineSvg').remove();
+  }
+  this.lineSvg = d3.select(this.mainChartElem).append("svg").attr("id",
+      'lineSvg').attr(
+      "width",
+      this.main_width + this.config.lineChart.main_margin.left
+          + this.config.lineChart.main_margin.right).attr(
+      "height",
+      this.main_height + this.config.lineChart.main_margin.top
+          + this.config.lineChart.main_margin.bottom);
+  this.drawLineChart(data, _self.config.lineChart.combo.init);
 
   this.makeCombo = function(ds, id, cb) {
     id = '#' + id;
@@ -467,21 +477,6 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
   }
 
   this.makeCombo(metrices, this.config.lineChart.combo.id, function(val) {
-    if (val == '*') {
-      data2 = _self.lineData;
-    } else {
-      var data2 = new Array();
-      for (var i = 0; i < data.length; i++) {
-        var tmp = {};
-        for ( var key in data[i]) {
-          if (key == 'date' || key == val
-              || key == _self.config.lineChart.yAxis.right) {
-            tmp[key] = data[i][key];
-          }
-        }
-        data2[data2.length] = tmp;
-      }
-    }
     if ($('.views').val() == 'tot_ms') { // response time
       if ($('#gmetrices').val() !== 'tot_ms') {
         _self.metric = $('#gmetrices').val();
@@ -491,13 +486,26 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
       _self.drawStackedChart(_self.makeStackedData(_self.lineData), function() {
         _self.drawHistogram(_self.makeHistogramData(_self.lineData));
       });
-    } else {
+    } else { // aggregate
+      if (val == '*') {
+        data2 = _self.lineData;
+      } else {
+        var data2 = new Array();
+        for (var i = 0; i < data.length; i++) {
+          var tmp = {};
+          for ( var key in data[i]) {
+            if (key == 'date' || key == val
+                || key == _self.config.lineChart.yAxis.right) {
+              tmp[key] = data[i][key];
+            }
+          }
+          data2[data2.length] = tmp;
+        }
+      }
       _self.lineChartInit();
       _self.drawLineChart(data2, val);
     }
   });
-
-  this.drawLineChart(data, _self.config.lineChart.combo.init);
 
   cb.call(null, data);
 
@@ -512,15 +520,17 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
 
 UptimeChart.prototype.drawLineChart = function(data, metric) {
   var _self = this;
-  d3.select("[id='" + this.mainChartElem + "']").remove();
-  this.lineSvg = d3.select(this.mainChartElem).append("svg").attr("id",
-      this.mainChartElem).attr(
-      "width",
-      this.main_width + this.config.lineChart.main_margin.left
-          + this.config.lineChart.main_margin.right).attr(
-      "height",
-      this.main_height + this.config.lineChart.main_margin.top
-          + this.config.lineChart.main_margin.bottom);
+  if (d3.selectAll('#lineSvg').length >= 1) {
+    d3.selectAll('#lineSvg').remove();
+    this.lineSvg = d3.select(this.mainChartElem).append("svg").attr("id",
+        'lineSvg').attr(
+        "width",
+        this.main_width + this.config.lineChart.main_margin.left
+            + this.config.lineChart.main_margin.right).attr(
+        "height",
+        this.main_height + this.config.lineChart.main_margin.top
+            + this.config.lineChart.main_margin.bottom);
+  }
 
   this.lineSvg.append("defs").append("clipPath").attr("id", "clip").append(
       "rect").attr("width", this.main_width).attr("height", this.main_height);
@@ -1266,7 +1276,7 @@ UptimeChart.prototype.redrawChart = function() {
       json.push(obj);
     }
   }
-  
+
   this.circles.selectAll("circle").transition().duration(1000).ease("linear")
       .attr("r", function(d) {
         return _self.getCircleSize(json, d.loc);
@@ -1288,7 +1298,6 @@ UptimeChart.prototype.redrawChart = function() {
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeHistogram = function(id) {
   var _self = this;
-  // _self.hgsvg = hgsvg1;
 
   var barColor = 'steelblue';
   function segColor(c) {
@@ -1299,7 +1308,6 @@ UptimeChart.prototype.makeHistogram = function(id) {
     }[c];
   }
 
-  // function to handle histogram.
   _self.histogram = function(fD) {
     var hg = {};
     var width = _self.config.histogram.margin.width
