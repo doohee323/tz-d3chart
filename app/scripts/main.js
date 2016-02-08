@@ -121,7 +121,7 @@ var UptimeChart = function(config) {
 
           var toggle = function(metric, d, i) {
             _self.metric = d.key;
-            if (metric == 'text') {
+            if (metric == 'show') {
               if ('#FFFFFF' == _self.convertRGBDecimalToHex(d3.select(
                   ".line" + d.key).style("stroke"))) {
                 if (_self.metric == _self.config.lineChart.yAxis.right
@@ -134,7 +134,7 @@ var UptimeChart = function(config) {
                 d3.select("circle.y" + d.key).style("stroke", d.color);
                 d3.select("line.y" + d.key).style("stroke", d.color);
               }
-            } else if (metric == 'circle') {
+            } else if (metric == 'hide') {
               var pickColor = _self.convertRGBDecimalToHex(d3.select(
                   ".line" + d.key).style("stroke"));
               if (pickColor != '#FFFFFF') {
@@ -168,7 +168,7 @@ var UptimeChart = function(config) {
           }).text(function(d, i) {
             return _self.getLabelFullName(d.key);
           }).on("click", function(d, i) {
-            toggle('text', d, i);
+            toggle('show', d, i);
           }).style("cursor", "pointer");
 
           li.selectAll("rect").data(items, function(d) {
@@ -198,7 +198,7 @@ var UptimeChart = function(config) {
           .style("fill", function(d) {
             return d.value.color;
           }).on("click", function(d, i) {
-            toggle('circle', d, i);
+            toggle('hide', d, i);
           }).style("cursor", "pointer");
 
           var lbbox = li[0][0].getBBox();
@@ -1002,7 +1002,7 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
         return key;
       }
     }
-    return "red";
+    return "#dc291e";
   }
 
   this.getCircleTotal = function(d, loc) {
@@ -1305,9 +1305,9 @@ UptimeChart.prototype.makeHistogram = function(id) {
   var barColor = 'steelblue';
   function segColor(c) {
     return {
-      nsl_ms : "red",
-      con_ms : "blue",
-      tfb_ms : "green"
+      nsl_ms : "#81bc00",
+      con_ms : "#7e7f74",
+      tfb_ms : "#ffa400"
     }[c];
   }
 
@@ -1551,7 +1551,7 @@ UptimeChart.prototype.makeStackedChart = function(id, data, cb) {
   var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .1);
   var y = d3.scale.linear().rangeRound([ height, 0 ]);
   _self.stackedColor = d3.scale.ordinal().range(
-      [ "#308fef", "#6b486b", "#ff8c00" ]);
+      [ "#81bc00", "#7e7f74", "#ffa400" ]);
 
   data = this.makeStackedData(data);
   this.drawStackedChart(data, function() {
@@ -1758,9 +1758,9 @@ var config = {
     "width" : 950,
     "circle_scale" : 0.2,
     "circle" : {
-      "green" : 20,
-      "yellow" : 100,
-      "red" : 200
+      "#81bc00" : 20,
+      "#236093" : 100,
+      "#dc291e" : 200
     },
     "scale" : 150,
     "tooltip" : {
@@ -1793,10 +1793,10 @@ var config = {
     "height" : 18
   },
   "mapping" : {
-    "nsl_ms" : "DNS Time", // DNS Lookup
-    "con_ms" : "Connect Time", // Time To Connect
-    "tfb_ms" : "Wait Time", // Time To 1st Byte
-    "tot_ms" : "Response Time", // Roundtrip Time
+    "nsl_ms" : "DNS Time", // DNS Lookup #81bc00
+    "con_ms" : "Connect Time", // Time To Connect #7e7f74
+    "tfb_ms" : "Wait Time", // Time To 1st Byte #ffa400
+    "tot_ms" : "Response Time", // Roundtrip Time #7D602B
     "state" : "Service State",
     "aggregate" : "Aggregation",
     "judge" : "Up/Down"

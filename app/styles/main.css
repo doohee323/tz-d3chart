@@ -123,7 +123,7 @@ div.combo {
 
 .legend rect {
 	fill: white;
-	/* 	stroke: gray; */
+	/* 	stroke: #7e7f74; */
 	opacity: 0.9;
 }
 
@@ -140,92 +140,92 @@ circle {
 
 /* judge */
 .line.linejudge {
-	stroke: red;
+	stroke: #dc291e;
 	fill-opacity: .1;
-	fill: red;
+	fill: #dc291e;
 }
 
 .focus circle.yjudge {
-	stroke: red;
+	stroke: #dc291e;
 }
 
 .focus line.yjudge {
-	stroke: red;
+	stroke: #dc291e;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
 /* nsl_ms */
 .line.linensl_ms {
-	stroke: green;
+	stroke: #81bc00;
 }
 
 .focus circle.ynsl_ms {
-	stroke: green;
+	stroke: #81bc00;
 }
 
 .focus line.ynsl_ms {
-	stroke: green;
+	stroke: #81bc00;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
 /* con_ms */
 .line.linecon_ms {
-	stroke: gray;
+	stroke: #7e7f74;
 }
 
 .focus circle.ycon_ms {
-	stroke: gray;
+	stroke: #7e7f74;
 }
 
 .focus line.ycon_ms {
-	stroke: gray;
+	stroke: #7e7f74;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
 /* tfb_ms */
 .line.linetfb_ms {
-	stroke: gold;
+	stroke: #ffa400;
 }
 
 .focus circle.ytfb_ms {
-	stroke: gold;
+	stroke: #ffa400;
 }
 
 .focus line.ytfb_ms {
-	stroke: gold;
+	stroke: #ffa400;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
 /* tot_ms */
 .line.linetot_ms {
-	stroke: brown;
+	stroke: #7D602B;
 }
 
 .focus circle.ytot_ms {
-	stroke: brown;
+	stroke: #7D602B;
 }
 
 .focus line.ytot_ms {
-	stroke: brown;
+	stroke: #7D602B;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
 
 /* aggregate */
 .line.lineaggregate {
-	stroke: blue;
+	stroke: #236093;
 }
 
 .focus circle.yaggregate {
-	stroke: blue;
+	stroke: #236093;
 }
 
 .focus line.yaggregate {
-	stroke: blue;
+	stroke: #236093;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
