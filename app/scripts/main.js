@@ -419,10 +419,16 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   lc.main_x = d3.time.scale().range([ 0, lc.main_width ]);
 
   lc.mainChartElem = chartElem;
-  var data = _self.makeChartData(resultset);
-  lc.lineData = data;
+  lc.lineData = _self.makeChartData(resultset);
+  
+  var metrices = {};
+  for ( var key in lc.lineData[0]) {
+    if (key != _self.config.lineChart.yAxis.right) {
+      metrices[key] = key;
+    }
+  }
 
-  _self.makeCombo = function(ds, id, cb) {
+  lc.makeCombo = function(ds, id, cb) {
     id = '#' + id;
     if ($(id + " option").length > 0)
       return;
@@ -449,7 +455,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     }
   }
 
-  _self.makeCombo(metrices, _self.config.lineChart.combo.id, function(val) {
+  lc.makeCombo(metrices, _self.config.lineChart.combo.id, function(val) {
     if ($('.views').val() == 'tot_ms') { // response time
       if ($('#gmetrices').val() == 'tot_ms') {
         _self.metric = null;
@@ -462,19 +468,19 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
                 .makeHistogramData(lc.lineData));
           });
     } else { // aggregate
-      _self.metric = $('#gmetrices').val();
+      lc.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
       $('.aggregate_view').show();
       if (val == '*') {
         data2 = lc.lineData;
       } else {
         var data2 = new Array();
-        for (var i = 0; i < data.length; i++) {
+        for (var i = 0; i < lc.lineData.length; i++) {
           var tmp = {};
-          for ( var key in data[i]) {
+          for ( var key in lc.lineData[i]) {
             if (key == 'date' || key == val
                 || key == _self.config.lineChart.yAxis.right) {
-              tmp[key] = data[i][key];
+              tmp[key] = lc.lineData[i][key];
             }
           }
           data2[data2.length] = tmp;
@@ -482,7 +488,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       }
       lc.lineChartInit();
       lc.drawLineChart(data2, val);
-      _self.drawMiniLineChart(data, _self.config.lineChart.combo.init);
+      _self.drawMiniLineChart(lc.lineData, _self.config.lineChart.combo.init);
     }
   });
 
@@ -751,13 +757,6 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         lc.mainChartElem, metric);
   }
 
-  var metrices = {};
-  for ( var key in data[0]) {
-    if (key != _self.config.lineChart.yAxis.right) {
-      metrices[key] = key;
-    }
-  }
-
   // "nsl_ms" : "DNS Time", // DNS Lookup
   // "con_ms" : "Connect Time", // Time To Connect
   // "tfb_ms" : "Wait Time", // Time To 1st Byte
@@ -777,10 +776,10 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           "height",
           lc.main_height + _self.config.lineChart.main_margin.top
               + _self.config.lineChart.main_margin.bottom);
-  lc.drawLineChart(data, _self.config.lineChart.combo.init);
+  lc.drawLineChart(lc.lineData, _self.config.lineChart.combo.init);
 
   _self.lc = lc;
-  cb.call(null, data);
+  cb.call(null, lc.lineData);
 
   return lc;
 }
@@ -814,9 +813,9 @@ UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
   this.lineChartInit = function() {
     _self.lc.main_y = {};
     _self.mini_y = {};
-    _self.main_line = {};
+    _self.lc.main_line = {};
     _self.mini_line = {};
-    _self.main, _self.mini;
+    _self.lc.main, _self.mini;
   }
 
   this.isBrushed = function() {
@@ -860,9 +859,9 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
     _self.lc.main_x.domain(_self.brush.empty() ? _self.mini_x.domain()
         : _self.brush.extent());
     for ( var key in _self.lc.main_y) {
-      _self.main.select(".line" + key).attr("d", _self.main_line[key]);
+      _self.lc.main.select(".line" + key).attr("d", _self.lc.main_line[key]);
     }
-    _self.main.select(".x.axis").call(_self.lc.main_xAxis);
+    _self.lc.main.select(".x.axis").call(_self.lc.main_xAxis);
   }
 
   var brushstart = function() {
@@ -911,7 +910,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
           return _self.mini_y[key](d[key]);
         });
         // it doesn't work for brushing
-        // this.main_line[key] =
+        // this.lc.main_line[key] =
         // d3.svg.line().interpolate(chart_shape).x(function(d) {
         // return _self.lc.main_x(d.date);
         // }).y(function(d) {
