@@ -260,7 +260,7 @@ circle {
 	opacity: .5;
 }
 
-div.tooltip {
+div.map_tooltip {
 	position: absolute;
 	text-align: left;
 	width: 100px;
@@ -274,7 +274,7 @@ div.tooltip {
 	color: #585956;
 }
 
-div.tooltip2 {
+div.lc_tooltip {
 	position: absolute;
 	text-align: left;
 	width: 250px;

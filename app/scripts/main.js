@@ -437,10 +437,10 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       lc.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
       $('.aggregate_view').show();
+      var data2 = new Array();
       if (val == '*') {
         data2 = _super.lineData;
       } else {
-        var data2 = new Array();
         for (var i = 0; i < _super.lineData.length; i++) {
           var tmp = {};
           for ( var key in _super.lineData[i]) {
@@ -467,15 +467,15 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   }
 
   lc.tooltip = function(txt) {
-    d3.select("body").select('div.tooltip2').remove();
+    d3.select("body").select('div.lc_tooltip').remove();
     txt = '<div>' + txt.split("\n").join("</div>\n<div>") + '</div>';
     var html = '<div style="width: 250px;">' + txt + '</div>';
-    var tooltip = d3.select("body").append("div").attr('pointer-events',
-        'none').attr("class", "tooltip2").style("opacity", 1).html(html).style(
-        "left", (d3.event.x + 10 + "px"))
+    var tooltip = d3.select("body").append("div")
+        .attr('pointer-events', 'none').attr("class", "lc_tooltip").style(
+            "opacity", 1).html(html).style("left", (d3.event.x + 10 + "px"))
         .style("top", (d3.event.y + 10 + "px"));
   }
-  
+
   lc.drawLineChart = function(data, metric) {
     if (d3.selectAll('#lineSvg').length >= 1) {
       d3.selectAll('#lineSvg').remove();
@@ -723,10 +723,10 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         .attr("width", lc.main_width).attr("height", lc.main_height).on(
             "mouseover", function() {
               focus.style("display", null);
-              d3.select("body").select('div.tooltip2').remove();
+              d3.select("body").select('div.lc_tooltip').remove();
             }).on("mouseout", function() {
           focus.style("display", "none");
-          d3.select("body").select('div.tooltip2').remove();
+          d3.select("body").select('div.lc_tooltip').remove();
         }).on("mousemove", mousemove);
 
     // /[ legend ]///////////////////////////
@@ -755,7 +755,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           lc.main_height + _super.config.lineChart.main_margin.top
               + _super.config.lineChart.main_margin.bottom);
   lc.drawLineChart(_super.lineData, _super.config.lineChart.combo.init);
-  
+
   _super.lc = lc;
   cb.call(null, _super.lineData);
 
@@ -1016,12 +1016,12 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
   map.mapData = map.getMapData(resultset, 'state');
 
   _super.mapCombo(locs, _super.config.map.combo.id, function(val) {
+    var data2 = new Array();
     if (val == '*') {
       data2 = _super.map.mapData;
     } else {
       var metric = $('#' + _super.config.lineChart.combo.id).val();
       var data = map.getMapData(resultset, metric);
-      var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
         if (data[i].loc == val) {
           data2[data2.length] = data[i];
@@ -1029,7 +1029,7 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
       }
     }
     _super.lc.init();
-    _super.map.drawMap(data2, val);
+    _super.map.drawChart(data2, val);
   });
 
   map.getCircleSize = function(d, loc) {
@@ -1076,7 +1076,7 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
     return total;
   }
 
-  map.drawMap = function(data, loc) {
+  map.drawChart = function(data, loc) {
     d3.select("[id='" + map.mapElem + "']").remove();
     map.mapSvg = d3.select(map.mapElem).append("svg").attr('id', map.mapElem)
         .attr("width", _super.config.map.width).attr("height",
@@ -1113,16 +1113,17 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
           var html = '<div style="width: 250px;">';
           html += '<div>* Site: ' + d["loc"];
           html += '</div>';
-          html += '<div>* Total: ' + Math.round(_super.getCircleTotal(d))
+          html += '<div>* Total: ' + Math.round(_super.map.getCircleTotal(d))
               + ' (ms)</div>';
           html += '</div>';
           var div = d3.select("body").append("div").attr('pointer-events',
-              'none').attr("class", "tooltip").style("opacity", 1).html(html)
-              .style("left", (d3.event.x + _super.config.map.tooltip.x + "px"))
-              .style("top", (d3.event.y + _super.config.map.tooltip.y + "px"));
+              'none').attr("class", "map_tooltip").style("opacity", 1).html(
+              html).style("left",
+              (d3.event.x + _super.config.map.tooltip.x + "px")).style("top",
+              (d3.event.y + _super.config.map.tooltip.y + "px"));
         }).on("mouseout", function(d) {
       d3.select(this).style("fill", _super.map.getCircleColor(d));
-      d3.select("body").select('div.tooltip').remove();
+      d3.select("body").select('div.map_tooltip').remove();
     }).style("fill", function(d) {
       return _super.map.getCircleColor(d);
     });
@@ -1138,7 +1139,7 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
   }
 
   _super.map = map;
-  map.drawMap(map.mapData, _super.config.map.combo.init);
+  map.drawChart(map.mapData, _super.config.map.combo.init);
 
   return map;
 }
@@ -1148,135 +1149,132 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ gmap chart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeGMap = function(gmapElem, data) {
+UptimeChart.prototype.gMap = function(gmapElem, data) {
   var _super = this;
-  _super.gmapData = data;
-  _super.gmapElem = gmapElem;
+  var gmap = {};
+
+  gmap.gmapData = data;
+  gmap.gmapElem = gmapElem;
 
   var locs = {};
   for (var i = 0; i < data.length; i++) {
     locs[data[i].loc] = data[i].loc;
   }
 
-  _super.combo(locs, _super.config.gmap.combo.id, function(val) {
+  _super.mapCombo(locs, _super.config.gmap.combo.id, function(val) {
+    var data2 = new Array();
     if (val == '*') {
-      data2 = _super.gmapData;
+      data2 = gmap.gmapData;
     } else {
-      var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
         if (data[i].loc == val) {
           data2[data2.length] = data[i];
         }
       }
     }
-    _super.lc.init();
-    _super.drawGMap(data2, val);
+    gmap.drawGMap(data2, val);
   });
 
-  _super.drawGMap(data, _super.config.gmap.combo.init);
-}
+  gmap.drawGMap = function(data, loc) {
+    var map = new google.maps.Map(d3.select(gmap.gmapElem).node(), {
+      zoom : 2,
+      center : new google.maps.LatLng(10, -350),
+      mapTypeId : google.maps.MapTypeId.SATELLITE
+    });
 
-// ///////////////////////////////////////////////////////////////////////////////
-// [ draw gmap ]
-// ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.drawGMap = function(data, loc) {
-  var _super = this;
+    var minZoomLevel = 2;
+    google.maps.event.addListener(map, 'zoom_changed', function() {
+      if (map.getZoom() < minZoomLevel)
+        map.setZoom(minZoomLevel);
+    });
 
-  var map = new google.maps.Map(d3.select(_super.gmapElem).node(), {
-    zoom : 2,
-    center : new google.maps.LatLng(10, -350),
-    mapTypeId : google.maps.MapTypeId.SATELLITE
-  });
+    var overlay = new google.maps.OverlayView();
 
-  var minZoomLevel = 2;
-  google.maps.event.addListener(map, 'zoom_changed', function() {
-    if (map.getZoom() < minZoomLevel)
-      map.setZoom(minZoomLevel);
-  });
+    overlay.onAdd = function() {
+      d3.select("[id='" + gmap.gmapElem + "']").remove();
+      var layer = d3.select(this.getPanes().overlayLayer).append("div").attr(
+          'id', gmap.gmapElem).attr("class", "stations");
 
-  var overlay = new google.maps.OverlayView();
+      overlay.draw = function() {
+        var marker2 = layer.selectAll("svg").data(d3.entries(data)).each(
+            transform).enter().append("svg:svg").each(transform);
 
-  overlay.onAdd = function() {
-    d3.select("[id='" + _super.gmapElem + "']").remove();
-    var layer = d3.select(this.getPanes().overlayLayer).append("div").attr(
-        'id', _super.gmapElem).attr("class", "stations");
+        function transform(d) {
+          d = d.value;
+          if (100 == parseFloat(d.latitude))
+            return;
 
-    overlay.draw = function() {
-      var marker2 = layer.selectAll("svg").data(d3.entries(data)).each(
-          transform).enter().append("svg:svg").each(transform);
+          var marker = new google.maps.Marker({
+            position : {
+              lat : parseFloat(d.latitude),
+              lng : parseFloat(d.longitude)
+            },
+            map : map,
+            label : d.loc,
+            title : d.loc
+          });
 
-      function transform(d) {
-        d = d.value;
-        if (100 == parseFloat(d.latitude))
-          return;
+          var contentString = '<div id="content">' + '<div id="siteNotice">'
+              + '</div>' + '<h1 id="firstHeading" class="firstHeading">'
+              + d.loc + '</h1>' + '<div id="bodyContent">' + '<p><b>' + d.loc
+              + '</b> is a large Site.</p>'
+              + '<a href="http://www.google.com">http://www.google.com</a> '
+              + '(last visited June 22, 2016).</p>' + '</div>' + '</div>';
 
-        var marker = new google.maps.Marker({
-          position : {
-            lat : parseFloat(d.latitude),
-            lng : parseFloat(d.longitude)
-          },
-          map : map,
-          label : d.loc,
-          title : d.loc
-        });
+          var infowindow = new google.maps.InfoWindow({
+            content : contentString,
+            maxWidth : 200
+          });
+          marker.addListener('mouseover', function() {
+            infowindow.open(map, marker);
+          });
+          // marker.addListener('mouseout', function() {
+          // infowindow.close();
+          // });
 
-        var contentString = '<div id="content">' + '<div id="siteNotice">'
-            + '</div>' + '<h1 id="firstHeading" class="firstHeading">' + d.loc
-            + '</h1>' + '<div id="bodyContent">' + '<p><b>' + d.loc
-            + '</b> is a large Site.</p>'
-            + '<a href="http://www.google.com">http://www.google.com</a> '
-            + '(last visited June 22, 2016).</p>' + '</div>' + '</div>';
+          var locCircle = new google.maps.Circle({
+            strokeColor : '#FF0000',
+            strokeOpacity : 0.8,
+            strokeWeight : 2,
+            fillColor : '#FF0000',
+            fillOpacity : 0.35,
+            map : map,
+            label : d.loc,
+            center : {
+              lat : parseFloat(d.latitude),
+              lng : parseFloat(d.longitude)
+            },
+            radius : Math.sqrt(100000000) * 100
+          });
 
-        var infowindow = new google.maps.InfoWindow({
-          content : contentString,
-          maxWidth : 200
-        });
-        marker.addListener('mouseover', function() {
-          infowindow.open(map, marker);
-        });
-        // marker.addListener('mouseout', function() {
-        // infowindow.close();
-        // });
+          var marker2 = new google.maps.Marker({
+            position : {
+              lat : parseFloat(d.latitude),
+              lng : parseFloat(d.longitude)
+            },
+            map : map,
+            optimized : false,
+            icon : {
+              url : '714_trans.gif',
+              size : new google.maps.Size(100, 100),
+              origin : new google.maps.Point(0, 0),
+              anchor : new google.maps.Point(32, 32)
+            },
+            title : d.loc,
+            zIndex : 0
+          });
 
-        var locCircle = new google.maps.Circle({
-          strokeColor : '#FF0000',
-          strokeOpacity : 0.8,
-          strokeWeight : 2,
-          fillColor : '#FF0000',
-          fillOpacity : 0.35,
-          map : map,
-          label : d.loc,
-          center : {
-            lat : parseFloat(d.latitude),
-            lng : parseFloat(d.longitude)
-          },
-          radius : Math.sqrt(100000000) * 100
-        });
-
-        var marker2 = new google.maps.Marker({
-          position : {
-            lat : parseFloat(d.latitude),
-            lng : parseFloat(d.longitude)
-          },
-          map : map,
-          optimized : false,
-          icon : {
-            url : '714_trans.gif',
-            size : new google.maps.Size(100, 100),
-            origin : new google.maps.Point(0, 0),
-            anchor : new google.maps.Point(32, 32)
-          },
-          title : d.loc,
-          zIndex : 0
-        });
-
-      }
+        }
+      };
     };
-  };
 
-  overlay.setMap(map);
+    overlay.setMap(map);
+  }
+
+  _super.gmap = gmap;
+
+  gmap.drawGMap(data, _super.config.gmap.combo.init);
 }
-
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make Histogram ]
 // ///////////////////////////////////////////////////////////////////////////////
@@ -2021,10 +2019,10 @@ function selectView() {
       }
     });
     uc.map("#graph", json);
-    // d3.json("map.json", function(json) {
-    // $('#googleMap').width(config.gmap.width).height(config.gmap.height);
-    // uc.makeGMap("#googleMap", json);
-    // });
+//    d3.json("map.json", function(json) {
+//      $('#googleMap').width(config.gmap.width).height(config.gmap.height);
+//      uc.gMap("#googleMap", json);
+//    });
   });
 }
 
