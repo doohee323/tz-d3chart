@@ -405,53 +405,24 @@ var UptimeChart = function(config) {
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   var _self = this;
-  
   var lc = {};
 
-  this.main_y = {};
-  this.main_line = {};
-  this.main, this.lineSvg;
+  lc.main_y = {};
+  lc.main_line = {};
+  lc.main;
 
-  this.main_width = config.lineChart.main_margin.width
+  lc.main_width = config.lineChart.main_margin.width
       - config.lineChart.main_margin.left - config.lineChart.main_margin.right
-  this.main_height = config.lineChart.main_margin.height
+  lc.main_height = config.lineChart.main_margin.height
       - config.lineChart.main_margin.top - config.lineChart.main_margin.bottom;
 
-  this.main_x = d3.time.scale().range([ 0, this.main_width ]);
+  lc.main_x = d3.time.scale().range([ 0, lc.main_width ]);
 
-  this.mainChartElem = chartElem;
-  var data = this.makeChartData(resultset);
-  this.lineData = data;
+  lc.mainChartElem = chartElem;
+  var data = _self.makeChartData(resultset);
+  lc.lineData = data;
 
-  var metrices = {};
-  for ( var key in data[0]) {
-    if (key != _self.config.lineChart.yAxis.right) {
-      metrices[key] = key;
-    }
-  }
-
-  // "nsl_ms" : "DNS Time", // DNS Lookup
-  // "con_ms" : "Connect Time", // Time To Connect
-  // "tfb_ms" : "Wait Time", // Time To 1st Byte
-  // "tot_ms" : "Response Time", // Roundtrip Time
-  // "state" : "Service State",
-  // "aggregate" : "Availability",
-  // "judge" : "Up/Down"
-
-  if (d3.selectAll('#lineSvg').length >= 1) {
-    d3.selectAll('#lineSvg').remove();
-  }
-  this.lineSvg = d3.select(this.mainChartElem).append("svg").attr("id",
-      'lineSvg').attr(
-      "width",
-      this.main_width + this.config.lineChart.main_margin.left
-          + this.config.lineChart.main_margin.right).attr(
-      "height",
-      this.main_height + this.config.lineChart.main_margin.top
-          + this.config.lineChart.main_margin.bottom);
-  this.drawLineChart(data, _self.config.lineChart.combo.init);
-
-  this.makeCombo = function(ds, id, cb) {
+  _self.makeCombo = function(ds, id, cb) {
     id = '#' + id;
     if ($(id + " option").length > 0)
       return;
@@ -478,24 +449,24 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     }
   }
 
-  this.makeCombo(metrices, this.config.lineChart.combo.id, function(val) {
+  _self.makeCombo(metrices, _self.config.lineChart.combo.id, function(val) {
     if ($('.views').val() == 'tot_ms') { // response time
       if ($('#gmetrices').val() == 'tot_ms') {
         _self.metric = null;
       } else {
         _self.metric = $('#gmetrices').val();
       }
-      _self.drawStackedChart(_self.sc.makeStackedData(_self.lineData),
+      _self.drawStackedChart(_self.sc.makeStackedData(lc.lineData),
           function() {
             _self.makeHistogram('#histogram', _self
-                .makeHistogramData(_self.lineData));
+                .makeHistogramData(lc.lineData));
           });
     } else { // aggregate
       _self.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
       $('.aggregate_view').show();
       if (val == '*') {
-        data2 = _self.lineData;
+        data2 = lc.lineData;
       } else {
         var data2 = new Array();
         for (var i = 0; i < data.length; i++) {
@@ -509,280 +480,309 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           data2[data2.length] = tmp;
         }
       }
-      _self.lineChartInit();
-      _self.drawLineChart(data2, val);
+      lc.lineChartInit();
+      lc.drawLineChart(data2, val);
       _self.drawMiniLineChart(data, _self.config.lineChart.combo.init);
     }
   });
 
-  cb.call(null, data);
-
-  this.lineChartInit = function() {
-    _self.main_y = {};
-    _self.mini_y = {};
-    _self.main_line = {};
-    _self.mini_line = {};
-    _self.main, _self.mini;
-  }
-}
-
-UptimeChart.prototype.drawLineChart = function(data, metric) {
-  var _self = this;
-  if (d3.selectAll('#lineSvg').length >= 1) {
-    d3.selectAll('#lineSvg').remove();
-    this.lineSvg = d3.select(this.mainChartElem).append("svg").attr("id",
-        'lineSvg').attr(
-        "width",
-        this.main_width + this.config.lineChart.main_margin.left
-            + this.config.lineChart.main_margin.right).attr(
-        "height",
-        this.main_height + this.config.lineChart.main_margin.top
-            + this.config.lineChart.main_margin.bottom);
+  lc.lineChartInit = function() {
+    lc.main_y = {};
+    lc.mini_y = {};
+    lc.main_line = {};
+    lc.mini_line = {};
+    lc.main, lc.mini;
   }
 
-  this.lineSvg.append("defs").append("clipPath").attr("id", "clip").append(
-      "rect").attr("width", this.main_width).attr("height", this.main_height);
-
-  this.main = this.lineSvg.append("g").attr(
-      "transform",
-      "translate(" + this.config.lineChart.main_margin.left + ","
-          + this.config.lineChart.main_margin.top + ")");
-
-  this.main_xAxis = d3.svg.axis().scale(this.main_x).tickFormat(
-      d3.time.format("%H:%M")).orient("bottom");
-
-  data.forEach(function(d) {
-    try {
-      var dt = _self.parseDate(d.date);
-      d.date = dt;
-    } catch (e) {
+  lc.drawLineChart = function(data, metric) {
+    if (d3.selectAll('#lineSvg').length >= 1) {
+      d3.selectAll('#lineSvg').remove();
+      lc.lineSvg = d3.select(lc.mainChartElem).append("svg").attr("id",
+          'lineSvg').attr(
+          "width",
+          lc.main_width + _self.config.lineChart.main_margin.left
+              + _self.config.lineChart.main_margin.right).attr(
+          "height",
+          lc.main_height + _self.config.lineChart.main_margin.top
+              + _self.config.lineChart.main_margin.bottom);
     }
+
+    lc.lineSvg.append("defs").append("clipPath").attr("id", "clip").append(
+        "rect").attr("width", lc.main_width).attr("height", lc.main_height);
+
+    lc.main = lc.lineSvg.append("g").attr(
+        "transform",
+        "translate(" + _self.config.lineChart.main_margin.left + ","
+            + _self.config.lineChart.main_margin.top + ")");
+
+    lc.main_xAxis = d3.svg.axis().scale(lc.main_x).tickFormat(
+        d3.time.format("%H:%M")).orient("bottom");
+
+    data.forEach(function(d) {
+      try {
+        var dt = _self.parseDate(d.date);
+        d.date = dt;
+      } catch (e) {
+      }
+      for ( var key in data[0]) {
+        if (key != 'date') {
+          // if (key == 'judge' || key == 'nsl_ms') {
+          d[key] = +d[key];
+        }
+      }
+    });
+
+    data.sort(function(a, b) {
+      return a.date - b.date;
+    });
+
     for ( var key in data[0]) {
       if (key != 'date') {
         // if (key == 'judge' || key == 'nsl_ms') {
-        d[key] = +d[key];
+        lc.main_y[key] = d3.scale.sqrt().range([ lc.main_height, 0 ]);
       }
     }
-  });
 
-  data.sort(function(a, b) {
-    return a.date - b.date;
-  });
-
-  for ( var key in data[0]) {
-    if (key != 'date') {
-      // if (key == 'judge' || key == 'nsl_ms') {
-      this.main_y[key] = d3.scale.sqrt().range([ this.main_height, 0 ]);
+    // /[ line definition ]///////////////////////////
+    // I need to enumerate instead of above fancy way.
+    if (metric != '*') {
+      var type = 'cardinal';
+      if (metric == 'state') {
+        type = 'step';
+      }
+      lc.main_line[metric] = d3.svg.line().interpolate(type).x(function(d) {
+        return lc.main_x(d.date);
+      }).y(function(d) {
+        return lc.main_y[metric](d[metric]);
+      });
+    } else {
+      lc.main_line['nsl_ms'] = d3.svg.line().interpolate("cardinal").x(
+          function(d) {
+            return lc.main_x(d.date);
+          }).y(function(d) {
+        return lc.main_y['nsl_ms'](d['nsl_ms']);
+      });
+      lc.main_line['con_ms'] = d3.svg.line().interpolate("cardinal").x(
+          function(d) {
+            return lc.main_x(d.date);
+          }).y(function(d) {
+        return lc.main_y['con_ms'](d['con_ms']);
+      });
+      lc.main_line['tfb_ms'] = d3.svg.line().interpolate("cardinal").x(
+          function(d) {
+            return lc.main_x(d.date);
+          }).y(function(d) {
+        return lc.main_y['tfb_ms'](d['tfb_ms']);
+      });
+      lc.main_line['tot_ms'] = d3.svg.line().interpolate("cardinal").x(
+          function(d) {
+            return lc.main_x(d.date);
+          }).y(function(d) {
+        return lc.main_y['tot_ms'](d['tot_ms']);
+      });
+      lc.main_line['state'] = d3.svg.line().interpolate("step").x(function(d) {
+        return lc.main_x(d.date);
+      }).y(function(d) {
+        return lc.main_y['state'](d['state']);
+      });
+      lc.main_line['aggregate'] = d3.svg.line().interpolate("cardinal").x(
+          function(d) {
+            return lc.main_x(d.date);
+          }).y(function(d) {
+        return lc.main_y['aggregate'](d['aggregate']);
+      });
     }
-  }
+    lc.main_line['judge'] = d3.svg.line().interpolate("step").x(function(d) {
+      return lc.main_x(d.date);
+    }).y(function(d) {
+      return lc.main_y['judge'](d['judge']);
+    });
 
-  // /[ line definition ]///////////////////////////
-  // I need to enumerate instead of above fancy way.
-  if (metric != '*') {
-    var type = 'cardinal';
-    if (metric == 'state') {
-      type = 'step';
+    lc.main_x.domain([ data[0].date, data[data.length - 1].date ]);
+
+    for ( var key in lc.main_y) {
+      lc.main_y[key].domain(d3.extent(data, function(d) {
+        return d[key];
+      }));
     }
-    this.main_line[metric] = d3.svg.line().interpolate(type).x(function(d) {
-      return _self.main_x(d.date);
-    }).y(function(d) {
-      return _self.main_y[metric](d[metric]);
-    });
-  } else {
-    this.main_line['nsl_ms'] = d3.svg.line().interpolate("cardinal").x(
-        function(d) {
-          return _self.main_x(d.date);
-        }).y(function(d) {
-      return _self.main_y['nsl_ms'](d['nsl_ms']);
-    });
-    this.main_line['con_ms'] = d3.svg.line().interpolate("cardinal").x(
-        function(d) {
-          return _self.main_x(d.date);
-        }).y(function(d) {
-      return _self.main_y['con_ms'](d['con_ms']);
-    });
-    this.main_line['tfb_ms'] = d3.svg.line().interpolate("cardinal").x(
-        function(d) {
-          return _self.main_x(d.date);
-        }).y(function(d) {
-      return _self.main_y['tfb_ms'](d['tfb_ms']);
-    });
-    this.main_line['tot_ms'] = d3.svg.line().interpolate("cardinal").x(
-        function(d) {
-          return _self.main_x(d.date);
-        }).y(function(d) {
-      return _self.main_y['tot_ms'](d['tot_ms']);
-    });
-    this.main_line['state'] = d3.svg.line().interpolate("step").x(function(d) {
-      return _self.main_x(d.date);
-    }).y(function(d) {
-      return _self.main_y['state'](d['state']);
-    });
-    this.main_line['aggregate'] = d3.svg.line().interpolate("cardinal").x(
-        function(d) {
-          return _self.main_x(d.date);
-        }).y(function(d) {
-      return _self.main_y['aggregate'](d['aggregate']);
-    });
-  }
-  this.main_line['judge'] = d3.svg.line().interpolate("step").x(function(d) {
-    return _self.main_x(d.date);
-  }).y(function(d) {
-    return _self.main_y['judge'](d['judge']);
-  });
 
-  this.main_x.domain([ data[0].date, data[data.length - 1].date ]);
+    // /[ main lineChart ]///////////////////////////
+    for ( var key in lc.main_y) {
+      lc.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
+          "class", "line line" + key).attr("d", lc.main_line[key]).attr(
+          "data-legend", function(d) {
+            return key;
+          });
+    }
 
-  for ( var key in this.main_y) {
-    this.main_y[key].domain(d3.extent(data, function(d) {
-      return d[key];
-    }));
-  }
+    // /[ main left x ]///////////////////////////
+    lc.main.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
+        "transform", "translate(0," + lc.main_height + ")").call(lc.main_xAxis);
+    // /[ main left y ]///////////////////////////
+    var main_yAxisLeft;
+    if (metric != '*') {
+      main_yAxisLeft = d3.svg.axis().scale(lc.main_y[metric]).orient("left");
+    } else {
+      main_yAxisLeft = d3.svg.axis().scale(
+          lc.main_y[_self.config.lineChart.yAxis.left]).orient("left");
+    }
+    lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(
+        main_yAxisLeft).append("text").attr("transform", "rotate(-90)").attr(
+        "y", 6).attr("dy", ".71em").style("text-anchor", "end").text("( ms )");
 
-  // /[ main lineChart ]///////////////////////////
-  for ( var key in this.main_y) {
-    this.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-        "class", "line line" + key).attr("d", this.main_line[key]).attr(
-        "data-legend", function(d) {
-          return key;
-        });
-  }
+    // /[ main right y ]///////////////////////////
+    var main_yAxisRight = d3.svg.axis().scale(
+        lc.main_y[_self.config.lineChart.yAxis.right]).orient("right").ticks(1);
+    lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
+        "transform", "translate(" + lc.main_width + ", 0)").call(
+        main_yAxisRight).append("text").attr("transform", "rotate(-90)").attr(
+        "y", 6).attr("dy", ".71em").style("text-anchor", "end").text("( ms )");
 
-  // /[ main left x ]///////////////////////////
-  this.main.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
-      "transform", "translate(0," + this.main_height + ")").call(
-      _self.main_xAxis);
-  // /[ main left y ]///////////////////////////
-  var main_yAxisLeft;
-  if (metric != '*') {
-    main_yAxisLeft = d3.svg.axis().scale(this.main_y[metric]).orient("left");
-  } else {
-    main_yAxisLeft = d3.svg.axis().scale(
-        this.main_y[this.config.lineChart.yAxis.left]).orient("left");
-  }
-  this.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(
-      main_yAxisLeft).append("text").attr("transform", "rotate(-90)").attr("y",
-      6).attr("dy", ".71em").style("text-anchor", "end").text("( ms )");
+    // /[ focus ]///////////////////////////
+    var focus = lc.main.append("g").attr("class", "focus").style("display",
+        "none");
+    for ( var key in lc.main_y) {
+      focus.append("line").attr("class", "y" + key).attr("x1",
+          lc.main_width - 6).attr("x2", lc.main_width + 6);
+      focus.append("circle").attr("class", "y" + key).attr("r", 4);
+      focus.append("text").attr("class", "y" + key).attr("fill", "#585956")
+          .attr("dy", "-1em");
+    }
 
-  // /[ main right y ]///////////////////////////
-  var main_yAxisRight = d3.svg.axis().scale(
-      this.main_y[this.config.lineChart.yAxis.right]).orient("right").ticks(1);
-  this.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
-      "transform", "translate(" + this.main_width + ", 0)").call(
-      main_yAxisRight).append("text").attr("transform", "rotate(-90)").attr(
-      "y", 6).attr("dy", ".71em").style("text-anchor", "end").text("( ms )");
+    var bisectDate = d3.bisector(function(d) {
+      return d.date;
+    }).left;
+    var formatDate2 = d3.time.format("%H:%M:%S");
 
-  // /[ focus ]///////////////////////////
-  var focus = this.main.append("g").attr("class", "focus").style("display",
-      "none");
-  for ( var key in this.main_y) {
-    focus.append("line").attr("class", "y" + key).attr("x1",
-        this.main_width - 6).attr("x2", this.main_width + 6);
-    focus.append("circle").attr("class", "y" + key).attr("r", 4);
-    focus.append("text").attr("class", "y" + key).attr("fill", "#585956").attr(
-        "dy", "-1em");
-  }
-
-  var bisectDate = d3.bisector(function(d) {
-    return d.date;
-  }).left;
-  var formatDate2 = d3.time.format("%H:%M:%S");
-
-  var mousemove = function() {
-    var metric = $('#' + _self.config.lineChart.combo.id).val();
-    if (metric == '*')
-      return;
-    var x0 = _self.main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0, 1), d0 = data[i - 1];
-    var d1 = data[i];
-    if (d1.date) {
-      var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
-      for ( var key in _self.main_y) {
-        if (key != metric)
-          continue;
-        if (key != _self.config.lineChart.yAxis.right
-            && '#FFFFFF' != _self.convertRGBDecimalToHex(d3.select(
-                ".line" + key).style("stroke"))) {
-          focus.select("circle.y" + key).attr(
-              "transform",
-              "translate(" + _self.main_x(d.date) + ","
-                  + _self.main_y[key](d[key]) + ")");
-          if (key == 'aggregate') {
-            var descript = '[Availability] \n';
-            var sum = 0;
-            for (var i = 0; i < _self.metric_data.length; i++) {
-              var type = _self.metric_data[i].target;
-              var j = 0;
-              for (j = 0; j < _self.metric_data[i].datapoints.length; j++) {
-                if (new Date(_self.metric_data[i].datapoints[j][1] * 1000)
-                    .toString() == d.date.toString()) {
-                  break;
+    var mousemove = function() {
+      var metric = $('#' + _self.config.lineChart.combo.id).val();
+      if (metric == '*')
+        return;
+      var x0 = lc.main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0, 1), d0 = data[i - 1];
+      var d1 = data[i];
+      if (d1.date) {
+        var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+        for ( var key in lc.main_y) {
+          if (key != metric)
+            continue;
+          if (key != _self.config.lineChart.yAxis.right
+              && '#FFFFFF' != _self.convertRGBDecimalToHex(d3.select(
+                  ".line" + key).style("stroke"))) {
+            focus.select("circle.y" + key).attr(
+                "transform",
+                "translate(" + lc.main_x(d.date) + "," + lc.main_y[key](d[key])
+                    + ")");
+            if (key == 'aggregate') {
+              var descript = '[Availability] \n';
+              var sum = 0;
+              for (var i = 0; i < _self.metric_data.length; i++) {
+                var type = _self.metric_data[i].target;
+                var j = 0;
+                for (j = 0; j < _self.metric_data[i].datapoints.length; j++) {
+                  if (new Date(_self.metric_data[i].datapoints[j][1] * 1000)
+                      .toString() == d.date.toString()) {
+                    break;
+                  }
+                }
+                if (j > 0) {
+                  // availability = metric(#2) / (active(#1) + include(#3))
+                  var active = _self.metric_data[i].description[j].v1;
+                  var metric = _self.metric_data[i].description[j].v2;
+                  var include = _self.metric_data[i].description[j].v3;
+                  var avail = Math.floor((metric / (active + include)));
+                  if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
+                    avail = 0;
+                  }
+                  sum += avail;
+                  descript += ' - ' + _self.getLabelFullName(type) + ' : '
+                      + avail + ' = ' + metric + ' / (' + active + ' + '
+                      + include + ') \n';
                 }
               }
-              if (j > 0) {
-                // availability = metric(#2) / (active(#1) + include(#3))
-                var active = _self.metric_data[i].description[j].v1;
-                var metric = _self.metric_data[i].description[j].v2;
-                var include = _self.metric_data[i].description[j].v3;
-                var avail = Math.floor((metric / (active + include)));
-                if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
-                  avail = 0;
-                }
-                sum += avail;
-                descript += ' - ' + _self.getLabelFullName(type) + ' : '
-                    + avail + ' = ' + metric + ' / (' + active + ' + '
-                    + include + ') \n';
+              var uptime_per = sum / lc.aggregate_max * 100;
+              if (uptime_per) {
+                uptime_per = Number((uptime_per).toFixed(1));
+              } else {
+                uptime_per = 0;
               }
+              descript += ' - availability sum: ' + sum + ' \n';
+              descript += ' - availability max: ' + lc.aggregate_max + ' \n';
+              descript = '[' + _self.formatDate(d.date) + '`s Aggregation]: '
+                  + uptime_per + '\n = ' + sum + ' / ' + lc.aggregate_max
+                  + ' * 100 /d[key]: ' + d[key] + '\n' + descript;
+              _self.tooltip2(descript);
             }
-            var uptime_per = sum / _self.aggregate_max * 100;
-            if (uptime_per) {
-              uptime_per = Number((uptime_per).toFixed(1));
-            } else {
-              uptime_per = 0;
-            }
-            descript += ' - availability sum: ' + sum + ' \n';
-            descript += ' - availability max: ' + _self.aggregate_max + ' \n';
-            descript = '[' + _self.formatDate(d.date) + '`s Aggregation]: '
-                + uptime_per + '\n = ' + sum + ' / ' + _self.aggregate_max
-                + ' * 100 /d[key]: ' + d[key] + '\n' + descript;
-            _self.tooltip2(descript);
+            var formatOutput = _self.getLabelFullName(key) + " - "
+                + formatDate2(d.date) + " - " + d[key] + " ms";
+            focus.select("text.y" + key).attr(
+                "transform",
+                "translate(" + lc.main_x(d.date) + "," + lc.main_y[key](d[key])
+                    + ")").text(formatOutput);
+            focus.select(".y" + key).attr(
+                "transform",
+                "translate(" + lc.main_width * -1 + ", "
+                    + lc.main_y[key](d[key]) + ")").attr("x2",
+                lc.main_width + lc.main_x(d.date));
+          } else {
+            focus.select("text.y" + key).attr(
+                "transform",
+                "translate(" + lc.main_x(d.date) + "," + lc.main_y[key](d[key])
+                    + ")").text('');
           }
-          var formatOutput = _self.getLabelFullName(key) + " - "
-              + formatDate2(d.date) + " - " + d[key] + " ms";
-          focus.select("text.y" + key).attr(
-              "transform",
-              "translate(" + _self.main_x(d.date) + ","
-                  + _self.main_y[key](d[key]) + ")").text(formatOutput);
-          focus.select(".y" + key).attr(
-              "transform",
-              "translate(" + _self.main_width * -1 + ", "
-                  + _self.main_y[key](d[key]) + ")").attr("x2",
-              _self.main_width + _self.main_x(d.date));
-        } else {
-          focus.select("text.y" + key).attr(
-              "transform",
-              "translate(" + _self.main_x(d.date) + ","
-                  + _self.main_y[key](d[key]) + ")").text('');
         }
+        focus.select(".x").attr("transform",
+            "translate(" + lc.main_x(d.date) + ",0)");
       }
-      focus.select(".x").attr("transform",
-          "translate(" + _self.main_x(d.date) + ",0)");
+    }
+
+    lc.main.append("rect").attr("class", "overlay")
+        .attr("width", lc.main_width).attr("height", lc.main_height).on(
+            "mouseover", function() {
+              focus.style("display", null);
+              d3.select("body").select('div.tooltip2').remove();
+            }).on("mouseout", function() {
+          focus.style("display", "none");
+          d3.select("body").select('div.tooltip2').remove();
+        }).on("mousemove", mousemove);
+
+    // /[ legend ]///////////////////////////
+    var legend = lc.main.append("g").attr("class", "legend").attr("transform",
+        "translate(40, " + _self.config.legend.y + ")").call(_self.makeLegend,
+        lc.mainChartElem, metric);
+  }
+
+  var metrices = {};
+  for ( var key in data[0]) {
+    if (key != _self.config.lineChart.yAxis.right) {
+      metrices[key] = key;
     }
   }
 
-  this.main.append("rect").attr("class", "overlay").attr("width",
-      this.main_width).attr("height", this.main_height).on("mouseover",
-      function() {
-        focus.style("display", null);
-        d3.select("body").select('div.tooltip2').remove();
-      }).on("mouseout", function() {
-    focus.style("display", "none");
-    d3.select("body").select('div.tooltip2').remove();
-  }).on("mousemove", mousemove);
+  // "nsl_ms" : "DNS Time", // DNS Lookup
+  // "con_ms" : "Connect Time", // Time To Connect
+  // "tfb_ms" : "Wait Time", // Time To 1st Byte
+  // "tot_ms" : "Response Time", // Roundtrip Time
+  // "state" : "Service State",
+  // "aggregate" : "Availability",
+  // "judge" : "Up/Down"
 
-  // /[ legend ]///////////////////////////
-  var legend = this.main.append("g").attr("class", "legend").attr("transform",
-      "translate(40, " + this.config.legend.y + ")").call(this.makeLegend,
-      _self.mainChartElem, metric);
+  if (d3.selectAll('#lineSvg').length >= 1) {
+    d3.selectAll('#lineSvg').remove();
+  }
+  lc.lineSvg = d3.select(lc.mainChartElem).append("svg").attr("id", 'lineSvg')
+      .attr(
+          "width",
+          lc.main_width + _self.config.lineChart.main_margin.left
+              + _self.config.lineChart.main_margin.right).attr(
+          "height",
+          lc.main_height + _self.config.lineChart.main_margin.top
+              + _self.config.lineChart.main_margin.bottom);
+  lc.drawLineChart(data, _self.config.lineChart.combo.init);
+
+  _self.lc = lc;
+  cb.call(null, data);
+
+  return lc;
 }
 
 UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
@@ -794,7 +794,7 @@ UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
 
   this.mini_height = config.lineChart.mini_margin.height
       - config.lineChart.mini_margin.top - config.lineChart.mini_margin.bottom;
-  this.mini_x = d3.time.scale().range([ 0, this.main_width ]);
+  this.mini_x = d3.time.scale().range([ 0, this.lc.main_width ]);
 
   this.miniChartElem = chartElem;
   var data = this.makeChartData(resultset);
@@ -812,7 +812,7 @@ UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
   cb.call(null, data);
 
   this.lineChartInit = function() {
-    _self.main_y = {};
+    _self.lc.main_y = {};
     _self.mini_y = {};
     _self.main_line = {};
     _self.mini_line = {};
@@ -820,7 +820,7 @@ UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
   }
 
   this.isBrushed = function() {
-    if (_self.main_x.domain().toString() != _self.mini_x.domain().toString()) {
+    if (_self.lc.main_x.domain().toString() != _self.mini_x.domain().toString()) {
       return true;
     } else {
       return false;
@@ -836,7 +836,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
   this.MLSvg = d3.select(this.miniChartElem).append("svg").attr("id",
       this.miniChartElem).attr(
       "width",
-      this.main_width + this.config.lineChart.mini_margin.left
+      this.lc.main_width + this.config.lineChart.mini_margin.left
           + this.config.lineChart.mini_margin.right).attr(
       "height",
       this.config.lineChart.mini_margin.top
@@ -845,7 +845,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
   ;
 
   this.MLSvg.append("defs").append("clipPath").attr("id", "clip")
-      .append("rect").attr("width", this.main_width).attr("height",
+      .append("rect").attr("width", this.lc.main_width).attr("height",
           this.mini_height);
 
   this.mini = this.MLSvg.append("g").attr(
@@ -857,12 +857,12 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
       d3.time.format("%H:%M")).orient("bottom");
 
   var brush2 = function() {
-    _self.main_x.domain(_self.brush.empty() ? _self.mini_x.domain()
+    _self.lc.main_x.domain(_self.brush.empty() ? _self.mini_x.domain()
         : _self.brush.extent());
-    for ( var key in _self.main_y) {
+    for ( var key in _self.lc.main_y) {
       _self.main.select(".line" + key).attr("d", _self.main_line[key]);
     }
-    _self.main.select(".x.axis").call(_self.main_xAxis);
+    _self.main.select(".x.axis").call(_self.lc.main_xAxis);
   }
 
   var brushstart = function() {
@@ -902,7 +902,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
 
   // /[ line definition ]///////////////////////////
   if (metric == '*') {
-    for ( var key in this.main_y) {
+    for ( var key in this.lc.main_y) {
       if (this.config.lineChart.yAxis.right != key) {
         this.mini_line[key] = d3.svg.line().interpolate(chart_shape).x(
             function(d) {
@@ -913,9 +913,9 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
         // it doesn't work for brushing
         // this.main_line[key] =
         // d3.svg.line().interpolate(chart_shape).x(function(d) {
-        // return _self.main_x(d.date);
+        // return _self.lc.main_x(d.date);
         // }).y(function(d) {
-        // return _self.main_y[key](d[key]);
+        // return _self.lc.main_y[key](d[key]);
         // });
       }
     }
@@ -939,17 +939,17 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
                 (d[_self.config.lineChart.yAxis.right]);
           });
 
-  this.mini_x.domain(this.main_x.domain());
+  this.mini_x.domain(this.lc.main_x.domain());
 
-  for ( var key in this.main_y) {
-    this.mini_y[key].domain(this.main_y[key].domain());
+  for ( var key in this.lc.main_y) {
+    this.mini_y[key].domain(this.lc.main_y[key].domain());
   }
 
   // /[ this.mini lineChart ]///////////////////////////
   this.mini.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
       "transform", "translate(0," + this.mini_height + ")").call(
-      _self.main_xAxis);
-  for ( var key in this.main_y) {
+      _self.lc.main_xAxis);
+  for ( var key in this.lc.main_y) {
     this.mini.append("path").datum(data).attr("class", "line area" + key).attr(
         "d", this.mini_line[key]);
   }
