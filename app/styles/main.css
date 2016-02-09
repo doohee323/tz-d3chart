@@ -344,7 +344,29 @@ span {
 
 .frt {
 	margin-top: 20px;
-	float: right;
+	float: left;
+}
+
+.gauge {
+	margin-left: 80px;
+	margin-top: 20px;
+	float: left;
+}
+
+#gauge g.arc {
+	fill: steelblue;
+}
+
+#gauge g.pointer {
+	fill: #e85116;
+	stroke: #b64011;
+}
+
+#gauge g.label text {
+	text-anchor: middle;
+	font-size: 14px;
+	font-weight: bold;
+	fill: #666;
 }
 
 .miniSvg-component {

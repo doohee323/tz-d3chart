@@ -478,7 +478,7 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
 
   this.makeCombo(metrices, this.config.lineChart.combo.id, function(val) {
     if ($('.views').val() == 'tot_ms') { // response time
-      if($('#gmetrices').val() == 'tot_ms') {
+      if ($('#gmetrices').val() == 'tot_ms') {
         _self.metric = null;
       } else {
         _self.metric = $('#gmetrices').val();
@@ -1062,8 +1062,8 @@ UptimeChart.prototype.drawMap = function(data, loc) {
         })
   });
 
-  this.circles.selectAll("circle").data(data).enter().append("circle").style(
-      "stroke", "black").attr("cx", function(d, i) {
+  this.circles.selectAll("circle").data(data).enter().append("g").append(
+      "circle").style("stroke", "black").attr("cx", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[0];
   }).attr("cy", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
@@ -1692,6 +1692,153 @@ UptimeChart.prototype.makeStackedData = function(json) {
   return data;
 }
 
+// ///////////////////////////////////////////////////////////////////////////////
+// [ make Gauge ]
+// ///////////////////////////////////////////////////////////////////////////////
+UptimeChart.prototype.makeGauge = function(id) {
+  var _self = this;
+
+  var gauge = {};
+  var defaultConfig = {
+    size : 200,
+    clipWidth : 200,
+    clipHeight : 110,
+    ringInset : 20,
+    ringWidth : 20,
+
+    pointerWidth : 10,
+    pointerTailLength : 5,
+    pointerHeadLengthPercent : 0.9,
+
+    minValue : 0,
+    maxValue : 10,
+
+    minAngle : -90,
+    maxAngle : 90,
+
+    transitionMs : 750,
+
+    majorTicks : 5,
+    labelFormat : d3.format(',g'),
+    labelInset : 10,
+
+    arcColorFn : d3.interpolateHsl(d3.rgb('#e8e2ca'), d3.rgb('#3e6c0a'))
+  };
+
+  var range;
+  var r;
+  var pointerHeadLength;
+  var value = 0;
+
+  var svg;
+  var arc;
+  var scale;
+  var ticks;
+  var tickData;
+  var pointer;
+
+  var donut = d3.layout.pie();
+
+  function deg2rad(deg) {
+    return deg * Math.PI / 180;
+  }
+
+  function newAngle(d) {
+    var ratio = scale(d);
+    var newAngle = defaultConfig.minAngle + (ratio * range);
+    return newAngle;
+  }
+
+  gauge.configure = function(config) {
+    var prop;
+    for (prop in config) {
+      defaultConfig[prop] = config[prop];
+    }
+
+    range = defaultConfig.maxAngle - defaultConfig.minAngle;
+    r = defaultConfig.size / 2;
+    pointerHeadLength = Math.round(r * defaultConfig.pointerHeadLengthPercent);
+
+    scale = d3.scale.linear().range([ 0, 1 ]).domain(
+        [ defaultConfig.minValue, defaultConfig.maxValue ]);
+
+    ticks = scale.ticks(defaultConfig.majorTicks);
+    tickData = d3.range(defaultConfig.majorTicks).map(function() {
+      return 1 / defaultConfig.majorTicks;
+    });
+
+    arc = d3.svg.arc().innerRadius(
+        r - defaultConfig.ringWidth - defaultConfig.ringInset).outerRadius(
+        r - defaultConfig.ringInset).startAngle(function(d, i) {
+      var ratio = d * i;
+      return deg2rad(defaultConfig.minAngle + (ratio * range));
+    }).endAngle(function(d, i) {
+      var ratio = d * (i + 1);
+      return deg2rad(defaultConfig.minAngle + (ratio * range));
+    });
+  };
+
+  function centerTranslation() {
+    return 'translate(' + r + ',' + r + ')';
+  }
+
+  gauge.isRendered = function() {
+    return (svg !== undefined);
+  };
+
+  gauge.render = function(newValue) {
+    svg = d3.select(id).append('svg:svg').attr('class', 'gauge').attr('width',
+        defaultConfig.clipWidth).attr('height', defaultConfig.clipHeight);
+
+    var centerTx = centerTranslation();
+
+    var arcs = svg.append('g').attr('class', 'arc').attr('transform', centerTx);
+
+    arcs.selectAll('path').data(tickData).enter().append('path').attr('fill',
+        function(d, i) {
+          return defaultConfig.arcColorFn(d * i);
+        }).attr('d', arc);
+
+    var lg = svg.append('g').attr('class', 'label').attr('transform', centerTx);
+    lg.selectAll('text').data(ticks).enter().append('text').attr(
+        'transform',
+        function(d) {
+          var ratio = scale(d);
+          var newAngle = defaultConfig.minAngle + (ratio * range);
+          return 'rotate(' + newAngle + ') translate(0,'
+              + (defaultConfig.labelInset - r) + ')';
+        }).text(defaultConfig.labelFormat);
+
+    var lineData = [ [ defaultConfig.pointerWidth / 2, 0 ],
+        [ 0, -pointerHeadLength ], [ -(defaultConfig.pointerWidth / 2), 0 ],
+        [ 0, defaultConfig.pointerTailLength ],
+        [ defaultConfig.pointerWidth / 2, 0 ] ];
+    var pointerLine = d3.svg.line().interpolate('step');
+    var pg = svg.append('g').data([ lineData ]).attr('class', 'pointer').attr(
+        'transform', centerTx);
+
+    pointer = pg
+        .append('path')
+        .attr('d', pointerLine/* function(d) { return pointerLine(d) +'Z';} */)
+        .attr('transform', 'rotate(' + defaultConfig.minAngle + ')');
+
+    gauge.update(newValue === undefined ? 0 : newValue);
+  };
+
+  gauge.update = function(newValue, newConfiguration) {
+    if (newConfiguration !== undefined) {
+      configure(newConfiguration);
+    }
+    var ratio = scale(newValue);
+    var newAngle = defaultConfig.minAngle + (ratio * range);
+    pointer.transition().duration(defaultConfig.transitionMs).ease('elastic')
+        .attr('transform', 'rotate(' + newAngle + ')');
+  };
+
+  gauge.configure(_self.config.gauge);
+  return gauge;
+}
+
 // //////////////////////////////////////////////////////////////////////////////
 // / [configuration]
 // //////////////////////////////////////////////////////////////////////////////
@@ -1743,6 +1890,14 @@ var config = {
       "right" : 40,
       "left" : 40
     }
+  },
+  "gauge" : {
+    "size" : 150,
+    "clipWidth" : 150,
+    "clipHeight" : 150,
+    "ringWidth" : 60,
+    "maxValue" : 10,
+    "transitionMs" : 4000
   },
   "map" : {
     "height" : 400,
@@ -1819,6 +1974,15 @@ function selectView() {
         uptimeChart.makeStackedChart('#stackedChart', data, function() {
           uptimeChart.makeHistogram('#histogram');
         });
+
+        var gauge = uptimeChart.makeGauge('#gauge');
+        gauge.render();
+        gauge.update(Math.random() * 10);
+        
+        setInterval(function() {
+          gauge.update(Math.random() * 10);
+        }, 5 * 1000);
+
       } else { // aggregate
         $('.tot_ms_view').hide();
         $('.aggregate_view').show();
