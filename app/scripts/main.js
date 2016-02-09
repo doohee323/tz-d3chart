@@ -156,7 +156,7 @@ var UptimeChart = function(config) {
           li.selectAll("text").data(items, function(d) {
             return d.key;
           }).call(function(d) {
-            d.enter().append("text");
+            d.enter().append("text").attr("fill", "#585956");
           }).call(function(d) {
             d.exit().remove();
           }).attr("y", function(d, i) {
@@ -644,7 +644,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
   }
 
   // /[ main left x ]///////////////////////////
-  this.main.append("g").attr("class", "x axis").attr("transform",
+  this.main.append("g").attr("class", "x axis").attr("fill", "#585956").attr("transform",
       "translate(0," + this.main_height + ")").call(_self.main_xAxis);
   // /[ main left y ]///////////////////////////
   var main_yAxisLeft;
@@ -654,14 +654,14 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
     main_yAxisLeft = d3.svg.axis().scale(
         this.main_y[this.config.lineChart.yAxis.left]).orient("left");
   }
-  this.main.append("g").attr("class", "y axis axisLeft").call(main_yAxisLeft)
+  this.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(main_yAxisLeft)
       .append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy",
           ".71em").style("text-anchor", "end").text("( ms )");
 
   // /[ main right y ]///////////////////////////
   var main_yAxisRight = d3.svg.axis().scale(
       this.main_y[this.config.lineChart.yAxis.right]).orient("right").ticks(1);
-  this.main.append("g").attr("class", "y axis axisRight").attr("transform",
+  this.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr("transform",
       "translate(" + this.main_width + ", 0)").call(main_yAxisRight).append(
       "text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em")
       .style("text-anchor", "end").text("( ms )");
@@ -673,7 +673,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
     focus.append("line").attr("class", "y" + key).attr("x1",
         this.main_width - 6).attr("x2", this.main_width + 6);
     focus.append("circle").attr("class", "y" + key).attr("r", 4);
-    focus.append("text").attr("class", "y" + key).attr("dy", "-1em");
+    focus.append("text").attr("class", "y" + key).attr("fill", "#585956").attr("dy", "-1em");
   }
 
   var bisectDate = d3.bisector(function(d) {
@@ -700,7 +700,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
               "translate(" + _self.main_x(d.date) + ","
                   + _self.main_y[key](d[key]) + ")");
           if (key == 'aggregate') {
-            var descript = '[availability] \n';
+            var descript = '[Availability] \n';
             var sum = 0;
             for (var i = 0; i < _self.metric_data.length; i++) {
               var type = _self.metric_data[i].target;
@@ -721,7 +721,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
                   avail = 0;
                 }
                 sum += avail;
-                descript += ' - ' + type + ' : ' + avail + ' = ' + metric
+                descript += ' - ' + _self.getLabelFullName(type) + ' : ' + avail + ' = ' + metric
                     + ' / (' + active + ' + ' + include + ') \n';
               }
             }
@@ -733,7 +733,7 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
             }
             descript += ' - availability sum: ' + sum + ' \n';
             descript += ' - availability max: ' + _self.aggregate_max + ' \n';
-            descript = '[' + _self.formatDate(d.date) + '`s aggregate]: '
+            descript = '[' + _self.formatDate(d.date) + '`s Aggregation]: '
                 + uptime_per + '\n = ' + sum + ' / ' + _self.aggregate_max
                 + ' * 100 /d[key]: ' + d[key] + '\n' + descript;
             _self.tooltip2(descript);
@@ -822,6 +822,8 @@ UptimeChart.prototype.makeMiniLineChart = function(chartElem, resultset, cb) {
 
 UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
   var _self = this;
+  var chart_shape = 'monotone'; // linear, step, basis, bundle, cardinal,
+  // monotone
   d3.select("[id='" + this.miniChartElem + "']").remove();
   this.MLSvg = d3.select(this.miniChartElem).append("svg").attr("id",
       this.miniChartElem).attr(
@@ -830,8 +832,9 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
           + this.config.lineChart.mini_margin.right).attr(
       "height",
       this.config.lineChart.mini_margin.top
-          + this.config.lineChart.mini_margin.bottom + this.mini_height).style(
-      "background-color", '#FE9A2E');
+          + this.config.lineChart.mini_margin.bottom + this.mini_height).attr(
+      "class", "miniSvg-component");
+  ;
 
   this.MLSvg.append("defs").append("clipPath").attr("id", "clip")
       .append("rect").attr("width", this.main_width).attr("height",
@@ -893,7 +896,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
   if (metric == '*') {
     for ( var key in this.main_y) {
       if (this.config.lineChart.yAxis.right != key) {
-        this.mini_line[key] = d3.svg.line().interpolate('cardinal').x(
+        this.mini_line[key] = d3.svg.line().interpolate(chart_shape).x(
             function(d) {
               return _self.mini_x(d.date);
             }).y(function(d) {
@@ -901,7 +904,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
         });
         // it doesn't work for brushing
         // this.main_line[key] =
-        // d3.svg.line().interpolate('cardinal').x(function(d) {
+        // d3.svg.line().interpolate(chart_shape).x(function(d) {
         // return _self.main_x(d.date);
         // }).y(function(d) {
         // return _self.main_y[key](d[key]);
@@ -909,7 +912,7 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
       }
     }
   } else {
-    var type = 'cardinal';
+    var type = chart_shape;
     if (metric == 'state') {
       type = 'step';
     }
@@ -935,10 +938,10 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
   }
 
   // /[ this.mini lineChart ]///////////////////////////
-  this.mini.append("g").attr("class", "x axis").attr("transform",
+  this.mini.append("g").attr("class", "x axis").attr("fill", "#585956").attr("transform",
       "translate(0," + this.mini_height + ")").call(_self.main_xAxis);
   for ( var key in this.main_y) {
-    this.mini.append("path").datum(data).attr("class", "line line" + key).attr(
+    this.mini.append("path").datum(data).attr("class", "line area" + key).attr(
         "d", this.mini_line[key]);
   }
 
@@ -1082,7 +1085,7 @@ UptimeChart.prototype.drawMap = function(data, loc) {
     return _self.getCircleColor(d);
   });
 
-  this.labels.selectAll("labels").data(data).enter().append("text").attr("x",
+  this.labels.selectAll("labels").data(data).enter().append("text").attr("fill", "#585956").attr("x",
       function(d, i) {
         return xy([ +d["longitude"], +d["latitude"] ])[0];
       }).attr("y", function(d, i) {
@@ -1336,7 +1339,7 @@ UptimeChart.prototype.makeHistogram = function(id) {
           return d[0];
         }));
 
-    _self.hgsvg.append("g").attr("class", "x axis").attr("transform",
+    _self.hgsvg.append("g").attr("class", "x axis").attr("fill", "#585956").attr("transform",
         "translate(0," + height + ")").call(
         d3.svg.axis().scale(x).tickFormat(d3.time.format("%H:%M")).orient(
             "bottom"));
@@ -1362,7 +1365,7 @@ UptimeChart.prototype.makeHistogram = function(id) {
     }).attr('fill', barColor).style("cursor", "pointer").on("mouseover",
         mouseover).on("mouseout", mouseout);
 
-    bars.append("text").text(function(d) {
+    bars.append("text").attr("fill", "#585956").text(function(d) {
       return d3.format(",")(d[1])
     }).attr("x", function(d) {
       return x(d[0]) + x.rangeBand() / 2;
@@ -1610,10 +1613,10 @@ UptimeChart.prototype.drawStackedChart = function(data, cb) {
     return d.total;
   }) ]);
 
-  // stSvg.append("g").attr("class", "x axis").attr("transform",
+  // stSvg.append("g").attr("class", "x axis").attr("fill", "#585956").attr("transform",
   // "translate(0," + height + ")").call(xAxis);
 
-  stSvg.append("g").attr("class", "y axis").call(yAxis).append("text").attr(
+  stSvg.append("g").attr("class", "y axis").attr("fill", "#585956").call(yAxis).append("text").attr(
       "transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
       "text-anchor", "end").text("(ms)");
 
@@ -1719,8 +1722,8 @@ var config = {
       "height" : 40,
       "top" : 0,
       "bottom" : 20,
-      "right" : 40,
-      "left" : 40
+      "right" : 0,
+      "left" : 0
     },
     "yAxis" : {
       "left" : "tot_ms",

@@ -81,6 +81,7 @@ div.combo {
 
 .axis text {
 	font: 10px sans-serif;
+	color: #585956;
 }
 
 .line {
@@ -140,6 +141,12 @@ circle {
 
 /* judge */
 .line.linejudge {
+	stroke: #dc291e;
+	fill-opacity: .1;
+	fill: #dc291e;
+}
+
+.line.areajudge {
 	stroke: #dc291e;
 	fill-opacity: .1;
 	fill: #dc291e;
@@ -220,6 +227,12 @@ circle {
 	stroke: #236093;
 }
 
+.line.areaaggregate {
+	stroke: #236093;
+	fill-opacity: .5;
+	fill: white;
+}
+
 .focus circle.yaggregate {
 	stroke: #236093;
 }
@@ -258,6 +271,7 @@ div.tooltip {
 	border: solid 1px #aaa;
 	border-radius: 8px;
 	pointer-events: none;
+	color: #585956;
 }
 
 div.tooltip2 {
@@ -271,6 +285,7 @@ div.tooltip2 {
 	border: solid 1px #aaa;
 	border-radius: 8px;
 	pointer-events: none;
+	color: #585956;
 }
 
 path {
@@ -301,6 +316,7 @@ path:hover {
 	border-collapse: collapse;
 	border-spacing: 0px;
 	font: 11px sans-serif;
+	color: #585956;
 }
 
 .legend2 td {
@@ -329,4 +345,9 @@ span {
 .frt {
 	margin-top: 20px;
 	float: right;
+}
+
+.miniSvg-component {
+	background-color: #C4C4C4;
+	margin-left: 40px;
 }
