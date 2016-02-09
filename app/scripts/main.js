@@ -403,8 +403,10 @@ var UptimeChart = function(config) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make lineChart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
+UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   var _self = this;
+  
+  var lc = {};
 
   this.main_y = {};
   this.main_line = {};
@@ -483,10 +485,11 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
       } else {
         _self.metric = $('#gmetrices').val();
       }
-      _self.drawStackedChart(_self.makeStackedData(_self.lineData), function() {
-        _self.makeHistogram('#histogram', _self
-            .makeHistogramData(_self.lineData));
-      });
+      _self.drawStackedChart(_self.sc.makeStackedData(_self.lineData),
+          function() {
+            _self.makeHistogram('#histogram', _self
+                .makeHistogramData(_self.lineData));
+          });
     } else { // aggregate
       _self.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
@@ -1263,12 +1266,13 @@ UptimeChart.prototype.redrawChart = function() {
   }
 
   if ($('.views').val() == 'tot_ms') { // response time
-    _self.drawStackedChart(_self.makeStackedData(_self.lineData), function() {
-      _self.drawHistogram(_self.makeHistogramData(_self.lineData));
-      if (_self.metric) {
-        $('#gmetrices').val(_self.metric);
-      }
-    });
+    _self.drawStackedChart(_self.sc.makeStackedData(_self.lineData),
+        function() {
+          _self.drawHistogram(_self.makeHistogramData(_self.lineData));
+          if (_self.metric) {
+            $('#gmetrices').val(_self.metric);
+          }
+        });
   }
 
   // map
@@ -1538,158 +1542,161 @@ UptimeChart.prototype.drawHistogram = function(data) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make StackedChart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeStackedChart = function(id, data, cb) {
+UptimeChart.prototype.stackedChart = function(id, data, cb) {
   var _self = this;
-  _self.stackedChartElem = id;
 
-  _self.drawStackedChart(_self.makeStackedData(data), function() {
+  var sc = {};
+  sc.stackedChartElem = id;
+
+  sc.drawStackedChart = function(data, cb) {
+    var width = config.stackedChart.margin.width
+        - config.stackedChart.margin.left - config.stackedChart.margin.right
+    var height = config.stackedChart.margin.height
+        - config.stackedChart.margin.top - config.stackedChart.margin.bottom;
+
+    var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .1);
+    var y = d3.scale.linear().rangeRound([ height, 0 ]);
+
+    // var xAxis = d3.svg.axis().scale(x).tickFormat(d3.time.format("%H:%M"))
+    // .orient("bottom");
+    var yAxis = d3.svg.axis().scale(y).orient("left").tickFormat(
+        d3.format(".2s"));
+
+    d3.select("[id='" + this.stackedChartElem + "']").remove();
+    sc.stSvg = d3.select(this.stackedChartElem).append("svg").attr("id",
+        this.stackedChartElem).attr(
+        "width",
+        width + config.stackedChart.margin.left
+            + config.stackedChart.margin.right).attr(
+        "height",
+        height + config.stackedChart.margin.top
+            + config.stackedChart.margin.bottom).append("g").attr(
+        "transform",
+        "translate(" + config.stackedChart.margin.left + ","
+            + config.stackedChart.margin.top + ")");
+
+    sc.stackedColor = d3.scale.ordinal().range(
+        [ "#81bc00", "#7e7f74", "#ffa400" ]);
+
+    sc.stackedColor.domain(d3.keys(data[0]).filter(function(key) {
+      return key !== "date";
+    }));
+    data.forEach(function(d) {
+      var y0 = 0;
+      d.metrics = sc.stackedColor.domain().map(function(key) {
+        return {
+          key : key,
+          y0 : y0,
+          y1 : y0 += +d[key]
+        };
+      });
+      d.total = d.metrics[d.metrics.length - 1].y1;
+    });
+
+    x.domain(data.map(function(d) {
+      return d.date;
+    }));
+    y.domain([ 0, d3.max(data, function(d) {
+      return d.total;
+    }) ]);
+
+    // sc.stSvg.append("g").attr("class", "x axis").attr("fill",
+    // "#585956").attr("transform",
+    // "translate(0," + height + ")").call(xAxis);
+
+    sc.stSvg.append("g").attr("class", "y axis").attr("fill", "#585956").call(
+        yAxis).append("text").attr("transform", "rotate(-90)").attr("y", 6)
+        .attr("dy", ".71em").style("text-anchor", "end").text("(ms)");
+
+    var date = sc.stSvg.selectAll(".date").data(data).enter().append("g").attr(
+        "class", "g").attr("transform", function(d) {
+      return "translate(" + x(d.date) + ",0)";
+    });
+
+    date.selectAll("rect").data(function(d) {
+      return d.metrics;
+    }).enter().append("rect").attr("width", x.rangeBand()).attr("y",
+        function(d) {
+          return y(d.y1);
+        }).attr("data-legend", function(d) {
+      return d.key;
+    }).attr("height", function(d) {
+      return y(d.y0) - y(d.y1);
+    }).style("fill", function(d) {
+      return sc.stackedColor(d.key);
+    });
+
+    _self.hgsvg = sc.stSvg;
+    cb.call(null);
+    return sc;
+  }
+
+  sc.makeStackedData = function(json) {
+    var data = new Array();
+
+    if (_self.isBrushed()) {
+      for (var i = 0; i < json.length; i++) {
+        if (json[i].date >= _self.brush.extent()[0]
+            && json[i].date <= _self.brush.extent()[1]) {
+          data.push(json[i]);
+        }
+      }
+    } else {
+      data = jQuery.extend(true, [], json);
+    }
+    if (data.length == 0) {
+      data = jQuery.extend(true, [], json);
+    }
+    var input = new Array();
+    data.forEach(function(d) {
+      var tmp = {};
+      tmp.date = d.date;
+      if (_self.metric) {
+        tmp[_self.metric] = d[_self.metric];
+      } else {
+        tmp.nsl_ms = d.nsl_ms;
+        tmp.con_ms = d.con_ms;
+        tmp.tfb_ms = d.tfb_ms;
+      }
+      input.push(tmp);
+    });
+
+    input.forEach(function(d) {
+      d.date = +d.date;
+      if (_self.metric) {
+        d[_self.metric] = +d[_self.metric];
+      } else {
+        d.nsl_ms = +d.nsl_ms;
+        d.con_ms = +d.con_ms;
+        d.tfb_ms = +d.tfb_ms;
+      }
+    });
+
+    data = new Array();
+    input.forEach(function(d) {
+      var tmp = {};
+      tmp.date = new Date(d.date * 1000);
+      if (_self.metric) {
+        tmp[_self.metric] = d[_self.metric];
+      } else {
+        tmp.nsl_ms = d.nsl_ms;
+        tmp.con_ms = d.con_ms;
+        tmp.tfb_ms = d.tfb_ms;
+      }
+      data.push(tmp);
+    });
+    return data;
+  }
+
+  sc.drawStackedChart(sc.makeStackedData(data), function() {
     cb.call();
     // /[ legend ]///////////////////////////
-    var legend = _self.stSvg.append("g").attr("class", "legend").attr(
-        "transform", "translate(40, " + _self.config.legend.y + ")").call(
-        _self.makeLegend, _self.stackedChartElem, "*");
-  });
-}
-
-UptimeChart.prototype.drawStackedChart = function(data, cb) {
-  var _self = this;
-
-  var width = config.stackedChart.margin.width
-      - config.stackedChart.margin.left - config.stackedChart.margin.right
-  var height = config.stackedChart.margin.height
-      - config.stackedChart.margin.top - config.stackedChart.margin.bottom;
-
-  var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .1);
-  var y = d3.scale.linear().rangeRound([ height, 0 ]);
-
-  // var xAxis = d3.svg.axis().scale(x).tickFormat(d3.time.format("%H:%M"))
-  // .orient("bottom");
-  var yAxis = d3.svg.axis().scale(y).orient("left")
-      .tickFormat(d3.format(".2s"));
-
-  d3.select("[id='" + this.stackedChartElem + "']").remove();
-  _self.stSvg = d3.select(this.stackedChartElem).append("svg").attr("id",
-      this.stackedChartElem).attr(
-      "width",
-      width + config.stackedChart.margin.left
-          + config.stackedChart.margin.right).attr(
-      "height",
-      height + config.stackedChart.margin.top
-          + config.stackedChart.margin.bottom).append("g").attr(
-      "transform",
-      "translate(" + config.stackedChart.margin.left + ","
-          + config.stackedChart.margin.top + ")");
-
-  _self.stackedColor = d3.scale.ordinal().range(
-      [ "#81bc00", "#7e7f74", "#ffa400" ]);
-
-  _self.stackedColor.domain(d3.keys(data[0]).filter(function(key) {
-    return key !== "date";
-  }));
-  data.forEach(function(d) {
-    var y0 = 0;
-    d.metrics = _self.stackedColor.domain().map(function(key) {
-      return {
-        key : key,
-        y0 : y0,
-        y1 : y0 += +d[key]
-      };
-    });
-    d.total = d.metrics[d.metrics.length - 1].y1;
+    var legend = sc.stSvg.append("g").attr("class", "legend").attr("transform",
+        "translate(40, " + _self.config.legend.y + ")").call(_self.makeLegend,
+        sc.stackedChartElem, "*");
   });
 
-  x.domain(data.map(function(d) {
-    return d.date;
-  }));
-  y.domain([ 0, d3.max(data, function(d) {
-    return d.total;
-  }) ]);
-
-  // _self.stSvg.append("g").attr("class", "x axis").attr("fill",
-  // "#585956").attr("transform",
-  // "translate(0," + height + ")").call(xAxis);
-
-  _self.stSvg.append("g").attr("class", "y axis").attr("fill", "#585956").call(
-      yAxis).append("text").attr("transform", "rotate(-90)").attr("y", 6).attr(
-      "dy", ".71em").style("text-anchor", "end").text("(ms)");
-
-  var date = _self.stSvg.selectAll(".date").data(data).enter().append("g")
-      .attr("class", "g").attr("transform", function(d) {
-        return "translate(" + x(d.date) + ",0)";
-      });
-
-  date.selectAll("rect").data(function(d) {
-    return d.metrics;
-  }).enter().append("rect").attr("width", x.rangeBand()).attr("y", function(d) {
-    return y(d.y1);
-  }).attr("data-legend", function(d) {
-    return d.key;
-  }).attr("height", function(d) {
-    return y(d.y0) - y(d.y1);
-  }).style("fill", function(d) {
-    return _self.stackedColor(d.key);
-  });
-
-  _self.hgsvg = _self.stSvg;
-  cb.call(null);
-}
-
-UptimeChart.prototype.makeStackedData = function(json) {
-  var _self = this;
-  var data = new Array();
-
-  if (_self.isBrushed()) {
-    for (var i = 0; i < json.length; i++) {
-      if (json[i].date >= _self.brush.extent()[0]
-          && json[i].date <= _self.brush.extent()[1]) {
-        data.push(json[i]);
-      }
-    }
-  } else {
-    data = jQuery.extend(true, [], json);
-  }
-  if (data.length == 0) {
-    data = jQuery.extend(true, [], json);
-  }
-  var input = new Array();
-  data.forEach(function(d) {
-    var tmp = {};
-    tmp.date = d.date;
-    if (_self.metric) {
-      tmp[_self.metric] = d[_self.metric];
-    } else {
-      tmp.nsl_ms = d.nsl_ms;
-      tmp.con_ms = d.con_ms;
-      tmp.tfb_ms = d.tfb_ms;
-    }
-    input.push(tmp);
-  });
-
-  input.forEach(function(d) {
-    d.date = +d.date;
-    if (_self.metric) {
-      d[_self.metric] = +d[_self.metric];
-    } else {
-      d.nsl_ms = +d.nsl_ms;
-      d.con_ms = +d.con_ms;
-      d.tfb_ms = +d.tfb_ms;
-    }
-  });
-
-  data = new Array();
-  input.forEach(function(d) {
-    var tmp = {};
-    tmp.date = new Date(d.date * 1000);
-    if (_self.metric) {
-      tmp[_self.metric] = d[_self.metric];
-    } else {
-      tmp.nsl_ms = d.nsl_ms;
-      tmp.con_ms = d.con_ms;
-      tmp.tfb_ms = d.tfb_ms;
-    }
-    data.push(tmp);
-  });
-  return data;
+  _self.sc = stackedChart;
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -1953,7 +1960,7 @@ var config = {
 function selectView() {
   d3.json("data.json", function(error, json) {
     var uptimeChart = new UptimeChart(config);
-    uptimeChart.makeLineChart("#lineChart", json, function(data) {
+    uptimeChart.lineChart("#lineChart", json, function(data) {
       if ($('.views').val() == 'tot_ms') { // response time
         $('.tot_ms_view').show();
         $('.aggregate_view').hide();
@@ -1971,14 +1978,14 @@ function selectView() {
         $('#gmetrices').val("tot_ms");
         uptimeChart.makeMiniLineChart("#minilineChart", json, function(data) {
         });
-        uptimeChart.makeStackedChart('#stackedChart', data, function() {
+        uptimeChart.stackedChart('#stackedChart', data, function() {
           uptimeChart.makeHistogram('#histogram');
         });
 
         var gauge = uptimeChart.makeGauge('#gauge');
         gauge.render();
         gauge.update(Math.random() * 10);
-        
+
         setInterval(function() {
           gauge.update(Math.random() * 10);
         }, 5 * 1000);
