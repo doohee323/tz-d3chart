@@ -16,27 +16,27 @@ var UptimeChart = function(config) {
     var endTime = _super.toUTCISOString(_super.mc.brush.extent()[1]);
 
     if (_super.mc.isBrushed()) {
-      for (var i = 0; i < _super.mapData.length; i++) {
+      for (var i = 0; i < _super.map.mapData.length; i++) {
         var obj = {};
-        for ( var key in _super.mapData[i]) {
+        for ( var key in _super.map.mapData[i]) {
           if (key == 'loc' || key == 'latitude' || key == 'longitude') {
-            obj[key] = _super.mapData[i][key];
+            obj[key] = _super.map.mapData[i][key];
           } else {
             if (new Date(key) >= new Date(startTime)
                 && new Date(key) <= new Date(endTime)) {
-              obj[key] = _super.mapData[i][key];
+              obj[key] = _super.map.mapData[i][key];
             }
           }
         }
         json.push(obj);
       }
     } else {
-      json = jQuery.extend(true, [], _super.mapData);
+      json = jQuery.extend(true, [], _super.map.mapData);
     }
 
     if ($('.views').val() == 'tot_ms') { // response time
       _super.sc.drawChart(_super.sc.getData(_super.lineData), function() {
-        _super.hst.drawChart(_super.getHistogramData(_super.lineData));
+        _super.hst.drawChart(_super.hst.getData(_super.lineData));
         if (_super.metric) {
           $('#gmetrices').val(_super.metric);
         }
@@ -45,15 +45,15 @@ var UptimeChart = function(config) {
 
     // map
     if (_super.metric) {
-      for (var i = 0; i < _super.mapData.length; i++) {
+      for (var i = 0; i < _super.map.mapData.length; i++) {
         var obj = {};
-        for ( var key in _super.mapData[i]) {
+        for ( var key in _super.map.mapData[i]) {
           if (key == 'loc' || key == 'latitude' || key == 'longitude') {
-            obj[key] = _super.mapData[i][key];
+            obj[key] = _super.map.mapData[i][key];
           } else {
             if (new Date(key) >= new Date(startTime)
                 && new Date(key) <= new Date(endTime)) {
-              obj[key] = _super.mapData[i][key];
+              obj[key] = _super.map.mapData[i][key];
             }
           }
         }
@@ -61,19 +61,22 @@ var UptimeChart = function(config) {
       }
     }
 
-    _super.circles.selectAll("circle").transition().duration(1000).ease(
+    _super.map.circles.selectAll("circle").transition().duration(1000).ease(
         "linear").attr("r", function(d) {
-      return _super.getCircleSize(json, d.loc);
-    }).attr("title", function(d) {
-      return d["loc"] + ": " + Math.round(_super.getCircleTotal(json, d.loc));
+      return _super.map.getCircleSize(json, d.loc);
+    }).attr(
+        "title",
+        function(d) {
+          return d["loc"] + ": "
+              + Math.round(_super.map.getCircleTotal(json, d.loc));
+        });
+
+    _super.map.circles.selectAll("circle").style("fill", function(d) {
+      return _super.map.getCircleColor(json, d.loc);
     });
 
-    _super.circles.selectAll("circle").style("fill", function(d) {
-      return _super.getCircleColor(json, d.loc);
-    });
-
-    _super.labels.selectAll("text").text(function(d) {
-      return Math.round(_super.getCircleTotal(json, d.loc));
+    _super.map.labels.selectAll("text").text(function(d) {
+      return Math.round(_super.map.getCircleTotal(json, d.loc));
     });
   }
 
@@ -279,64 +282,35 @@ var UptimeChart = function(config) {
     return g;
   }
 
-  // make mapData for lineChart from maxtrix, locs
-  _super.getMapData = function(resultset, metric) {
-    var data = resultset.data.metric;
-    var locs = resultset.meta.locs;
-
-    var mapData = new Array();
-    for (var i = 0; i < locs.length; i++) {
-      var loc = locs[i].loc;
-      var row = {};
-      row.loc = loc;
-      row.latitude = locs[i].latitude;
-      row.longitude = locs[i].longitude;
-      for (var j = 0; j < data.length; j++) {
-        if (data[j].target == loc + '.' + metric) {
-          var datapoints = data[j].datapoints;
-          for (var p = 0; p < datapoints.length; p++) {
-            var dt = new Date(datapoints[p][1] * 1000);
-            var t = _super.toUTCISOString(dt);
-            if (datapoints[p][0]) {
-              row[t] = datapoints[p][0];
-            } else {
-              row[t] = 0;
-            }
-          }
-        }
-      }
-      if (Object.keys(row).length > 3) {
-        mapData.push(row);
-      }
-    }
-
-    for (var i = 0; i < locs.length; i++) {
-      var loc = locs[i].loc;
-      var bExist = false;
-      for (var j = 0; j < mapData.length; j++) {
-        if (mapData[j].loc == loc) {
-          bExist = true;
-          break;
-        }
-      }
-      if (!bExist) {
-        var row = {};
-        row.loc = loc;
-        row.latitude = locs[i].latitude == null ? 100 : locs[i].latitude;
-        row.longitude = locs[i].longitude == null ? 100 : locs[i].longitude;
-        for ( var key in mapData[0]) {
-          if (key != 'loc' && key != 'latitude' && key != 'longitude') {
-            row[key] = 0;
-          }
-        }
-        mapData.push(row);
-      }
-    }
-    return mapData;
+  _super.toUTCISOString = function(st) {
+    st = new Date(Date.UTC(st.getFullYear(), st.getMonth(), st.getDate(), st
+        .getHours(), st.getMinutes()));
+    return st.toISOString();
   }
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// [ make lineChart ]
+// ///////////////////////////////////////////////////////////////////////////////
+UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
+  var _super = this;
+  var lc = {};
+
+  lc.main_y = {};
+  lc.main_line = {};
+  lc.main;
+
+  lc.main_width = config.lineChart.main_margin.width
+      - config.lineChart.main_margin.left - config.lineChart.main_margin.right
+  lc.main_height = config.lineChart.main_margin.height
+      - config.lineChart.main_margin.top - config.lineChart.main_margin.bottom;
+
+  lc.main_x = d3.time.scale().range([ 0, lc.main_width ]);
+
+  lc.mainChartElem = chartElem;
 
   // make chartData for Chart
-  _super.getChartData = function(resultset) {
+  lc.getData = function(resultset) {
     var max = 0;
     var locMetric = resultset.data.metric;
     var metric = resultset.data.avgMetric;
@@ -412,83 +386,7 @@ var UptimeChart = function(config) {
     return chartData;
   }
 
-  // make data for hst.histogram
-  _super.getHistogramData = function(json) {
-    var data = new Array();
-    if (_super.mc.isBrushed()) {
-      for (var i = 0; i < json.length; i++) {
-        if (json[i].date >= _super.mc.brush.extent()[0]
-            && json[i].date <= _super.mc.brush.extent()[1]) {
-          data.push(json[i]);
-        }
-      }
-    } else {
-      data = jQuery.extend(true, [], json);
-    }
-    if (data.length == 0) {
-      data = jQuery.extend(true, [], json);
-    }
-    var data2 = new Array();
-    var date = 0;
-    var nsl_ms = 0;
-    var con_ms = 0;
-    var tfb_ms = 0;
-    for (var i = 0; i < data.length; i++) {
-      if (i % _super.config.histogram.group_size == 0 && i > 0) {
-        var tmp = {};
-        tmp.date = data[i].date;
-        tmp.nsl_ms = Math.round(parseFloat(nsl_ms / 20));
-        tmp.con_ms = Math.round(parseFloat(con_ms / 20));
-        tmp.tfb_ms = Math.round(parseFloat(tfb_ms / 20));
-        data2.push(tmp);
-        nsl_ms = 0;
-        con_ms = 0;
-        tfb_ms = 0;
-      }
-      nsl_ms += parseFloat(data[i].nsl_ms);
-      con_ms += parseFloat(data[i].con_ms);
-      tfb_ms += parseFloat(data[i].tfb_ms);
-    }
-    return data2;
-  }
-
-  _super.tooltip2 = function(txt) {
-    d3.select("body").select('div.tooltip2').remove();
-    txt = '<div>' + txt.split("\n").join("</div>\n<div>") + '</div>';
-    var html = '<div style="width: 250px;">' + txt + '</div>';
-    var tooltip2 = d3.select("body").append("div").attr('pointer-events',
-        'none').attr("class", "tooltip2").style("opacity", 1).html(html).style(
-        "left", (d3.event.x + 10 + "px"))
-        .style("top", (d3.event.y + 10 + "px"));
-  }
-
-  _super.toUTCISOString = function(st) {
-    st = new Date(Date.UTC(st.getFullYear(), st.getMonth(), st.getDate(), st
-        .getHours(), st.getMinutes()));
-    return st.toISOString();
-  }
-}
-
-// ///////////////////////////////////////////////////////////////////////////////
-// [ make lineChart ]
-// ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
-  var _super = this;
-  var lc = {};
-
-  lc.main_y = {};
-  lc.main_line = {};
-  lc.main;
-
-  lc.main_width = config.lineChart.main_margin.width
-      - config.lineChart.main_margin.left - config.lineChart.main_margin.right
-  lc.main_height = config.lineChart.main_margin.height
-      - config.lineChart.main_margin.top - config.lineChart.main_margin.bottom;
-
-  lc.main_x = d3.time.scale().range([ 0, lc.main_width ]);
-
-  lc.mainChartElem = chartElem;
-  _super.lineData = _super.getChartData(resultset);
+  _super.lineData = lc.getData(resultset);
 
   var metrices = {};
   for ( var key in _super.lineData[0]) {
@@ -530,10 +428,11 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       } else {
         _super.metric = $('#gmetrices').val();
       }
-      _super.sc.drawChart(_super.sc.getData(_super.lineData), function() {
-        _super.hst.histogram('#histogram', _super
-            .getHistogramData(_super.lineData));
-      });
+      _super.sc.drawChart(_super.sc.getData(_super.lineData),
+          function() {
+            _super.hst.histogram('#histogram', _super.hst
+                .getData(_super.lineData));
+          });
     } else { // aggregate
       lc.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
@@ -567,6 +466,16 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     lc.main, lc.mini;
   }
 
+  lc.tooltip = function(txt) {
+    d3.select("body").select('div.tooltip2').remove();
+    txt = '<div>' + txt.split("\n").join("</div>\n<div>") + '</div>';
+    var html = '<div style="width: 250px;">' + txt + '</div>';
+    var tooltip = d3.select("body").append("div").attr('pointer-events',
+        'none').attr("class", "tooltip2").style("opacity", 1).html(html).style(
+        "left", (d3.event.x + 10 + "px"))
+        .style("top", (d3.event.y + 10 + "px"));
+  }
+  
   lc.drawLineChart = function(data, metric) {
     if (d3.selectAll('#lineSvg').length >= 1) {
       d3.selectAll('#lineSvg').remove();
@@ -785,7 +694,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
               descript = '[' + _super.formatDate(d.date) + '`s Aggregation]: '
                   + uptime_per + '\n = ' + sum + ' / ' + _super.aggregate_max
                   + ' * 100 /d[key]: ' + d[key] + '\n' + descript;
-              _super.tooltip2(descript);
+              lc.tooltip(descript);
             }
             var formatOutput = _super.getLabelFullName(key) + " - "
                 + formatDate2(d.date) + " - " + d[key] + " ms";
@@ -846,7 +755,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           lc.main_height + _super.config.lineChart.main_margin.top
               + _super.config.lineChart.main_margin.bottom);
   lc.drawLineChart(_super.lineData, _super.config.lineChart.combo.init);
-
+  
   _super.lc = lc;
   cb.call(null, _super.lineData);
 
@@ -866,7 +775,10 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
   mc.mini_x = d3.time.scale().range([ 0, _super.lc.main_width ]);
 
   mc.miniChartElem = chartElem;
-  _super.lineData = _super.getChartData(resultset);
+
+  if (_super.lineData) {
+    _super.lineData = _super.lc.getData(resultset);
+  }
 
   var metrices = {};
   for ( var key in _super.lineData[0]) {
@@ -1032,25 +944,83 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ map chart ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
+UptimeChart.prototype.map = function(mapElem, resultset, locs) {
   var _super = this;
 
-  this.states;
-  this.circles;
-  this.labels;
-  this.circle_scale = config.map.circle_scale;
-  this.mapElem = mapElem;
+  var map = {};
+  map.states;
+  map.circles;
+  map.labels;
+  map.circle_scale = config.map.circle_scale;
+  map.mapElem = mapElem;
 
   var data = resultset.data.metric;
   var locs = resultset.meta.locs;
-  this.mapData = this.getMapData(resultset, 'state');
 
-  this.mapCombo(locs, this.config.map.combo.id, function(val) {
+  // make mapData for lineChart from maxtrix, locs
+  map.getMapData = function(resultset, metric) {
+    var data = resultset.data.metric;
+    var locs = resultset.meta.locs;
+
+    var mapData = new Array();
+    for (var i = 0; i < locs.length; i++) {
+      var loc = locs[i].loc;
+      var row = {};
+      row.loc = loc;
+      row.latitude = locs[i].latitude;
+      row.longitude = locs[i].longitude;
+      for (var j = 0; j < data.length; j++) {
+        if (data[j].target == loc + '.' + metric) {
+          var datapoints = data[j].datapoints;
+          for (var p = 0; p < datapoints.length; p++) {
+            var dt = new Date(datapoints[p][1] * 1000);
+            var t = _super.toUTCISOString(dt);
+            if (datapoints[p][0]) {
+              row[t] = datapoints[p][0];
+            } else {
+              row[t] = 0;
+            }
+          }
+        }
+      }
+      if (Object.keys(row).length > 3) {
+        mapData.push(row);
+      }
+    }
+
+    for (var i = 0; i < locs.length; i++) {
+      var loc = locs[i].loc;
+      var bExist = false;
+      for (var j = 0; j < mapData.length; j++) {
+        if (mapData[j].loc == loc) {
+          bExist = true;
+          break;
+        }
+      }
+      if (!bExist) {
+        var row = {};
+        row.loc = loc;
+        row.latitude = locs[i].latitude == null ? 100 : locs[i].latitude;
+        row.longitude = locs[i].longitude == null ? 100 : locs[i].longitude;
+        for ( var key in mapData[0]) {
+          if (key != 'loc' && key != 'latitude' && key != 'longitude') {
+            row[key] = 0;
+          }
+        }
+        mapData.push(row);
+      }
+    }
+    return mapData;
+  }
+
+  map.mapData = map.getMapData(resultset, 'state');
+
+  _super.mapCombo(locs, _super.config.map.combo.id, function(val) {
     if (val == '*') {
-      data2 = _super.mapData;
+      data2 = _super.map.mapData;
     } else {
       var metric = $('#' + _super.config.lineChart.combo.id).val();
-      var data = _super.getMapData(resultset, metric);
+      var data = map.getMapData(resultset, metric);
       var data2 = new Array();
       for (var i = 0; i < data.length; i++) {
         if (data[i].loc == val) {
@@ -1059,15 +1029,15 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
       }
     }
     _super.lc.init();
-    _super.drawMap(data2, val);
+    _super.map.drawMap(data2, val);
   });
 
-  this.getCircleSize = function(d, loc) {
-    var size = Math.round(this.getCircleTotal(d, loc));
+  map.getCircleSize = function(d, loc) {
+    var size = Math.round(map.getCircleTotal(d, loc));
     for ( var key in config.map.circle) {
       var val = config.map.circle[key];
       if (size < val) {
-        var s = val * this.circle_scale;
+        var s = val * map.circle_scale;
         if (s < 5) {
           s = 10;
         }
@@ -1077,8 +1047,8 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
     return 50;
   }
 
-  this.getCircleColor = function(d, loc) {
-    var size = Math.round(this.getCircleTotal(d, loc));
+  map.getCircleColor = function(d, loc) {
+    var size = Math.round(map.getCircleTotal(d, loc));
     for ( var key in config.map.circle) {
       var val = config.map.circle[key];
       if (size < val) {
@@ -1088,7 +1058,7 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
     return "#dc291e";
   }
 
-  this.getCircleTotal = function(d, loc) {
+  map.getCircleTotal = function(d, loc) {
     if (loc) {
       for (var i = 0; i < d.length; i++) {
         if (d[i].loc == loc) {
@@ -1106,74 +1076,74 @@ UptimeChart.prototype.makeMap = function(mapElem, resultset, locs) {
     return total;
   }
 
-  this.drawMap(this.mapData, _super.config.map.combo.init);
+  map.drawMap = function(data, loc) {
+    d3.select("[id='" + map.mapElem + "']").remove();
+    map.mapSvg = d3.select(map.mapElem).append("svg").attr('id', map.mapElem)
+        .attr("width", _super.config.map.width).attr("height",
+            _super.config.map.height);
+    map.states = map.mapSvg.append("g").attr("id", "states");
+    map.circles = map.mapSvg.append("g").attr("id", "circles");
+    map.labels = map.mapSvg.append("g").attr("id", "labels");
+    var xy = d3.geo.equirectangular().scale(_super.config.map.scale);
+    var path = d3.geo.path().projection(xy);
+
+    d3.json("countries.json", function(data) {
+      map.states.selectAll("path").data(data.features).enter().append("path")
+          .attr("d", path).on(
+              "mouseover",
+              function(d) {
+                d3.select(this).style("fill", "#6C0").append("title").text(
+                    d.properties.name);
+              }).on("mouseout", function(d) {
+            d3.select(this).style("fill", "#ccc");
+          })
+    });
+
+    map.circles.selectAll("circle").data(data).enter().append("g").append(
+        "circle").style("stroke", "black").attr("cx", function(d, i) {
+      return xy([ +d["longitude"], +d["latitude"] ])[0];
+    }).attr("cy", function(d, i) {
+      return xy([ +d["longitude"], +d["latitude"] ])[1];
+    }).attr("r", function(d) {
+      return _super.map.getCircleSize(d);
+    }).on(
+        "mouseover",
+        function(d, i) {
+          d3.select(this).style("fill", "#FC0");
+          var html = '<div style="width: 250px;">';
+          html += '<div>* Site: ' + d["loc"];
+          html += '</div>';
+          html += '<div>* Total: ' + Math.round(_super.getCircleTotal(d))
+              + ' (ms)</div>';
+          html += '</div>';
+          var div = d3.select("body").append("div").attr('pointer-events',
+              'none').attr("class", "tooltip").style("opacity", 1).html(html)
+              .style("left", (d3.event.x + _super.config.map.tooltip.x + "px"))
+              .style("top", (d3.event.y + _super.config.map.tooltip.y + "px"));
+        }).on("mouseout", function(d) {
+      d3.select(this).style("fill", _super.map.getCircleColor(d));
+      d3.select("body").select('div.tooltip').remove();
+    }).style("fill", function(d) {
+      return _super.map.getCircleColor(d);
+    });
+
+    map.labels.selectAll("labels").data(data).enter().append("text").attr(
+        "fill", "#585956").attr("x", function(d, i) {
+      return xy([ +d["longitude"], +d["latitude"] ])[0];
+    }).attr("y", function(d, i) {
+      return xy([ +d["longitude"], +d["latitude"] ])[1];
+    }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d, i) {
+      return Math.round(_super.map.getCircleTotal(d));
+    }).attr("d", path)
+  }
+
+  _super.map = map;
+  map.drawMap(map.mapData, _super.config.map.combo.init);
+
+  return map;
 }
 
-// ///////////////////////////////////////////////////////////////////////////////
 // [ draw map ]
-// ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.drawMap = function(data, loc) {
-  var _super = this;
-  d3.select("[id='" + this.mapElem + "']").remove();
-  this.mapSvg = d3.select(this.mapElem).append("svg").attr('id', this.mapElem)
-      .attr("width", this.config.map.width).attr("height",
-          this.config.map.height);
-  this.states = this.mapSvg.append("g").attr("id", "states");
-  this.circles = this.mapSvg.append("g").attr("id", "circles");
-  this.labels = this.mapSvg.append("g").attr("id", "labels");
-  var xy = d3.geo.equirectangular().scale(this.config.map.scale);
-  var path = d3.geo.path().projection(xy);
-
-  d3.json("countries.json", function(data) {
-    _super.states.selectAll("path").data(data.features).enter().append("path")
-        .attr("d", path).on(
-            "mouseover",
-            function(d) {
-              d3.select(this).style("fill", "#6C0").append("title").text(
-                  d.properties.name);
-            }).on("mouseout", function(d) {
-          d3.select(this).style("fill", "#ccc");
-        })
-  });
-
-  this.circles.selectAll("circle").data(data).enter().append("g").append(
-      "circle").style("stroke", "black").attr("cx", function(d, i) {
-    return xy([ +d["longitude"], +d["latitude"] ])[0];
-  }).attr("cy", function(d, i) {
-    return xy([ +d["longitude"], +d["latitude"] ])[1];
-  }).attr("r", function(d) {
-    return _super.getCircleSize(d);
-  }).on(
-      "mouseover",
-      function(d, i) {
-        d3.select(this).style("fill", "#FC0");
-        var html = '<div style="width: 250px;">';
-        html += '<div>* Site: ' + d["loc"];
-        html += '</div>';
-        html += '<div>* Total: ' + Math.round(_super.getCircleTotal(d))
-            + ' (ms)</div>';
-        html += '</div>';
-        var div = d3.select("body").append("div")
-            .attr('pointer-events', 'none').attr("class", "tooltip").style(
-                "opacity", 1).html(html).style("left",
-                (d3.event.x + _super.config.map.tooltip.x + "px")).style("top",
-                (d3.event.y + _super.config.map.tooltip.y + "px"));
-      }).on("mouseout", function(d) {
-    d3.select(this).style("fill", _super.getCircleColor(d));
-    d3.select("body").select('div.tooltip').remove();
-  }).style("fill", function(d) {
-    return _super.getCircleColor(d);
-  });
-
-  this.labels.selectAll("labels").data(data).enter().append("text").attr(
-      "fill", "#585956").attr("x", function(d, i) {
-    return xy([ +d["longitude"], +d["latitude"] ])[0];
-  }).attr("y", function(d, i) {
-    return xy([ +d["longitude"], +d["latitude"] ])[1];
-  }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d, i) {
-    return Math.round(_super.getCircleTotal(d));
-  }).attr("d", path)
-}
 
 // ///////////////////////////////////////////////////////////////////////////////
 // [ gmap chart ]
@@ -1530,10 +1500,50 @@ UptimeChart.prototype.histogram = function(id, data) {
     hst.lg = hst.legend2(hst.tf);
   }
 
+  // make data for hst.histogram
+  hst.getData = function(json) {
+    var data = new Array();
+    if (_super.mc.isBrushed()) {
+      for (var i = 0; i < json.length; i++) {
+        if (json[i].date >= _super.mc.brush.extent()[0]
+            && json[i].date <= _super.mc.brush.extent()[1]) {
+          data.push(json[i]);
+        }
+      }
+    } else {
+      data = jQuery.extend(true, [], json);
+    }
+    if (data.length == 0) {
+      data = jQuery.extend(true, [], json);
+    }
+    var data2 = new Array();
+    var date = 0;
+    var nsl_ms = 0;
+    var con_ms = 0;
+    var tfb_ms = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (i % _super.config.histogram.group_size == 0 && i > 0) {
+        var tmp = {};
+        tmp.date = data[i].date;
+        tmp.nsl_ms = Math.round(parseFloat(nsl_ms / 20));
+        tmp.con_ms = Math.round(parseFloat(con_ms / 20));
+        tmp.tfb_ms = Math.round(parseFloat(tfb_ms / 20));
+        data2.push(tmp);
+        nsl_ms = 0;
+        con_ms = 0;
+        tfb_ms = 0;
+      }
+      nsl_ms += parseFloat(data[i].nsl_ms);
+      con_ms += parseFloat(data[i].con_ms);
+      tfb_ms += parseFloat(data[i].tfb_ms);
+    }
+    return data2;
+  }
+
   if (data) {
     hst.drawChart(data);
   } else {
-    hst.drawChart(_super.getHistogramData(_super.lineData));
+    hst.drawChart(hst.getData(_super.lineData));
   }
 
   _super.hst = hst;
@@ -2010,7 +2020,7 @@ function selectView() {
         });
       }
     });
-    uc.makeMap("#graph", json);
+    uc.map("#graph", json);
     // d3.json("map.json", function(json) {
     // $('#googleMap').width(config.gmap.width).height(config.gmap.height);
     // uc.makeGMap("#googleMap", json);
