@@ -478,15 +478,17 @@ UptimeChart.prototype.makeLineChart = function(chartElem, resultset, cb) {
 
   this.makeCombo(metrices, this.config.lineChart.combo.id, function(val) {
     if ($('.views').val() == 'tot_ms') { // response time
-      if ($('#gmetrices').val() !== 'tot_ms') {
-        _self.metric = $('#gmetrices').val();
-      } else {
+      if($('#gmetrices').val() == 'tot_ms') {
         _self.metric = null;
+      } else {
+        _self.metric = $('#gmetrices').val();
       }
       _self.drawStackedChart(_self.makeStackedData(_self.lineData), function() {
-        _self.drawHistogram(_self.makeHistogramData(_self.lineData));
+        _self.makeHistogram('#histogram', _self
+            .makeHistogramData(_self.lineData));
       });
     } else { // aggregate
+      _self.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
       $('.aggregate_view').show();
       if (val == '*') {
@@ -644,8 +646,9 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
   }
 
   // /[ main left x ]///////////////////////////
-  this.main.append("g").attr("class", "x axis").attr("fill", "#585956").attr("transform",
-      "translate(0," + this.main_height + ")").call(_self.main_xAxis);
+  this.main.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
+      "transform", "translate(0," + this.main_height + ")").call(
+      _self.main_xAxis);
   // /[ main left y ]///////////////////////////
   var main_yAxisLeft;
   if (metric != '*') {
@@ -654,17 +657,17 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
     main_yAxisLeft = d3.svg.axis().scale(
         this.main_y[this.config.lineChart.yAxis.left]).orient("left");
   }
-  this.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(main_yAxisLeft)
-      .append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy",
-          ".71em").style("text-anchor", "end").text("( ms )");
+  this.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(
+      main_yAxisLeft).append("text").attr("transform", "rotate(-90)").attr("y",
+      6).attr("dy", ".71em").style("text-anchor", "end").text("( ms )");
 
   // /[ main right y ]///////////////////////////
   var main_yAxisRight = d3.svg.axis().scale(
       this.main_y[this.config.lineChart.yAxis.right]).orient("right").ticks(1);
-  this.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr("transform",
-      "translate(" + this.main_width + ", 0)").call(main_yAxisRight).append(
-      "text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em")
-      .style("text-anchor", "end").text("( ms )");
+  this.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
+      "transform", "translate(" + this.main_width + ", 0)").call(
+      main_yAxisRight).append("text").attr("transform", "rotate(-90)").attr(
+      "y", 6).attr("dy", ".71em").style("text-anchor", "end").text("( ms )");
 
   // /[ focus ]///////////////////////////
   var focus = this.main.append("g").attr("class", "focus").style("display",
@@ -673,7 +676,8 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
     focus.append("line").attr("class", "y" + key).attr("x1",
         this.main_width - 6).attr("x2", this.main_width + 6);
     focus.append("circle").attr("class", "y" + key).attr("r", 4);
-    focus.append("text").attr("class", "y" + key).attr("fill", "#585956").attr("dy", "-1em");
+    focus.append("text").attr("class", "y" + key).attr("fill", "#585956").attr(
+        "dy", "-1em");
   }
 
   var bisectDate = d3.bisector(function(d) {
@@ -721,8 +725,9 @@ UptimeChart.prototype.drawLineChart = function(data, metric) {
                   avail = 0;
                 }
                 sum += avail;
-                descript += ' - ' + _self.getLabelFullName(type) + ' : ' + avail + ' = ' + metric
-                    + ' / (' + active + ' + ' + include + ') \n';
+                descript += ' - ' + _self.getLabelFullName(type) + ' : '
+                    + avail + ' = ' + metric + ' / (' + active + ' + '
+                    + include + ') \n';
               }
             }
             var uptime_per = sum / _self.aggregate_max * 100;
@@ -938,8 +943,9 @@ UptimeChart.prototype.drawMiniLineChart = function(data, metric) {
   }
 
   // /[ this.mini lineChart ]///////////////////////////
-  this.mini.append("g").attr("class", "x axis").attr("fill", "#585956").attr("transform",
-      "translate(0," + this.mini_height + ")").call(_self.main_xAxis);
+  this.mini.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
+      "transform", "translate(0," + this.mini_height + ")").call(
+      _self.main_xAxis);
   for ( var key in this.main_y) {
     this.mini.append("path").datum(data).attr("class", "line area" + key).attr(
         "d", this.mini_line[key]);
@@ -1085,10 +1091,10 @@ UptimeChart.prototype.drawMap = function(data, loc) {
     return _self.getCircleColor(d);
   });
 
-  this.labels.selectAll("labels").data(data).enter().append("text").attr("fill", "#585956").attr("x",
-      function(d, i) {
-        return xy([ +d["longitude"], +d["latitude"] ])[0];
-      }).attr("y", function(d, i) {
+  this.labels.selectAll("labels").data(data).enter().append("text").attr(
+      "fill", "#585956").attr("x", function(d, i) {
+    return xy([ +d["longitude"], +d["latitude"] ])[0];
+  }).attr("y", function(d, i) {
     return xy([ +d["longitude"], +d["latitude"] ])[1];
   }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d, i) {
     return Math.round(_self.getCircleTotal(d));
@@ -1302,7 +1308,7 @@ UptimeChart.prototype.redrawChart = function() {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make Histogram ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeHistogram = function(id) {
+UptimeChart.prototype.makeHistogram = function(id, data) {
   var _self = this;
 
   var barColor = 'steelblue';
@@ -1322,27 +1328,15 @@ UptimeChart.prototype.makeHistogram = function(id) {
     var height = _self.config.histogram.margin.height;
     var ratio = _self.config.histogram.ratio;
 
-    // d3.select("[id='hgsvg']").remove();
-    // var hgsvg = _self.hgsvg.append("svg").attr("id", 'hgsvg').attr(
-    // "width",
-    // width + config.stackedChart.margin.left
-    // + config.stackedChart.margin.right).attr(
-    // "height",
-    // height + config.stackedChart.margin.top
-    // + config.stackedChart.margin.bottom).append("g").attr(
-    // "transform",
-    // "translate(" + config.stackedChart.margin.left + ","
-    // + config.stackedChart.margin.top + ")");
-
     var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], 0.1).domain(
         fD.map(function(d) {
           return d[0];
         }));
 
-    _self.hgsvg.append("g").attr("class", "x axis").attr("fill", "#585956").attr("transform",
-        "translate(0," + height + ")").call(
-        d3.svg.axis().scale(x).tickFormat(d3.time.format("%H:%M")).orient(
-            "bottom"));
+    _self.hgsvg.append("g").attr("class", "x axis").attr("fill", "#585956")
+        .attr("transform", "translate(0," + height + ")").call(
+            d3.svg.axis().scale(x).tickFormat(d3.time.format("%H:%M")).orient(
+                "bottom"));
 
     // _self.hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top /
     // 2)).attr(
@@ -1507,13 +1501,15 @@ UptimeChart.prototype.makeHistogram = function(id) {
     return lg;
   }
 
-  this.drawHistogram(this.makeHistogramData(this.lineData));
+  if (data) {
+    _self.drawHistogram(data);
+  } else {
+    _self.drawHistogram(_self.makeHistogramData(_self.lineData));
+  }
 }
 
 UptimeChart.prototype.drawHistogram = function(data) {
   var _self = this;
-  // d3.select("[id='hgsvg']").remove();
-
   d3.select("[id='piesvg']").remove();
   d3.select("[id='tr']").remove();
   d3.selectAll("span").remove();
@@ -1544,21 +1540,14 @@ UptimeChart.prototype.drawHistogram = function(data) {
 // ///////////////////////////////////////////////////////////////////////////////
 UptimeChart.prototype.makeStackedChart = function(id, data, cb) {
   var _self = this;
-  this.stackedChartElem = id;
+  _self.stackedChartElem = id;
 
-  var width = config.stackedChart.margin.width
-      - config.stackedChart.margin.left - config.stackedChart.margin.right
-  var height = config.stackedChart.margin.height
-      - config.stackedChart.margin.top - config.stackedChart.margin.bottom;
-
-  var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .1);
-  var y = d3.scale.linear().rangeRound([ height, 0 ]);
-  _self.stackedColor = d3.scale.ordinal().range(
-      [ "#81bc00", "#7e7f74", "#ffa400" ]);
-
-  data = this.makeStackedData(data);
-  this.drawStackedChart(data, function() {
+  _self.drawStackedChart(_self.makeStackedData(data), function() {
     cb.call();
+    // /[ legend ]///////////////////////////
+    var legend = _self.stSvg.append("g").attr("class", "legend").attr(
+        "transform", "translate(40, " + _self.config.legend.y + ")").call(
+        _self.makeLegend, _self.stackedChartElem, "*");
   });
 }
 
@@ -1579,7 +1568,7 @@ UptimeChart.prototype.drawStackedChart = function(data, cb) {
       .tickFormat(d3.format(".2s"));
 
   d3.select("[id='" + this.stackedChartElem + "']").remove();
-  var stSvg = d3.select(this.stackedChartElem).append("svg").attr("id",
+  _self.stSvg = d3.select(this.stackedChartElem).append("svg").attr("id",
       this.stackedChartElem).attr(
       "width",
       width + config.stackedChart.margin.left
@@ -1590,6 +1579,9 @@ UptimeChart.prototype.drawStackedChart = function(data, cb) {
       "transform",
       "translate(" + config.stackedChart.margin.left + ","
           + config.stackedChart.margin.top + ")");
+
+  _self.stackedColor = d3.scale.ordinal().range(
+      [ "#81bc00", "#7e7f74", "#ffa400" ]);
 
   _self.stackedColor.domain(d3.keys(data[0]).filter(function(key) {
     return key !== "date";
@@ -1613,17 +1605,18 @@ UptimeChart.prototype.drawStackedChart = function(data, cb) {
     return d.total;
   }) ]);
 
-  // stSvg.append("g").attr("class", "x axis").attr("fill", "#585956").attr("transform",
+  // _self.stSvg.append("g").attr("class", "x axis").attr("fill",
+  // "#585956").attr("transform",
   // "translate(0," + height + ")").call(xAxis);
 
-  stSvg.append("g").attr("class", "y axis").attr("fill", "#585956").call(yAxis).append("text").attr(
-      "transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em").style(
-      "text-anchor", "end").text("(ms)");
+  _self.stSvg.append("g").attr("class", "y axis").attr("fill", "#585956").call(
+      yAxis).append("text").attr("transform", "rotate(-90)").attr("y", 6).attr(
+      "dy", ".71em").style("text-anchor", "end").text("(ms)");
 
-  var date = stSvg.selectAll(".date").data(data).enter().append("g").attr(
-      "class", "g").attr("transform", function(d) {
-    return "translate(" + x(d.date) + ",0)";
-  });
+  var date = _self.stSvg.selectAll(".date").data(data).enter().append("g")
+      .attr("class", "g").attr("transform", function(d) {
+        return "translate(" + x(d.date) + ",0)";
+      });
 
   date.selectAll("rect").data(function(d) {
     return d.metrics;
@@ -1637,12 +1630,7 @@ UptimeChart.prototype.drawStackedChart = function(data, cb) {
     return _self.stackedColor(d.key);
   });
 
-  // /[ legend ]///////////////////////////
-  var legend = stSvg.append("g").attr("class", "legend").attr("transform",
-      "translate(40, " + this.config.legend.y + ")").call(this.makeLegend,
-      _self.stackedChartElem, "*");
-
-  _self.hgsvg = stSvg;
+  _self.hgsvg = _self.stSvg;
   cb.call(null);
 }
 
@@ -1828,8 +1816,8 @@ function selectView() {
         $('#gmetrices').val("tot_ms");
         uptimeChart.makeMiniLineChart("#minilineChart", json, function(data) {
         });
-        uptimeChart.makeStackedChart('#stackedChart', data, function(svg) {
-          uptimeChart.makeHistogram('#histogram', svg);
+        uptimeChart.makeStackedChart('#stackedChart', data, function() {
+          uptimeChart.makeHistogram('#histogram');
         });
       } else { // aggregate
         $('.tot_ms_view').hide();
