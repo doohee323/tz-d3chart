@@ -348,7 +348,7 @@ span {
 }
 
 .gauge {
-	margin-left: 80px;
+	margin-left: 60px;
 	margin-top: 20px;
 	float: left;
 }
@@ -364,8 +364,7 @@ span {
 
 #gauge g.label text {
 	text-anchor: middle;
-	font-size: 14px;
-	font-weight: bold;
+	font-size: 12px;
 	fill: #666;
 }
 

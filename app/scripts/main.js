@@ -36,7 +36,10 @@ var UptimeChart = function(config) {
 
     if ($('.views').val() == 'tot_ms') { // response time
       _super.sc.drawChart(_super.sc.getData(_super.lineData), function() {
-        _super.hst.drawChart(_super.hst.getData(_super.lineData));
+        _super.hst.drawChart(_super.hst.getData(_super.lineData),
+            function(data) {
+              _super.gauge.update(data.tot_ms);
+            });
         if (_super.metric) {
           $('#gmetrices').val(_super.metric);
         }
@@ -1725,27 +1728,27 @@ UptimeChart.prototype.gauge = function(id, config) {
   var defaultConfig = {
     size : 200,
     clipWidth : 200,
-    clipHeight : 110,
+    clipHeight : 200,
     ringInset : 20,
     ringWidth : 20,
 
-    pointerWidth : 10,
-    pointerTailLength : 5,
-    pointerHeadLengthPercent : 0.9,
+    pointerWidth : 8,
+    pointerTailLength : 2,
+    pointerHeadLengthPercent : 0.8,
 
     minValue : 0,
-    maxValue : 10,
+    maxValue : 300,
 
     minAngle : -90,
     maxAngle : 90,
 
-    transitionMs : 750,
+    transitionMs : 2000,
 
     majorTicks : 5,
     labelFormat : d3.format(',g'),
-    labelInset : 10,
+    labelInset : 17,
 
-    arcColorFn : d3.interpolateHsl(d3.rgb('#e8e2ca'), d3.rgb('#3e6c0a'))
+    arcColorFn : d3.interpolateHsl(d3.rgb('#FFE8C6'), d3.rgb('#dc291e'))
   };
 
   var range;
@@ -1802,8 +1805,10 @@ UptimeChart.prototype.gauge = function(id, config) {
   };
 
   gauge.render = function(newValue) {
-    svg = d3.select(id).append('svg:svg').attr('class', 'gauge').attr('width',
-        defaultConfig.clipWidth).attr('height', defaultConfig.clipHeight);
+    d3.select("[id='" + id + "']").remove();
+    svg = d3.select(id).append('svg:svg').attr("id", id).attr('class', 'gauge')
+        .attr('width', defaultConfig.clipWidth).attr('height',
+            defaultConfig.clipHeight);
     var centerTx = function() {
       return 'translate(' + r + ',' + r + ')';
     }
@@ -1849,6 +1854,8 @@ UptimeChart.prototype.gauge = function(id, config) {
   };
 
   gauge.configure(config);
+
+  _super.gauge = gauge;
   return gauge;
 }
 
@@ -1905,12 +1912,12 @@ var config = {
     }
   },
   "gauge" : {
-    "size" : 120,
-    "clipWidth" : 120,
-    "clipHeight" : 120,
+    "size" : 160,
+    "clipWidth" : 160,
+    "clipHeight" : 160,
     "ringWidth" : 60,
-    "maxValue" : 10,
-    "transitionMs" : 4000
+    "maxValue" : 300,
+    "transitionMs" : 2000
   },
   "map" : {
     "height" : 400,
@@ -1986,10 +1993,9 @@ function selectView() {
         });
         uc.stackedChart('#stackedChart', data, function() {
           uc.histogram('#histogram', null, function(data) {
-            config.gauge.maxValue = data.tot_ms;
             var gauge = uc.gauge('#gauge', config.gauge);
             gauge.render();
-            gauge.update(200);
+            gauge.update(data.tot_ms);
           });
         });
       } else { // aggregate
