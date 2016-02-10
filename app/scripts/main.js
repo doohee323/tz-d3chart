@@ -34,7 +34,7 @@ var UptimeChart = function(config) {
       json = jQuery.extend(true, [], _super.map.mapData);
     }
 
-    if ($('.views').val() == 'tot_ms') { // response time
+    if ($('#view').find( "li.active" ).text() == 'Response') { // response time
       _super.sc.drawChart(_super.sc.getData(_super.lineData), function() {
         _super.hst.drawChart(_super.hst.getData(_super.lineData),
             function(data) {
@@ -425,7 +425,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   }
 
   lc.combo(metrices, _super.config.lineChart.combo.id, function(val) {
-    if ($('.views').val() == 'tot_ms') { // response time
+    if ($('#view').find( "li.active" ).text() == 'Response') { // response time
       if ($('#gmetrices').val() == 'tot_ms') {
         _super.metric = null;
       } else {
@@ -1970,11 +1970,11 @@ var config = {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-function selectView() {
+function selectView(view) {
   d3.json("data.json", function(error, json) {
     var uc = new UptimeChart(config);
     uc.lineChart("#lineChart", json, function(data) {
-      if ($('.views').val() == 'tot_ms') { // response time
+      if ($('#view').find( "li.active" ).text() == 'Response') { // response time
         $('.tot_ms_view').show();
         $('.aggregate_view').hide();
         $("#gmetrices").find('option').each(
