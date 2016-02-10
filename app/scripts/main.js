@@ -1278,7 +1278,7 @@ UptimeChart.prototype.gMap = function(gmapElem, data) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make Histogram ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.histogram = function(id, data) {
+UptimeChart.prototype.histogram = function(id, data, cb) {
   var _super = this;
   var hst = {};
 
@@ -1472,7 +1472,7 @@ UptimeChart.prototype.histogram = function(id, data) {
     return lg;
   }
 
-  hst.drawChart = function(data) {
+  hst.drawChart = function(data, cb) {
     d3.select("[id='piesvg']").remove();
     d3.select("[id='tr']").remove();
     d3.selectAll("span").remove();
@@ -1496,6 +1496,10 @@ UptimeChart.prototype.histogram = function(id, data) {
     hst.hg = hst.histogram(sf);
     hst.pc = hst.pieChart(hst.tf);
     hst.lg = hst.legend2(hst.tf);
+
+    if (cb) {
+      cb.call(null, data);
+    }
   }
 
   // make data for hst.histogram
@@ -1519,6 +1523,7 @@ UptimeChart.prototype.histogram = function(id, data) {
     var nsl_ms = 0;
     var con_ms = 0;
     var tfb_ms = 0;
+    var tot_ms = 0;
     for (var i = 0; i < data.length; i++) {
       if (i % _super.config.histogram.group_size == 0 && i > 0) {
         var tmp = {};
@@ -1534,14 +1539,16 @@ UptimeChart.prototype.histogram = function(id, data) {
       nsl_ms += parseFloat(data[i].nsl_ms);
       con_ms += parseFloat(data[i].con_ms);
       tfb_ms += parseFloat(data[i].tfb_ms);
+      tot_ms += parseFloat(data[i].tot_ms);
     }
+    data2.tot_ms = tot_ms / data.length;
     return data2;
   }
 
   if (data) {
-    hst.drawChart(data);
+    hst.drawChart(data, cb);
   } else {
-    hst.drawChart(hst.getData(_super.lineData));
+    hst.drawChart(hst.getData(_super.lineData), cb);
   }
 
   _super.hst = hst;
@@ -1711,7 +1718,7 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
 // ///////////////////////////////////////////////////////////////////////////////
 // [ make Gauge ]
 // ///////////////////////////////////////////////////////////////////////////////
-UptimeChart.prototype.makeGauge = function(id) {
+UptimeChart.prototype.gauge = function(id, config) {
   var _super = this;
 
   var gauge = {};
@@ -1794,27 +1801,17 @@ UptimeChart.prototype.makeGauge = function(id) {
     });
   };
 
-  function centerTranslation() {
-    return 'translate(' + r + ',' + r + ')';
-  }
-
-  gauge.isRendered = function() {
-    return (svg !== undefined);
-  };
-
   gauge.render = function(newValue) {
     svg = d3.select(id).append('svg:svg').attr('class', 'gauge').attr('width',
         defaultConfig.clipWidth).attr('height', defaultConfig.clipHeight);
-
-    var centerTx = centerTranslation();
-
+    var centerTx = function() {
+      return 'translate(' + r + ',' + r + ')';
+    }
     var arcs = svg.append('g').attr('class', 'arc').attr('transform', centerTx);
-
     arcs.selectAll('path').data(tickData).enter().append('path').attr('fill',
         function(d, i) {
           return defaultConfig.arcColorFn(d * i);
         }).attr('d', arc);
-
     var lg = svg.append('g').attr('class', 'label').attr('transform', centerTx);
     lg.selectAll('text').data(ticks).enter().append('text').attr(
         'transform',
@@ -1851,7 +1848,7 @@ UptimeChart.prototype.makeGauge = function(id) {
         .attr('transform', 'rotate(' + newAngle + ')');
   };
 
-  gauge.configure(_super.config.gauge);
+  gauge.configure(config);
   return gauge;
 }
 
@@ -1908,9 +1905,9 @@ var config = {
     }
   },
   "gauge" : {
-    "size" : 150,
-    "clipWidth" : 150,
-    "clipHeight" : 150,
+    "size" : 120,
+    "clipWidth" : 120,
+    "clipHeight" : 120,
     "ringWidth" : 60,
     "maxValue" : 10,
     "transitionMs" : 4000
@@ -1988,17 +1985,13 @@ function selectView() {
         uc.miniLineChart("#minilineChart", json, function(data) {
         });
         uc.stackedChart('#stackedChart', data, function() {
-          uc.histogram('#histogram');
+          uc.histogram('#histogram', null, function(data) {
+            config.gauge.maxValue = data.tot_ms;
+            var gauge = uc.gauge('#gauge', config.gauge);
+            gauge.render();
+            gauge.update(200);
+          });
         });
-
-        var gauge = uc.makeGauge('#gauge');
-        gauge.render();
-        gauge.update(Math.random() * 10);
-
-        setInterval(function() {
-          gauge.update(Math.random() * 10);
-        }, 5 * 1000);
-
       } else { // aggregate
         $('.tot_ms_view').hide();
         $('.aggregate_view').show();
@@ -2019,10 +2012,10 @@ function selectView() {
       }
     });
     uc.map("#graph", json);
-//    d3.json("map.json", function(json) {
-//      $('#googleMap').width(config.gmap.width).height(config.gmap.height);
-//      uc.gMap("#googleMap", json);
-//    });
+    // d3.json("map.json", function(json) {
+    // $('#googleMap').width(config.gmap.width).height(config.gmap.height);
+    // uc.gMap("#googleMap", json);
+    // });
   });
 }
 
