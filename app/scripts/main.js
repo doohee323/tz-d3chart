@@ -6,7 +6,7 @@ var UptimeChart = function(config) {
   _super.config = config;
 
   d3.select(window).on("resize", function() {
-    // _super.resize();
+    _super.resize();
   });
 
   _super.formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
@@ -1884,20 +1884,16 @@ UptimeChart.prototype.gauge = function(id, config) {
 UptimeChart.prototype.resize = function() {
   var _super = this;
 
-  var width = _super.lc.main_width + _super.config.lineChart.main_margin.left
-      + _super.config.lineChart.main_margin.right;
-
-  var height = _super.lc.main_height + _super.config.lineChart.main_margin.top
-      + _super.config.lineChart.main_margin.bottom;
-
-  var aspect = width / height;
-  var targetWidth = 0;
-  if (width > $(window).width()) {
-    targetWidth = $(window).width() - 100;
-    d3.select('#lineSvg').attr("width", targetWidth);
-    d3.select('#lineSvg').attr("height", targetWidth / aspect);
-  }
-  console.log($(window).width());
+//  var width = _super.config.lineChart.main_margin.width;
+//  var height = _super.config.lineChart.main_margin.height;
+//
+//  var aspect = height / width;
+//  var targetWidth = 0;
+//  if (width > $(window).width()) {
+//    targetWidth = $(window).width() - 100;
+//    d3.select('#lineSvg').attr("width", targetWidth);
+//    d3.select('#lineSvg').attr("height", targetWidth * aspect);
+//  }
 }
 
 // //////////////////////////////////////////////////////////////////////////////
