@@ -1970,10 +1970,18 @@ var config = {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-function selectView(view) {
+function selectView(tabId) {
   d3.json("data.json", function(error, json) {
     var uc = new UptimeChart(config);
     uc.lineChart("#lineChart", json, function(data) {
+      if(tabId) {
+        var active = $('#view').find( "li.active" );
+        var inactive = $('#view').find( "li.inactive" );
+        active.removeClass("active");
+        active.addClass("inactive");
+        inactive.removeClass("inactive");
+        inactive.addClass("active");
+      }
       if ($('#view').find( "li.active" ).text() == 'Response') { // response time
         $('.tot_ms_view').show();
         $('.aggregate_view').hide();

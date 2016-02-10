@@ -32,19 +32,10 @@
 
 		<div class="row">
 			<form class="form-horizontal">
-				<div class="form-group">
-					<label for="views" class="col-xs-1 control-label">Views:</label>
-					<div class="col-xs-5">
-						<select class="views form-control col-sm-5" placeholder="views"
-							onchange="selectView()">
-							<option value='tot_ms' selected>Response</option>
-							<option value='aggregate'>Availability</option>
-						</select>
-					</div>
-				</div>
-				<ul class="nav nav-tabs" id="view">
+				<ul class="nav nav-tabs" id="view" style="margin-bottom: 10px;">
 					<li class="active"><a href="javascript: selectView('tot_ms')">Response</a></li>
-					<li><a href="javascript: selectView('aggregate')">Availability</a></li>
+					<li class="inactive"><a
+						href="javascript: selectView('aggregate')">Availability</a></li>
 				</ul>
 				<div class="form-group">
 					<label for="gmetrices" class="col-xs-1 control-label">Metric:</label>
