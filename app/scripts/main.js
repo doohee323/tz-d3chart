@@ -461,17 +461,15 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         }
       }
       lc.init();
-      lc.drawLineChart(data2, val);
+      lc.update(data2, val);
       _super.mc.update(_super.lineData, _super.config.lineChart.combo.init);
     }
   });
 
   lc.init = function() {
     lc.main_y = {};
-    lc.mini_y = {};
     lc.main_line = {};
-    lc.mini_line = {};
-    lc.main, lc.mini;
+    lc.main = {};
   }
 
   lc.tooltip = function(txt) {
@@ -484,17 +482,12 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         .style("top", (d3.event.y + 10 + "px"));
   }
 
-  lc.drawLineChart = function(data, metric) {
+  lc.update = function(data, metric) {
     if (d3.selectAll('#lineSvg').length >= 1) {
       d3.selectAll('#lineSvg').remove();
       lc.lineSvg = d3.select(lc.mainChartElem).append("svg").attr("id",
-          'lineSvg').attr(
-          "width",
-          lc.main_width + _super.config.lineChart.main_margin.left
-              + _super.config.lineChart.main_margin.right).attr(
-          "height",
-          lc.main_height + _super.config.lineChart.main_margin.top
-              + _super.config.lineChart.main_margin.bottom);
+          'lineSvg').attr("width", _super.config.lineChart.main_margin.width)
+          .attr("height", _super.config.lineChart.main_margin.height);
     }
 
     lc.lineSvg.append("defs").append("clipPath").attr("id", "clip").append(
@@ -762,7 +755,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           "height",
           lc.main_height + _super.config.lineChart.main_margin.top
               + _super.config.lineChart.main_margin.bottom);
-  lc.drawLineChart(_super.lineData, _super.config.lineChart.combo.init);
+  lc.update(_super.lineData, _super.config.lineChart.combo.init);
 
   _super.lc = lc;
   cb.call(null, _super.lineData);
@@ -786,8 +779,9 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
   mc.mini_height = _super.config.lineChart.mini_margin.height
       - _super.config.lineChart.mini_margin.top
       - _super.config.lineChart.mini_margin.bottom;
-      
-  mc.mini_x = d3.time.scale().range([ 0, _super.lc.main_width ]);
+
+  mc.mini_x = d3.time.scale().range(
+      [ 0, _super.config.lineChart.mini_margin.width ]);
 
   if (_super.lineData) {
     _super.lineData = _super.lc.getData(resultset);
@@ -820,18 +814,12 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     // monotone
     if (d3.selectAll('#mlSvg').length >= 1) {
       d3.selectAll('#mlSvg').remove();
-    mc.mlSvg = d3.select(mc.miniChartElem).append("svg").attr("id",
-        "mlSvg").attr(
-        "width",
-        _super.lc.main_width + _super.config.lineChart.mini_margin.left
-            + _super.config.lineChart.mini_margin.right).attr(
-        "height",
-        _super.config.lineChart.mini_margin.top
-            + _super.config.lineChart.mini_margin.bottom + mc.mini_height)
-        .attr("class", "miniSvg-component");
-    ;
+      mc.mlSvg = d3.select(mc.miniChartElem).append("svg").attr("id", "mlSvg")
+          .attr("width", _super.config.lineChart.mini_margin.width).attr(
+              "height", _super.config.lineChart.mini_margin.height).attr(
+              "class", "miniSvg-component");
     }
-    
+
     mc.mlSvg.append("defs").append("clipPath").attr("id", "clip")
         .append("rect").attr("width", _super.lc.main_width).attr("height",
             _super.mc.mini_height);
@@ -1616,13 +1604,9 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
 
     d3.select("[id='" + sc.stackedChartElem + "']").remove();
     sc.stSvg = d3.select(sc.stackedChartElem).append("svg").attr("id",
-        sc.stackedChartElem).attr(
-        "width",
-        width + _super.config.stackedChart.margin.left
-            + _super.config.stackedChart.margin.right).attr(
-        "height",
-        height + _super.config.stackedChart.margin.top
-            + _super.config.stackedChart.margin.bottom).append("g").attr(
+        sc.stackedChartElem).attr("width",
+        _super.config.stackedChart.margin.width).attr("height",
+        _super.config.stackedChart.margin.height).append("g").attr(
         "transform",
         "translate(" + _super.config.stackedChart.margin.left + ","
             + _super.config.stackedChart.margin.top + ")");
@@ -1930,7 +1914,7 @@ var uptimeConfig = {
       "left" : 40
     },
     "mini_margin" : {
-      "width" : 950,
+      "width" : 870,
       "height" : 40,
       "top" : 0,
       "bottom" : 20,
