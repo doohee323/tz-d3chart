@@ -5,6 +5,10 @@ var UptimeChart = function(config) {
   var _super = this;
   _super.config = config;
 
+  d3.select(window).on("resize", function() {
+    // _super.resize();
+  });
+
   _super.formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
   _super.parseDate = _super.formatDate.parse;
 
@@ -304,7 +308,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
   lc.main_width = _super.config.lineChart.main_margin.width
       - _super.config.lineChart.main_margin.left
-      - _super.config.lineChart.main_margin.right
+      - _super.config.lineChart.main_margin.right;
+
   lc.main_height = _super.config.lineChart.main_margin.height
       - _super.config.lineChart.main_margin.top
       - _super.config.lineChart.main_margin.bottom;
@@ -432,11 +437,9 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       } else {
         _super.metric = $('#gmetrices').val();
       }
-      _super.sc.update(_super.sc.getData(_super.lineData),
-          function() {
-            _super.hst.histogram('#histogram', _super.hst
-                .getData(_super.lineData));
-          });
+      _super.sc.update(_super.sc.getData(_super.lineData), function() {
+        _super.histogram('#histogram', _super.hst.getData(_super.lineData));
+      });
     } else { // aggregate
       lc.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
@@ -484,13 +487,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     if (d3.selectAll('#lineSvg').length >= 1) {
       d3.selectAll('#lineSvg').remove();
       lc.lineSvg = d3.select(lc.mainChartElem).append("svg").attr("id",
-          'lineSvg').attr(
-          "width",
-          lc.main_width + _super.config.lineChart.main_margin.left
-              + _super.config.lineChart.main_margin.right).attr(
-          "height",
-          lc.main_height + _super.config.lineChart.main_margin.top
-              + _super.config.lineChart.main_margin.bottom);
+          'lineSvg').attr("width", lc.main_width)
+          .attr("height", lc.main_height);
     }
 
     lc.lineSvg.append("defs").append("clipPath").attr("id", "clip").append(
@@ -770,16 +768,20 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
   var _super = this;
 
   var mc = {};
+  mc.miniChartElem = chartElem;
   mc.mini_y = {};
   mc.mini_line = {};
   mc.mini;
 
+  mc.mini_width = _super.config.lineChart.mini_margin.width
+      - _super.config.lineChart.mini_margin.left
+      - _super.config.lineChart.mini_margin.right;
+
   mc.mini_height = _super.config.lineChart.mini_margin.height
       - _super.config.lineChart.mini_margin.top
       - _super.config.lineChart.mini_margin.bottom;
-  mc.mini_x = d3.time.scale().range([ 0, _super.lc.main_width ]);
-
-  mc.miniChartElem = chartElem;
+  
+  mc.mini_x = d3.time.scale().range([ 0, mc.mini_width ]);
 
   if (_super.lineData) {
     _super.lineData = _super.lc.getData(resultset);
@@ -793,11 +795,9 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
   }
 
   mc.init = function() {
-    _super.lc.main_y = {};
     _super.mc.mini_y = {};
-    _super.lc.main_line = {};
     _super.mc.mini_line = {};
-    _super.lc.main, _super.mc.mini;
+    _super.mc.mini = {};
   }
 
   mc.isBrushed = function() {
@@ -811,24 +811,17 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
 
   mc.update = function(data, metric) {
     var chart_shape = 'monotone'; // linear, step, basis, bundle, cardinal,
-    // monotone
-    d3.select("[id='" + mc.miniChartElem + "']").remove();
-    mc.MLSvg = d3.select(mc.miniChartElem).append("svg").attr("id",
-        mc.miniChartElem).attr(
-        "width",
-        _super.lc.main_width + _super.config.lineChart.mini_margin.left
-            + _super.config.lineChart.mini_margin.right).attr(
-        "height",
-        _super.config.lineChart.mini_margin.top
-            + _super.config.lineChart.mini_margin.bottom + mc.mini_height)
-        .attr("class", "miniSvg-component");
-    ;
-
-    mc.MLSvg.append("defs").append("clipPath").attr("id", "clip")
-        .append("rect").attr("width", _super.lc.main_width).attr("height",
+    if (d3.selectAll('#mlSvg').length >= 1) {
+      d3.selectAll('#mlSvg').remove();
+      mc.mlSvg = d3.select(mc.miniChartElem).append("svg").attr("id", "mlSvg")
+          .attr("width", mc.mini_width).attr("height", mc.mini_height).attr(
+              "class", "miniSvg-component");
+    }
+    mc.mlSvg.append("defs").append("clipPath").attr("id", "clip")
+        .append("rect").attr("width", mc.mini_width).attr("height",
             _super.mc.mini_height);
 
-    mc.mini = mc.MLSvg.append("g").attr(
+    mc.mini = mc.mlSvg.append("g").attr(
         "transform",
         "translate(" + _super.config.lineChart.mini_margin.left + ","
             + _super.config.lineChart.mini_margin.top + ")");
@@ -1886,6 +1879,28 @@ UptimeChart.prototype.gauge = function(id, config) {
   return gauge;
 }
 
+// ///////////////////////////////////////////////////////////////////////////////
+// [ resize svg ]
+// ///////////////////////////////////////////////////////////////////////////////
+UptimeChart.prototype.resize = function() {
+  var _super = this;
+
+  var width = _super.lc.main_width + _super.config.lineChart.main_margin.left
+      + _super.config.lineChart.main_margin.right;
+
+  var height = _super.lc.main_height + _super.config.lineChart.main_margin.top
+      + _super.config.lineChart.main_margin.bottom;
+
+  var aspect = width / height;
+  var targetWidth = 0;
+  if (width > $(window).width()) {
+    targetWidth = $(window).width() - 100;
+    d3.select('#lineSvg').attr("width", targetWidth);
+    d3.select('#lineSvg').attr("height", targetWidth / aspect);
+  }
+  console.log($(window).width());
+}
+
 // //////////////////////////////////////////////////////////////////////////////
 // / [configuration]
 // //////////////////////////////////////////////////////////////////////////////
@@ -1895,14 +1910,14 @@ var uptimeConfig = {
       "width" : 950,
       "height" : 250,
       "top" : 50,
-      "bottom" : 20,
+      "bottom" : 50,
       "right" : 40,
       "left" : 40
     },
     "mini_margin" : {
-      "width" : 950,
-      "height" : 40,
-      "top" : 0,
+      "width" : 870,
+      "height" : 80,
+      "top" : 20,
       "bottom" : 20,
       "right" : 0,
       "left" : 0
