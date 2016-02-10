@@ -309,7 +309,6 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   lc.main_width = _super.config.lineChart.main_margin.width
       - _super.config.lineChart.main_margin.left
       - _super.config.lineChart.main_margin.right;
-
   lc.main_height = _super.config.lineChart.main_margin.height
       - _super.config.lineChart.main_margin.top
       - _super.config.lineChart.main_margin.bottom;
@@ -437,9 +436,11 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       } else {
         _super.metric = $('#gmetrices').val();
       }
-      _super.sc.update(_super.sc.getData(_super.lineData), function() {
-        _super.histogram('#histogram', _super.hst.getData(_super.lineData));
-      });
+      _super.sc.update(_super.sc.getData(_super.lineData),
+          function() {
+            _super.hst.histogram('#histogram', _super.hst
+                .getData(_super.lineData));
+          });
     } else { // aggregate
       lc.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
@@ -487,8 +488,13 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     if (d3.selectAll('#lineSvg').length >= 1) {
       d3.selectAll('#lineSvg').remove();
       lc.lineSvg = d3.select(lc.mainChartElem).append("svg").attr("id",
-          'lineSvg').attr("width", lc.main_width)
-          .attr("height", lc.main_height);
+          'lineSvg').attr(
+          "width",
+          lc.main_width + _super.config.lineChart.main_margin.left
+              + _super.config.lineChart.main_margin.right).attr(
+          "height",
+          lc.main_height + _super.config.lineChart.main_margin.top
+              + _super.config.lineChart.main_margin.bottom);
     }
 
     lc.lineSvg.append("defs").append("clipPath").attr("id", "clip").append(
@@ -780,8 +786,8 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
   mc.mini_height = _super.config.lineChart.mini_margin.height
       - _super.config.lineChart.mini_margin.top
       - _super.config.lineChart.mini_margin.bottom;
-  
-  mc.mini_x = d3.time.scale().range([ 0, mc.mini_width ]);
+      
+  mc.mini_x = d3.time.scale().range([ 0, _super.lc.main_width ]);
 
   if (_super.lineData) {
     _super.lineData = _super.lc.getData(resultset);
@@ -811,14 +817,23 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
 
   mc.update = function(data, metric) {
     var chart_shape = 'monotone'; // linear, step, basis, bundle, cardinal,
+    // monotone
     if (d3.selectAll('#mlSvg').length >= 1) {
       d3.selectAll('#mlSvg').remove();
-      mc.mlSvg = d3.select(mc.miniChartElem).append("svg").attr("id", "mlSvg")
-          .attr("width", mc.mini_width).attr("height", mc.mini_height).attr(
-              "class", "miniSvg-component");
+    mc.mlSvg = d3.select(mc.miniChartElem).append("svg").attr("id",
+        "mlSvg").attr(
+        "width",
+        _super.lc.main_width + _super.config.lineChart.mini_margin.left
+            + _super.config.lineChart.mini_margin.right).attr(
+        "height",
+        _super.config.lineChart.mini_margin.top
+            + _super.config.lineChart.mini_margin.bottom + mc.mini_height)
+        .attr("class", "miniSvg-component");
+    ;
     }
+    
     mc.mlSvg.append("defs").append("clipPath").attr("id", "clip")
-        .append("rect").attr("width", mc.mini_width).attr("height",
+        .append("rect").attr("width", _super.lc.main_width).attr("height",
             _super.mc.mini_height);
 
     mc.mini = mc.mlSvg.append("g").attr(
@@ -1910,14 +1925,14 @@ var uptimeConfig = {
       "width" : 950,
       "height" : 250,
       "top" : 50,
-      "bottom" : 50,
+      "bottom" : 20,
       "right" : 40,
       "left" : 40
     },
     "mini_margin" : {
-      "width" : 870,
-      "height" : 80,
-      "top" : 20,
+      "width" : 950,
+      "height" : 40,
+      "top" : 0,
       "bottom" : 20,
       "right" : 0,
       "left" : 0
