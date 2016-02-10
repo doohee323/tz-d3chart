@@ -9,7 +9,7 @@ var UptimeChart = function(config) {
   _super.parseDate = _super.formatDate.parse;
 
   // [ updateChart with brushing ]
-  _super.updateChart = function() {
+  _super.update = function() {
     var json = [];
 
     var startTime = _super.toUTCISOString(_super.mc.brush.extent()[0]);
@@ -34,12 +34,11 @@ var UptimeChart = function(config) {
       json = jQuery.extend(true, [], _super.map.mapData);
     }
 
-    if ($('#view').find( "li.active" ).text() == 'Response') { // response time
-      _super.sc.drawChart(_super.sc.getData(_super.lineData), function() {
-        _super.hst.drawChart(_super.hst.getData(_super.lineData),
-            function(data) {
-              _super.gauge.update(data.tot_ms);
-            });
+    if ($('#view').find("li.active").text() == 'Response') {
+      _super.sc.update(_super.sc.getData(_super.lineData), function() {
+        _super.hst.update(_super.hst.getData(_super.lineData), function(data) {
+          _super.gauge.update(data.tot_ms);
+        });
         if (_super.metric) {
           $('#gmetrices').val(_super.metric);
         }
@@ -225,7 +224,7 @@ var UptimeChart = function(config) {
                 d3.select("line.y" + d.key).style("stroke", '#FFFFFF');
               }
             }
-            _super.updateChart();
+            _super.update();
           }
 
           li.selectAll("text").data(items, function(d) {
@@ -425,13 +424,13 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   }
 
   lc.combo(metrices, _super.config.lineChart.combo.id, function(val) {
-    if ($('#view').find( "li.active" ).text() == 'Response') { // response time
+    if ($('#view').find("li.active").text() == 'Response') {
       if ($('#gmetrices').val() == 'tot_ms') {
         _super.metric = null;
       } else {
         _super.metric = $('#gmetrices').val();
       }
-      _super.sc.drawChart(_super.sc.getData(_super.lineData),
+      _super.sc.update(_super.sc.getData(_super.lineData),
           function() {
             _super.hst.histogram('#histogram', _super.hst
                 .getData(_super.lineData));
@@ -457,7 +456,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       }
       lc.init();
       lc.drawLineChart(data2, val);
-      _super.mc.drawChart(_super.lineData, _super.config.lineChart.combo.init);
+      _super.mc.update(_super.lineData, _super.config.lineChart.combo.init);
     }
   });
 
@@ -807,7 +806,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     }
   }
 
-  mc.drawChart = function(data, metric) {
+  mc.update = function(data, metric) {
     var chart_shape = 'monotone'; // linear, step, basis, bundle, cardinal,
     // monotone
     d3.select("[id='" + mc.miniChartElem + "']").remove();
@@ -848,7 +847,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     }
 
     var brushend = function() {
-      _super.updateChart();
+      _super.update();
     }
 
     mc.brush = d3.svg.brush().x(mc.mini_x).on("brush", brush2).on('brushstart',
@@ -939,7 +938,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
 
   _super.mc = mc;
 
-  mc.drawChart(_super.lineData, _super.config.lineChart.combo.init);
+  mc.update(_super.lineData, _super.config.lineChart.combo.init);
 
   cb.call(null, _super.lineData);
 }
@@ -1032,7 +1031,7 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
       }
     }
     _super.lc.init();
-    _super.map.drawChart(data2, val);
+    _super.map.update(data2, val);
   });
 
   map.getCircleSize = function(d, loc) {
@@ -1079,7 +1078,7 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
     return total;
   }
 
-  map.drawChart = function(data, loc) {
+  map.update = function(data, loc) {
     d3.select("[id='" + map.mapElem + "']").remove();
     map.mapSvg = d3.select(map.mapElem).append("svg").attr('id', map.mapElem)
         .attr("width", _super.config.map.width).attr("height",
@@ -1142,7 +1141,7 @@ UptimeChart.prototype.map = function(mapElem, resultset, locs) {
   }
 
   _super.map = map;
-  map.drawChart(map.mapData, _super.config.map.combo.init);
+  map.update(map.mapData, _super.config.map.combo.init);
 
   return map;
 }
@@ -1475,7 +1474,7 @@ UptimeChart.prototype.histogram = function(id, data, cb) {
     return lg;
   }
 
-  hst.drawChart = function(data, cb) {
+  hst.update = function(data, cb) {
     d3.select("[id='piesvg']").remove();
     d3.select("[id='tr']").remove();
     d3.selectAll("span").remove();
@@ -1549,9 +1548,9 @@ UptimeChart.prototype.histogram = function(id, data, cb) {
   }
 
   if (data) {
-    hst.drawChart(data, cb);
+    hst.update(data, cb);
   } else {
-    hst.drawChart(hst.getData(_super.lineData), cb);
+    hst.update(hst.getData(_super.lineData), cb);
   }
 
   _super.hst = hst;
@@ -1567,7 +1566,7 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
   var sc = {};
   sc.stackedChartElem = id;
 
-  sc.drawChart = function(data, cb) {
+  sc.update = function(data, cb) {
     var width = config.stackedChart.margin.width
         - config.stackedChart.margin.left - config.stackedChart.margin.right
     var height = config.stackedChart.margin.height
@@ -1581,9 +1580,9 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
     var yAxis = d3.svg.axis().scale(y).orient("left").tickFormat(
         d3.format(".2s"));
 
-    d3.select("[id='" + this.stackedChartElem + "']").remove();
-    sc.stSvg = d3.select(this.stackedChartElem).append("svg").attr("id",
-        this.stackedChartElem).attr(
+    d3.select("[id='" + sc.stackedChartElem + "']").remove();
+    sc.stSvg = d3.select(sc.stackedChartElem).append("svg").attr("id",
+        sc.stackedChartElem).attr(
         "width",
         width + config.stackedChart.margin.left
             + config.stackedChart.margin.right).attr(
@@ -1646,6 +1645,12 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
     });
 
     _super.hgsvg = sc.stSvg;
+
+    // /[ legend ]///////////////////////////
+    var legend = sc.stSvg.append("g").attr("class", "legend").attr("transform",
+        "translate(40, " + _super.config.legend.y + ")").call(_super.legend,
+        sc.stackedChartElem, "*");
+
     cb.call(null);
     return sc;
   }
@@ -1707,12 +1712,8 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
     return data;
   }
 
-  sc.drawChart(sc.getData(data), function() {
+  sc.update(sc.getData(data), function() {
     cb.call();
-    // /[ legend ]///////////////////////////
-    var legend = sc.stSvg.append("g").attr("class", "legend").attr("transform",
-        "translate(40, " + _super.config.legend.y + ")").call(_super.legend,
-        sc.stackedChartElem, "*");
   });
 
   _super.sc = sc;
@@ -1974,15 +1975,15 @@ function selectView(tabId) {
   d3.json("data.json", function(error, json) {
     var uc = new UptimeChart(config);
     uc.lineChart("#lineChart", json, function(data) {
-      if(tabId) {
-        var active = $('#view').find( "li.active" );
-        var inactive = $('#view').find( "li.inactive" );
+      if (tabId) {
+        var active = $('#view').find("li.active");
+        var inactive = $('#view').find("li.inactive");
         active.removeClass("active");
         active.addClass("inactive");
         inactive.removeClass("inactive");
         inactive.addClass("active");
       }
-      if ($('#view').find( "li.active" ).text() == 'Response') { // response time
+      if ($('#view').find("li.active").text() == 'Response') {
         $('.tot_ms_view').show();
         $('.aggregate_view').hide();
         $("#gmetrices").find('option').each(
