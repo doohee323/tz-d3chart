@@ -30,12 +30,55 @@
 			<h3 class="text-muted">prototype_chart_d3</h3>
 		</div>
 
+		<div class="row">
+			<div class="alert alert-danger" id="ajaxMessages"
+				style="display: none">
+				<div class="label label-danger" style="float: left;">Error!</div>
+				<div style="margin-left: 50px" id="serverMessages"></div>
+			</div>
+
+			<div id="loading" style="text-align: center">
+				<i class="icon-spinner icon-spin icon-large"></i> Loading Chart...
+			</div>
+			<div id="nodata" style="display: none;">
+				<div style="height: 75px"></div>
+				<div class="alert alert-block">
+					<b>No Data:</b> There is no data to display for your selection.
+				</div>
+			</div>
+
+			<form class="form-horizontal">
+				<div class="form-group">
+					<div class="col-xs-3">
+						<div class="zoom-controls">
+							<span class="zoom-button 12h anchor-link"><a
+								href="javascript: uc.changeDate('12h')">12h</a></span>&nbsp;&nbsp; <span
+								class="zoom-button 24h anchor-link"><a
+								href="javascript: uc.changeDate('24h')">24h</a></span>&nbsp;&nbsp; <span
+								class="zoom-button 7d anchor-link"><a
+								href="javascript: uc.changeDate('7d')">7d</a></span>&nbsp;&nbsp; <span
+								class="zoom-button 14d anchor-link"><a
+								href="javascript: uc.changeDate('14d')">14d</a></span>
+						</div>
+					</div>
+					<div class="col-xs-7">&nbsp;&nbsp;</div>
+					<div class="col-xs-2">
+						<button class="latest"
+							onclick="uc.changeDate('1h')">
+							<span >Latest</span>
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+
 		<div class="row" id="frame">
 			<form class="form-horizontal">
 				<ul class="nav nav-tabs" id="view" style="margin-bottom: 10px;">
-					<li class="active"><a href="javascript: selectView('tot_ms')">Response</a></li>
+					<li class="active"><a
+						href="javascript: uc.selectView('tot_ms')">Response</a></li>
 					<li class="inactive"><a
-						href="javascript: selectView('aggregate')">Availability</a></li>
+						href="javascript: uc.selectView('aggregate')">Availability</a></li>
 				</ul>
 				<div class="form-group">
 					<label for="gmetrices" class="col-xs-1 control-label">Metric:</label>
@@ -61,6 +104,13 @@
 			</div>
 			<div id="graph"></div>
 			<!--<div id="googleMap"></div> -->
+
+			<input id='from' type='hidden' value='-340min'
+				style="width: 20%; margin-top: 10px;"> <input id='until'
+				type='hidden' value='-0min' style="width: 20%; margin-top: 10px;">
+			<input id='dateCondi' type='hidden' value='' style="width: 60%">
+			<input id='queryUptime' type='hidden' value='Query'> <input
+				id='refreshBtn' type='hidden' value='Stop'>
 		</div>
 
 		<div class="footer"></div>
