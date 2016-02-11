@@ -1905,9 +1905,9 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
 UptimeChart.prototype.selectView = function(tabId, json) {
   var _super = this;
   if (json) {
-    resultset = json;
+    _super.resultset = json;
   } else {
-    json = resultset;
+    json = _super.resultset;
   }
   _super.lineChart("#lineChart", json, function(data) {
     if (tabId) {
@@ -1962,8 +1962,17 @@ UptimeChart.prototype.selectView = function(tabId, json) {
   });
 }
 
-UptimeChart.prototype.createChart = function() {
+UptimeChart.prototype.createChart = function(ghcid) {
   var _super = this;
+  
+  if(ghcid) {
+    _super.ghcid = ghcid;  
+  } else {
+    var ghcid = _super.ghcid;  
+    if (!ghcid) {
+    console.log('ghcid null!');
+    }
+  }
 
   console.time("query response time");
   $("#nodata").css('display', 'none');
@@ -2018,7 +2027,9 @@ UptimeChart.prototype.createChart = function() {
           showChart(false);
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
-          d3.json("data.json", function(error, json) {
+          debugger;
+          from = from.substring(1, from.length) + '.json';
+          d3.json(from, function(error, json) {
             _super.selectView(null, json);
           });
           _super.showChart(true);
@@ -2163,6 +2174,5 @@ var uptimeConfig = {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-var resultset;
 var uc = new UptimeChart(uptimeConfig);
-uc.createChart();
+uc.createChart(1);
