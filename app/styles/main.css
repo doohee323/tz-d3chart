@@ -286,21 +286,13 @@ path:hover {
 	opacity: 0.9;
 }
 
-.legend2 tr {
-	border-bottom: 1px solid grey;
-}
-
-.legend2 tr:first-child {
-	border-top: 1px solid grey;
-}
-
 .axis path, .axis line {
 	fill: none;
 	stroke: #000;
 	shape-rendering: crispEdges;
 }
 
-.legend2 {
+.legendTb {
 	margin-bottom: 20px;
 	display: inline-block;
 	border-collapse: collapse;
@@ -309,30 +301,42 @@ path:hover {
 	color: #585956;
 }
 
-.legend2 td {
-	padding: 4px 5px;
+.legendTb tr {
+	border-bottom: 1px solid grey;
 }
 
-.legend2Name .legend2Freq, .legend2Perc {
+.legendTb tr:first-child {
+	border-top: 1px solid grey;
+}
+
+.legendTb td {
+	padding: 4px 13px;
+}
+
+.legendTbName .legendTbSum .legendTbMean .legendTbPerc {
 	align: right;
 	width: 100px;
+}
+
+.legendTbMean {
+	font: 11px sans-serif;
+	color: #ff0f1e;
 }
 
 #diagram {
 	width: 800px;
 }
 
-span {
+.flt {
 	width: 250px;
 	height: 100px;
-}
-
-.flt {
 	margin-top: 10px;
 	float: left;
 }
 
 .frt {
+	width: 250px;
+	height: 100px;
 	margin-top: 20px;
 	float: left;
 }
@@ -355,6 +359,16 @@ span {
 #gauge g.label text {
 	font: 12px sans-serif;
 	fill: #585956;
+}
+
+#gauge g.title text {
+	font: 12px sans-serif;
+	fill: #585956;
+}
+
+#gauge g.art text {
+	font: 12px sans-serif;
+	fill: #ff0f1e;
 }
 
 .miniSvg-component {
@@ -406,4 +420,3 @@ span {
 	height: 20px;
 	font-size: 9pt;
 }
-
