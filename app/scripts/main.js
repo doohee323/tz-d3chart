@@ -12,6 +12,19 @@ var UptimeChart = function(config) {
   _super.formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
   _super.parseDate = _super.formatDate.parse;
 
+  $('#from').val('-' + _super.config.slide.init.x1 + 'min');
+  $('#until').val('-' + _super.config.slide.init.x0 + 'min');
+
+  d3.select('#slider3').call(
+      d3.slider().axis(true).min(0).max(600).step(10).value(
+          [ _super.config.slide.init.x0, _super.config.slide.init.x1 ]).step(5)
+          .on("slideend", function(e) {
+            uc.createChart();
+          }).on("slide", function(evt, value) {
+            $('#from').val('-' + value[1] + 'min');
+            $('#until').val('-' + value[0] + 'min');
+          }));
+
   // [ updateChart with brushing ]
   _super.update = function() {
     var json = [];
@@ -460,11 +473,10 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       } else {
         _super.metric = $('#gmetrices').val();
       }
-      _super.sc.update(_super.sc.getData(_super.lineData),
-          function() {
-            _super.hst.histogram('#histogram', _super.hst
-                .getData(_super.lineData));
-          });
+      _super.sc.update(_super.sc.getData(_super.lineData), function() {
+        _super
+            .histogramChart('#histogram', _super.hst.getData(_super.lineData));
+      });
     } else { // aggregate
       lc.metric = $('#gmetrices').val();
       $('.tot_ms_view').hide();
@@ -1909,12 +1921,12 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
     var newAngle = defaultConfig.minAngle + (ratio * range);
     pointer.transition().duration(defaultConfig.transitionMs).ease('elastic')
         .attr('transform', 'rotate(' + newAngle + ')');
-    
+
     d3.select("[id='art']").remove();
-    svg.append('g').attr('class', 'art').attr("id", 'art').append("text").attr("x", 125).attr(
-        "y", 105).attr("text-anchor", "middle").style("text-decoration",
-        "underline").text(newValue);
-    
+    svg.append('g').attr('class', 'art').attr("id", 'art').append("text").attr(
+        "x", 125).attr("y", 105).attr("text-anchor", "middle").style(
+        "text-decoration", "underline").text(newValue);
+
   };
 
   gauge.configure(config);
@@ -2061,7 +2073,6 @@ UptimeChart.prototype.createChart = function(ghcid) {
       });
 
   window.onerror = function(msg, url, line, col, error) {
-    debugger;
     if (url == '') {
       _super.ajaxMessage('error', 'internal error!');
       _super.showChart(true);
@@ -2073,7 +2084,6 @@ UptimeChart.prototype.createChart = function(ghcid) {
 
 UptimeChart.prototype.changeDate = function(from) {
   var _super = this;
-  $('#ajaxMessages').hide();
   $("#from").val(from);
   $("#until").val('');
   _super.createChart();
@@ -2101,6 +2111,12 @@ UptimeChart.prototype.resize = function() {
 // / [configuration]
 // //////////////////////////////////////////////////////////////////////////////
 var uptimeConfig = {
+  "slide" : {
+    "init" : {
+      "x0" : 0,
+      "x1" : 60
+    }
+  },
   "lineChart" : {
     "main" : {
       "margin" : {

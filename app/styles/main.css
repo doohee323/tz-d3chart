@@ -59,10 +59,6 @@ body {
 	}
 }
 
-div {
-	font: 11px sans-serif;
-}
-
 .axis path, .axis line {
 	fill: none;
 	stroke: #000;
@@ -380,7 +376,6 @@ path:hover {
 	float: left;
 	font-size: 11px;
 	line-height: 15px;
-	margin-left: 18px;
 	margin-top: 1px;
 	font-weight: bold;
 	position: absolute;
@@ -420,3 +415,12 @@ path:hover {
 	height: 20px;
 	font-size: 9pt;
 }
+
+
+
+
+
+
+
+
+

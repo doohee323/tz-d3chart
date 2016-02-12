@@ -12,11 +12,13 @@
 
 <!-- build:css(.) styles/vendor.css -->
 <!-- bower:css -->
-<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
+<link rel="stylesheet"
+	href="/bower_components/bootstrap/dist/css/bootstrap.css" />
 <!-- endbower -->
 <!-- endbuild -->
 <!-- build:css(.tmp) styles/main.css -->
 <link rel="stylesheet" href="styles/main.css">
+<link rel="stylesheet" href="styles/d3.slider.css">
 <!-- endbuild -->
 </head>
 <body>
@@ -41,7 +43,7 @@
 				style="left: 10%;">
 				<div class="modal-dialog"
 					style="margin-top: 40%; width: 30%; text-align: center;">
-						<img width="100pt" height="100pt" src="loading_spinner.gif">
+					<img width="100pt" height="100pt" src="loading_spinner.gif">
 				</div>
 			</div>
 			<div id="nodata" style="display: none;">
@@ -65,9 +67,21 @@
 								href="javascript: uc.changeDate('-14d')">14d</a></span>
 						</div>
 					</div>
-					<div class="col-xs-7">&nbsp;&nbsp;</div>
+					<div class="col-xs-9">&nbsp;&nbsp;</div>
+				</div>
+				<div class="form-group">
+					<div class="col-xs-5">
+						<div id="slider3"></div>
+					</div>
+					<div class="col-xs-3">
+						<input id='from' type='text' value='-60min'
+							style="width: 40%; margin-top: 0px;"> &nbsp;~&nbsp; <input
+							id='until' type='text' value='-0min'
+							style="width: 40%; margin-top: 0px;">
+					</div>
+					<div class="col-xs-2">&nbsp;&nbsp;</div>
 					<div class="col-xs-2">
-						<button class="latest" onclick="uc.changeDate('1h')">
+						<button class="latest" onclick="javascript: uc.changeDate('-1hour')">
 							<span>Latest</span>
 						</button>
 					</div>
@@ -77,7 +91,8 @@
 
 		<div class="row" id="frame">
 			<form class="form-horizontal">
-				<ul class="nav nav-tabs" id="view" style="margin-bottom: 10px;">
+				<ul class="nav nav-tabs" id="view"
+					style="margin-bottom: 10px; font-size: 11pt;">
 					<li class="active"><a
 						href="javascript: uc.selectView('tot_ms')">Response</a></li>
 					<li class="inactive"><a
@@ -108,9 +123,6 @@
 			<div id="graph"></div>
 			<!--<div id="googleMap"></div> -->
 
-			<input id='from' type='hidden' value='-60min'
-				style="width: 20%; margin-top: 10px;"> <input id='until'
-				type='hidden' value='-0min' style="width: 20%; margin-top: 10px;">
 			<input id='dateCondi' type='hidden' value='' style="width: 60%">
 			<input id='queryUptime' type='hidden' value='Query'> <input
 				id='refreshBtn' type='hidden' value='Stop'>
@@ -141,6 +153,7 @@
 	<!-- endbuild -->
 
 	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+
 	<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
 	<!-- 	<script src="http://maps.googleapis.com/maps/api/js"></script> -->
 	<!-- 	<script type="text/javascript" -->
@@ -150,6 +163,7 @@
 		src="http://maps.google.com/maps/api/js?sensor=true"></script>
 
 	<!-- build:js scripts/main.js -->
+	<script src="scripts/d3.slider.js"></script>
 	<script src="scripts/main.js"></script>
 	<!-- endbuild -->
 
