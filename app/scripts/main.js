@@ -311,10 +311,10 @@ var UptimeChart = function(config) {
   _super.showChart = function(status) {
     if (status) {
       $("#nodata").css('display', 'none');
-      $("#loading").css('display', 'none');
+      $("#loading_modal").hide();
     } else {
       $("#nodata").css('display', '');
-      $("#loading").css('display', 'none');
+      $("#loading_modal").hide();
     }
   }
 }
@@ -1964,19 +1964,19 @@ UptimeChart.prototype.selectView = function(tabId, json) {
 
 UptimeChart.prototype.createChart = function(ghcid) {
   var _super = this;
-  
-  if(ghcid) {
-    _super.ghcid = ghcid;  
+
+  if (ghcid) {
+    _super.ghcid = ghcid;
   } else {
-    var ghcid = _super.ghcid;  
+    var ghcid = _super.ghcid;
     if (!ghcid) {
-    console.log('ghcid null!');
+      console.log('ghcid null!');
     }
   }
 
   console.time("query response time");
   $("#nodata").css('display', 'none');
-  $("#loading").css('display', '');
+  $("#loading_modal").show();
 
   var gmetric = $("#gmetrices").val();
   var locs = $("#locs").val();
@@ -2027,12 +2027,13 @@ UptimeChart.prototype.createChart = function(ghcid) {
           showChart(false);
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
-          debugger;
           from = from.substring(1, from.length) + '.json';
           d3.json(from, function(error, json) {
             _super.selectView(null, json);
+            setTimeout(function(){  
+              _super.showChart(true);
+            }, 1000);
           });
-          _super.showChart(true);
         }
       });
 }

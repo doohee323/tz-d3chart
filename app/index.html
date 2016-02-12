@@ -37,8 +37,13 @@
 				<div style="margin-left: 50px" id="serverMessages"></div>
 			</div>
 
-			<div id="loading" style="text-align: center">
-				<i class="icon-spinner icon-spin icon-large"></i> Loading Chart...
+			<!-- Loading Modal -->
+			<div id="loading_modal" class="modal" role="dialog"
+				style="left: 10%;">
+				<div class="modal-dialog"
+					style="margin-top: 40%; width: 30%; text-align: center;">
+						<img width="100pt" height="100pt" src="loading_spinner.gif">
+				</div>
 			</div>
 			<div id="nodata" style="display: none;">
 				<div style="height: 75px"></div>
@@ -52,10 +57,10 @@
 					<div class="col-xs-3">
 						<div class="zoom-controls">
 							<span class="zoom-button 12h anchor-link"><a
-								href="javascript: uc.changeDate('-12hours')">12h</a></span>&nbsp;&nbsp; <span
-								class="zoom-button 24h anchor-link"><a
-								href="javascript: uc.changeDate('-24hours')">24h</a></span>&nbsp;&nbsp; <span
-								class="zoom-button 7d anchor-link"><a
+								href="javascript: uc.changeDate('-12hours')">12h</a></span>&nbsp;&nbsp;
+							<span class="zoom-button 24h anchor-link"><a
+								href="javascript: uc.changeDate('-24hours')">24h</a></span>&nbsp;&nbsp;
+							<span class="zoom-button 7d anchor-link"><a
 								href="javascript: uc.changeDate('-7d')">7d</a></span>&nbsp;&nbsp; <span
 								class="zoom-button 14d anchor-link"><a
 								href="javascript: uc.changeDate('-14d')">14d</a></span>
@@ -63,9 +68,8 @@
 					</div>
 					<div class="col-xs-7">&nbsp;&nbsp;</div>
 					<div class="col-xs-2">
-						<button class="latest"
-							onclick="uc.changeDate('1h')">
-							<span >Latest</span>
+						<button class="latest" onclick="uc.changeDate('1h')">
+							<span>Latest</span>
 						</button>
 					</div>
 				</div>
