@@ -162,7 +162,7 @@ var UptimeChart = function(config) {
                       }
                     } else {
                       if (self.attr("data-legend") == metric
-                          || self.attr("data-legend") == _super.config.lineChart.yAxis.right) {
+                          || self.attr("data-legend") == _super.config.lineChart.main.yAxis.right) {
                         items[self.attr("data-legend")] = {
                           pos : self.attr("data-legend-pos")
                               || this.getBBox().y,
@@ -181,7 +181,7 @@ var UptimeChart = function(config) {
           // set judge first in array
           var items2 = new Array();
           var ritem = items.find(function(element, index, array) {
-            if (element.key == _super.config.lineChart.yAxis.right) {
+            if (element.key == _super.config.lineChart.main.yAxis.right) {
               return element;
             } else {
               return false;
@@ -191,7 +191,8 @@ var UptimeChart = function(config) {
             items2.push(ritem);
           }
           for (var i = 0; i < items.length; i++) {
-            if (items[i].key != _super.config.lineChart.yAxis.right && items[i]) {
+            if (items[i].key != _super.config.lineChart.main.yAxis.right
+                && items[i]) {
               items2.push(items[i]);
             }
           }
@@ -202,7 +203,7 @@ var UptimeChart = function(config) {
             if (metric == 'show') {
               if ('#FFFFFF' == _super.convertRGBDecimalToHex(d3.select(
                   ".line" + d.key).style("stroke"))) {
-                if (_super.metric == _super.config.lineChart.yAxis.right
+                if (_super.metric == _super.config.lineChart.main.yAxis.right
                     || _super.metric == 'state') {
                   d3.select(".line" + d.key).style("stroke", d.color).style(
                       "fill", d.color);
@@ -217,7 +218,7 @@ var UptimeChart = function(config) {
                   ".line" + d.key).style("stroke"));
               if (pickColor != '#FFFFFF') {
                 d.color = pickColor;
-                if (_super.metric == _super.config.lineChart.yAxis.right
+                if (_super.metric == _super.config.lineChart.main.yAxis.right
                     || _super.metric == 'state') {
                   d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
                       "fill", "white");
@@ -330,12 +331,12 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   lc.main_line = {};
   lc.main;
 
-  lc.main_width = _super.config.lineChart.main_margin.width
-      - _super.config.lineChart.main_margin.left
-      - _super.config.lineChart.main_margin.right;
-  lc.main_height = _super.config.lineChart.main_margin.height
-      - _super.config.lineChart.main_margin.top
-      - _super.config.lineChart.main_margin.bottom;
+  lc.main_width = _super.config.lineChart.main.margin.width
+      - _super.config.lineChart.main.margin.left
+      - _super.config.lineChart.main.margin.right;
+  lc.main_height = _super.config.lineChart.main.margin.height
+      - _super.config.lineChart.main.margin.top
+      - _super.config.lineChart.main.margin.bottom;
 
   lc.main_x = d3.time.scale().range([ 0, lc.main_width ]);
 
@@ -422,7 +423,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
   var metrices = {};
   for ( var key in _super.lineData[0]) {
-    if (key != _super.config.lineChart.yAxis.right) {
+    if (key != _super.config.lineChart.main.yAxis.right) {
       metrices[key] = key;
     }
   }
@@ -477,7 +478,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           var tmp = {};
           for ( var key in _super.lineData[i]) {
             if (key == 'date' || key == val
-                || key == _super.config.lineChart.yAxis.right) {
+                || key == _super.config.lineChart.main.yAxis.right) {
               tmp[key] = _super.lineData[i][key];
             }
           }
@@ -510,8 +511,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     if (d3.selectAll('#lineSvg').length >= 1) {
       d3.selectAll('#lineSvg').remove();
       lc.lineSvg = d3.select(lc.mainChartElem).append("svg").attr("id",
-          'lineSvg').attr("width", _super.config.lineChart.main_margin.width)
-          .attr("height", _super.config.lineChart.main_margin.height);
+          'lineSvg').attr("width", _super.config.lineChart.main.margin.width)
+          .attr("height", _super.config.lineChart.main.margin.height);
     }
 
     lc.lineSvg.append("defs").append("clipPath").attr("id", "clip").append(
@@ -519,8 +520,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
     lc.main = lc.lineSvg.append("g").attr(
         "transform",
-        "translate(" + _super.config.lineChart.main_margin.left + ","
-            + _super.config.lineChart.main_margin.top + ")");
+        "translate(" + _super.config.lineChart.main.margin.left + ","
+            + _super.config.lineChart.main.margin.top + ")");
 
     lc.main_xAxis = d3.svg.axis().scale(lc.main_x).tickFormat(
         d3.time.format("%H:%M")).orient("bottom");
@@ -551,37 +552,38 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     }
 
     // /[ line definition ]///////////////////////////
+    var chart_type = _super.config.lineChart.type;
     // I need to enumerate instead of above fancy way.
     if (metric != '*') {
-      var type = 'cardinal';
       if (metric == 'state') {
-        type = 'step';
+        chart_type = 'step';
       }
-      lc.main_line[metric] = d3.svg.line().interpolate(type).x(function(d) {
-        return lc.main_x(d.date);
-      }).y(function(d) {
+      lc.main_line[metric] = d3.svg.line().interpolate(chart_type).x(
+          function(d) {
+            return lc.main_x(d.date);
+          }).y(function(d) {
         return lc.main_y[metric](d[metric]);
       });
     } else {
-      lc.main_line['nsl_ms'] = d3.svg.line().interpolate("cardinal").x(
+      lc.main_line['nsl_ms'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
         return lc.main_y['nsl_ms'](d['nsl_ms']);
       });
-      lc.main_line['con_ms'] = d3.svg.line().interpolate("cardinal").x(
+      lc.main_line['con_ms'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
         return lc.main_y['con_ms'](d['con_ms']);
       });
-      lc.main_line['tfb_ms'] = d3.svg.line().interpolate("cardinal").x(
+      lc.main_line['tfb_ms'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
         return lc.main_y['tfb_ms'](d['tfb_ms']);
       });
-      lc.main_line['tot_ms'] = d3.svg.line().interpolate("cardinal").x(
+      lc.main_line['tot_ms'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
@@ -592,7 +594,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       }).y(function(d) {
         return lc.main_y['state'](d['state']);
       });
-      lc.main_line['aggregate'] = d3.svg.line().interpolate("cardinal").x(
+      lc.main_line['aggregate'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
@@ -631,7 +633,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       main_yAxisLeft = d3.svg.axis().scale(lc.main_y[metric]).orient("left");
     } else {
       main_yAxisLeft = d3.svg.axis().scale(
-          lc.main_y[_super.config.lineChart.yAxis.left]).orient("left");
+          lc.main_y[_super.config.lineChart.main.yAxis.left]).orient("left");
     }
     lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(
         main_yAxisLeft).append("text").attr("transform", "rotate(-90)").attr(
@@ -639,7 +641,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
     // /[ main right y ]///////////////////////////
     var main_yAxisRight = d3.svg.axis().scale(
-        lc.main_y[_super.config.lineChart.yAxis.right]).orient("right")
+        lc.main_y[_super.config.lineChart.main.yAxis.right]).orient("right")
         .ticks(1);
     lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
         "transform", "translate(" + lc.main_width + ", 0)").call(
@@ -673,7 +675,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         for ( var key in lc.main_y) {
           if (key != metric)
             continue;
-          if (key != _super.config.lineChart.yAxis.right
+          if (key != _super.config.lineChart.main.yAxis.right
               && '#FFFFFF' != _super.convertRGBDecimalToHex(d3.select(
                   ".line" + key).style("stroke"))) {
             focus.select("circle.y" + key).attr(
@@ -774,11 +776,11 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   lc.lineSvg = d3.select(lc.mainChartElem).append("svg").attr("id", 'lineSvg')
       .attr(
           "width",
-          lc.main_width + _super.config.lineChart.main_margin.left
-              + _super.config.lineChart.main_margin.right).attr(
+          lc.main_width + _super.config.lineChart.main.margin.left
+              + _super.config.lineChart.main.margin.right).attr(
           "height",
-          lc.main_height + _super.config.lineChart.main_margin.top
-              + _super.config.lineChart.main_margin.bottom);
+          lc.main_height + _super.config.lineChart.main.margin.top
+              + _super.config.lineChart.main.margin.bottom);
   lc.update(_super.lineData, _super.config.lineChart.combo.init);
 
   _super.lc = lc;
@@ -796,16 +798,16 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
   mc.mini_line = {};
   mc.mini;
 
-  mc.mini_width = _super.config.lineChart.mini_margin.width
-      - _super.config.lineChart.mini_margin.left
-      - _super.config.lineChart.mini_margin.right;
+  mc.mini_width = _super.config.lineChart.mini.margin.width
+      - _super.config.lineChart.mini.margin.left
+      - _super.config.lineChart.mini.margin.right;
 
-  mc.mini_height = _super.config.lineChart.mini_margin.height
-      - _super.config.lineChart.mini_margin.top
-      - _super.config.lineChart.mini_margin.bottom;
+  mc.mini_height = _super.config.lineChart.mini.margin.height
+      - _super.config.lineChart.mini.margin.top
+      - _super.config.lineChart.mini.margin.bottom;
 
   mc.mini_x = d3.time.scale().range(
-      [ 0, _super.config.lineChart.mini_margin.width ]);
+      [ 0, _super.config.lineChart.mini.margin.width ]);
 
   if (_super.lineData) {
     _super.lineData = _super.lc.getData(resultset);
@@ -813,7 +815,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
 
   var metrices = {};
   for ( var key in _super.lineData[0]) {
-    if (key != _super.config.lineChart.yAxis.right) {
+    if (key != _super.config.lineChart.main.yAxis.right) {
       metrices[key] = key;
     }
   }
@@ -834,13 +836,11 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
   }
 
   mc.update = function(data, metric) {
-    var chart_shape = 'monotone'; // linear, step, basis, bundle, cardinal,
-    // monotone
     if (d3.selectAll('#mlSvg').length >= 1) {
       d3.selectAll('#mlSvg').remove();
       mc.mlSvg = d3.select(mc.miniChartElem).append("svg").attr("id", "mlSvg")
-          .attr("width", _super.config.lineChart.mini_margin.width).attr(
-              "height", _super.config.lineChart.mini_margin.height).attr(
+          .attr("width", _super.config.lineChart.mini.margin.width).attr(
+              "height", _super.config.lineChart.mini.margin.height).attr(
               "class", "miniSvg-component");
     }
 
@@ -850,8 +850,8 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
 
     mc.mini = mc.mlSvg.append("g").attr(
         "transform",
-        "translate(" + _super.config.lineChart.mini_margin.left + ","
-            + _super.config.lineChart.mini_margin.top + ")");
+        "translate(" + _super.config.lineChart.mini.margin.left + ","
+            + _super.config.lineChart.mini.margin.top + ")");
 
     var mini_xAxis = d3.svg.axis().scale(mc.mini_x).tickFormat(
         d3.time.format("%H:%M")).orient("bottom");
@@ -902,10 +902,13 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     }
 
     // /[ line definition ]///////////////////////////
+    var chart_type = _super.config.lineChart.mini.type; // linear, step, basis,
+    // monotone, bundle,
+    // cardinal,
     if (metric == '*') {
       for ( var key in _super.lc.main_y) {
-        if (_super.config.lineChart.yAxis.right != key) {
-          mc.mini_line[key] = d3.svg.line().interpolate(chart_shape).x(
+        if (_super.config.lineChart.main.yAxis.right != key) {
+          mc.mini_line[key] = d3.svg.line().interpolate(chart_type).x(
               function(d) {
                 return _super.mc.mini_x(d.date);
               }).y(function(d) {
@@ -913,7 +916,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
           });
           // it doesn't work for brushing
           // _super.lc.main_line[key] =
-          // d3.svg.line().interpolate(chart_shape).x(function(d) {
+          // d3.svg.line().interpolate(chart_type).x(function(d) {
           // return _super.lc.main_x(d.date);
           // }).y(function(d) {
           // return _super.lc.main_y[key](d[key]);
@@ -921,23 +924,22 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
         }
       }
     } else {
-      var type = chart_shape;
-      if (metric == 'state') {
-        type = 'step';
+      if (_super.config.lineChart.main.yAxis.right != key) {
+        mc.mini_line[metric] = d3.svg.line().interpolate(chart_type).x(
+            function(d) {
+              return _super.mc.mini_x(d.date);
+            }).y(function(d) {
+          return _super.mc.mini_y[metric](d[metric]);
+        });
       }
-      mc.mini_line[metric] = d3.svg.line().interpolate(type).x(function(d) {
-        return _super.mc.mini_x(d.date);
-      }).y(function(d) {
-        return _super.mc.mini_y[metric](d[metric]);
-      });
     }
-    mc.mini_line[_super.config.lineChart.yAxis.right] = d3.svg.line()
-        .interpolate('step').x(function(d) {
+    mc.mini_line[_super.config.lineChart.main.yAxis.right] = d3.svg.line()
+        .interpolate("step").x(function(d) {
           return _super.mc.mini_x(d.date);
         }).y(
             function(d) {
-              return _super.mc.mini_y[_super.config.lineChart.yAxis.right]
-                  (d[_super.config.lineChart.yAxis.right]);
+              return _super.mc.mini_y[_super.config.lineChart.main.yAxis.right]
+                  (d[_super.config.lineChart.main.yAxis.right]);
             });
 
     mc.mini_x.domain(_super.lc.main_x.domain());
@@ -2029,8 +2031,9 @@ UptimeChart.prototype.createChart = function(ghcid) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
           d3.json(from, function(error, json) {
+            // d3.json('data.json', function(error, json) {
             _super.selectView(null, json);
-            setTimeout(function(){  
+            setTimeout(function() {
               _super.showChart(true);
             }, 1000);
           });
@@ -2052,8 +2055,8 @@ UptimeChart.prototype.changeDate = function(from) {
 UptimeChart.prototype.resize = function() {
   var _super = this;
 
-  // var width = _super.config.lineChart.main_margin.width;
-  // var height = _super.config.lineChart.main_margin.height;
+  // var width = _super.config.lineChart.main.margin.width;
+  // var height = _super.config.lineChart.main.margin.height;
   //
   // var aspect = height / width;
   // var targetWidth = 0;
@@ -2069,25 +2072,31 @@ UptimeChart.prototype.resize = function() {
 // //////////////////////////////////////////////////////////////////////////////
 var uptimeConfig = {
   "lineChart" : {
-    "main_margin" : {
-      "width" : 950,
-      "height" : 250,
-      "top" : 50,
-      "bottom" : 20,
-      "right" : 40,
-      "left" : 40
+    "main" : {
+      "margin" : {
+        "width" : 950,
+        "height" : 250,
+        "top" : 50,
+        "bottom" : 20,
+        "right" : 40,
+        "left" : 40
+      },
+      "yAxis" : {
+        "left" : "tot_ms",
+        "right" : "judge"
+      },
+      "type" : "cardinal"
     },
-    "mini_margin" : {
-      "width" : 870,
-      "height" : 40,
-      "top" : 0,
-      "bottom" : 20,
-      "right" : 0,
-      "left" : 0
-    },
-    "yAxis" : {
-      "left" : "tot_ms",
-      "right" : "judge"
+    "mini" : {
+      "margin" : {
+        "width" : 870,
+        "height" : 40,
+        "top" : 0,
+        "bottom" : 20,
+        "right" : 0,
+        "left" : 0
+      },
+      "type" : "monotone"
     },
     "combo" : {
       "id" : "gmetrices",
