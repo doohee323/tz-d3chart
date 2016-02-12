@@ -552,7 +552,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     }
 
     // /[ line definition ]///////////////////////////
-    var chart_type = _super.config.lineChart.type;
+    var chart_type = _super.config.lineChart.main.type;
     // I need to enumerate instead of above fancy way.
     if (metric != '*') {
       if (metric == 'state') {
