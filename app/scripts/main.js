@@ -5,6 +5,7 @@ var UptimeChart = function(config) {
   var _super = this;
   _super.config = config;
 
+  _super.resize();
   d3.select(window).on("resize", function() {
     _super.resize();
   });
@@ -1136,11 +1137,21 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   map.update = function(data, loc) {
     d3.select("[id='" + map.mapElem + "']").remove();
     map.mapSvg = d3.select(map.mapElem).append("svg").attr('id', map.mapElem)
-        .attr("width", _super.config.map.width).attr("height",
-            _super.config.map.height);
-    map.states = map.mapSvg.append("g").attr("id", "states");
-    map.circles = map.mapSvg.append("g").attr("id", "circles");
-    map.labels = map.mapSvg.append("g").attr("id", "labels");
+        .attr("width", _super.config.map.margin.width).attr("height",
+            _super.config.map.margin.height);
+    map.states = map.mapSvg.append("g").attr("id", "states").attr(
+        "transform",
+        "translate(" + _super.config.map.margin.left + ","
+            + _super.config.map.margin.top + ")");
+
+    map.circles = map.mapSvg.append("g").attr("id", "circles").attr(
+        "transform",
+        "translate(" + _super.config.map.margin.left + ","
+            + _super.config.map.margin.top + ")");
+    map.labels = map.mapSvg.append("g").attr("id", "labels").attr(
+        "transform",
+        "translate(" + _super.config.map.margin.left + ","
+            + _super.config.map.margin.top + ")");
     var xy = d3.geo.equirectangular().scale(_super.config.map.scale);
     var path = d3.geo.path().projection(xy);
 
@@ -2095,16 +2106,72 @@ UptimeChart.prototype.changeDate = function(from) {
 UptimeChart.prototype.resize = function() {
   var _super = this;
 
-  // var width = _super.config.lineChart.main.margin.width;
-  // var height = _super.config.lineChart.main.margin.height;
-  //
-  // var aspect = height / width;
-  // var targetWidth = 0;
-  // if (width > $(window).width()) {
-  // targetWidth = $(window).width() - 100;
-  // d3.select('#lineSvg').attr("width", targetWidth);
-  // d3.select('#lineSvg').attr("height", targetWidth * aspect);
-  // }
+  var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+  var height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+
+  // debugger;
+  var device = '';
+  if (width < 360) {
+    device = 'iphone_mini';
+    _super.config.lineChart.main.margin.width = 350;
+    _super.config.lineChart.mini.margin.width = 270;
+    _super.config.histogram.margin.width = 350;
+    _super.config.stackedChart.margin.width = 350;
+    _super.config.map.margin.width = 350;
+    _super.config.map.margin.height = 200;
+    _super.config.map.margin.top = -140;
+    _super.config.map.margin.left = -330;
+    _super.config.map.scale = 50;
+  } else if (width >= 360 && width <= 500) {
+    device = 'nexus4'; // iphone6(391) iphone6_plus(429)
+    _super.config.lineChart.main.margin.width = 400;
+    _super.config.lineChart.mini.margin.width = 330;
+    _super.config.histogram.margin.width = 400;
+    _super.config.stackedChart.margin.width = 400;
+    _super.config.map.margin.width = 400;
+    _super.config.map.margin.height = 200;
+    _super.config.map.margin.top = -120;
+    _super.config.map.margin.left = -280;
+    _super.config.map.scale = 65;
+  } else if (width > 500 && width <= 700) {
+    device = 'nexus7'; // 615
+    _super.config.lineChart.main.margin.width = 600;
+    _super.config.lineChart.mini.margin.width = 520;
+    _super.config.histogram.margin.width = 600;
+    _super.config.stackedChart.margin.width = 600;
+    _super.config.map.margin.width = 600;
+    _super.config.map.margin.height = 300;
+    _super.config.map.margin.top = -100;
+    _super.config.map.margin.left = -180;
+    _super.config.map.scale = 95;
+  } else if (width > 700 && width <= 770) {
+    device = 'ipad'; // 768
+    _super.config.lineChart.main.margin.width = 750;
+    _super.config.lineChart.mini.margin.width = 670;
+    _super.config.histogram.margin.width = 750;
+    _super.config.stackedChart.margin.width = 750;
+    _super.config.map.margin.width = 750;
+    _super.config.map.margin.height = 400;
+    _super.config.map.margin.top = -30;
+    _super.config.map.margin.left = -130;
+    _super.config.map.scale = 115;
+  } else {
+    device = 'desktop';
+    _super.config.lineChart.main.margin.width = 950;
+    _super.config.lineChart.mini.margin.width = 870;
+    _super.config.histogram.margin.width = 950;
+    _super.config.stackedChart.margin.width = 950;
+    _super.config.map.margin.width = 950;
+    _super.config.map.margin.height = 400;
+    _super.config.map.margin.top = 0;
+    _super.config.map.margin.left = 0;
+    _super.config.map.scale = 135;
+  }
+  if (device != _super.device) {
+    _super.device = device;
+    console.log(width + ' -> ' + _super.device);
+    _super.createChart();
+  }
 }
 
 // //////////////////////////////////////////////////////////////////////////////
@@ -2180,8 +2247,12 @@ var uptimeConfig = {
     "transitionMs" : 2000
   },
   "map" : {
-    "height" : 400,
-    "width" : 950,
+    "margin" : {
+      "width" : 950,
+      "height" : 400,
+      "top" : 0,
+      "left" : 0
+    },
     "circle_scale" : 0.5,
     "circle" : {
       "#81bc00" : 5,

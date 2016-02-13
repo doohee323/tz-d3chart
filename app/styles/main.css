@@ -395,7 +395,7 @@ path:hover {
 }
 
 .latest {
-	width: 80px;
+	width: 90%;
 	height: 26px;
 	padding-top: 2px;
 	display: block;
@@ -411,7 +411,7 @@ path:hover {
 }
 
 .latest span {
-	width: 74px;
+	width: 80%;
 	height: 20px;
 	font-size: 9pt;
 }
