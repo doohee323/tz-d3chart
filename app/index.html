@@ -101,12 +101,10 @@
 			<form class="form-horizontal">
 				<ul class="nav nav-tabs" id="view"
 					style="margin-bottom: 10px; font-size: 11pt;">
-					<li class="active" title="You can see in the response time perspective.">
-						<a href="javascript: uc.selectView('tot_ms')">Response</a>
-					</li>
-					<li class="inactive" title="You can see in the availability perspective.">
-						<a href="javascript: uc.selectView('aggregate')">Availability</a>
-					</li>
+ 					<li class="active"><a
+						href="javascript: uc.selectView('tot_ms')"  title="You can see in the response time perspective.">Response</a></li>
+					<li class="inactive"><a
+						href="javascript: uc.selectView('aggregate')" title="You can see in the availability perspective.">Availability</a></li>
 				</ul>
 				<div class="form-group">
 					<label for="gmetrices" class="col-xs-1 control-label">Metric:</label>
@@ -171,7 +169,6 @@
 
 	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 
-	<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
 	<!-- 	<script src="http://maps.googleapis.com/maps/api/js"></script> -->
 	<!-- 	<script type="text/javascript" -->
 	<!-- 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9oB28RSLjXkirKBIvzVBWoLmGNK0pJq0"> -->
