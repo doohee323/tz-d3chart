@@ -2113,14 +2113,14 @@ UptimeChart.prototype.createChart = function(ghcid) {
         }
       });
 
-  window.onerror = function(msg, url, line, col, error) {
-    if (url == '') {
-      _super.ajaxMessage('error', 'internal error!');
-      _super.showChart(true);
-    }
-    var suppressErrorAlert = true;
-    return suppressErrorAlert;
-  };
+//  window.onerror = function(msg, url, line, col, error) {
+//    if (url == '') {
+//      _super.ajaxMessage('error', 'internal error!');
+//      _super.showChart(true);
+//    }
+//    var suppressErrorAlert = true;
+//    return suppressErrorAlert;
+//  };
 }
 
 UptimeChart.prototype.changeDate = function(from) {
@@ -2334,23 +2334,20 @@ var uptimeConfig = {
 var uc = new UptimeChart(uptimeConfig);
 uc.createChart(1);
 
-$(document).tooltip();
-
+// initialize input widgets first
 $('#datepairExample .time').timepicker({
-  'showDuration' : true,
-  'timeFormat' : 'g:ia'
+    'showDuration': true,
+    'timeFormat': 'g:ia'
 });
 
 $('#datepairExample .date').datepicker({
-  'format' : 'yyyy-m-d',
-  'autoclose' : true
+    'format': 'm/d/yyyy',
+    'autoclose': true
 });
 
 // initialize datepair
-// $('#datepairExample').datepair();
-
-var eventsExampleEl = document.getElementById('datepairExample');
-var eventsExampleDatepair = new Datepair(eventsExampleEl);
+var basicExampleEl = document.getElementById('datepairExample');
+var datepair = new Datepair(basicExampleEl);
 
 var test = function() {
   $('#ajaxMessage').hide();
@@ -2398,13 +2395,16 @@ var test = function() {
   }
 }
 
-$('#datepairExample').on('rangeSelected', function() {
-  debugger;
-  test();
-}).on('rangeIncomplete', function() {
-  debugger;
-  test();
-}).on('rangeError', function() {
-  debugger;
-  test();
-});
+//$('#datepairExample').on('rangeSelected', function() {
+//  debugger;
+//  test();
+//}).on('rangeIncomplete', function() {
+//  debugger;
+//  test();
+//}).on('rangeError', function() {
+//  debugger;
+//  test();
+//});
+
+$(document).tooltip();
+
