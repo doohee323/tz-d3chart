@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 // [ UptimeChart constructor ]
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 var UptimeChart = function(config) {
   var _super = this;
   _super.config = config;
@@ -16,35 +16,36 @@ var UptimeChart = function(config) {
   $('#from').val('-' + _super.config.slide.init.x1 + 'min');
   $('#until').val('-' + _super.config.slide.init.x0 + 'min');
 
-  var now = moment.utc();
+  $('#datepairElem .time').timepicker({
+    'showDuration' : true,
+    'timeFormat' : 'g:ia'
+  });
+
+  $('#datepairElem .date').datepicker({
+    'format' : 'dd-mm-yyyy',
+    'autoclose' : true
+  });
+
+  var basicExampleEl = document.getElementById('datepairElem');
+  var datepair = new Datepair(basicExampleEl);
+
+  $('#datepairElem').on('rangeSelected', _super.changeDateWithDatepair).on(
+      'changeTime', _super.changeDateWithDatepair).on('rangeIncomplete',
+      function() {
+      }).on('rangeError', function() {
+  });
+
+  var now = moment();
   var start_date = moment(now).add('minutes', _super.config.slide.init.x1 * -1);
-  var end_date = moment.utc();
-  $('#datepairExample .date.start').val(start_date.format("DD/MM/YYYY"));
-  $('#datepairExample .date.end').val(end_date.format("DD/MM/YYYY"));
-  $('#datepairExample .time.start').val(start_date.format("LT"));
-  $('#datepairExample .time.end').val(end_date.format("LT"));
-
-  d3.select('#slider').call(
-      d3.slider().axis(true).min(0).max(600).step(10).value(
-          [ _super.config.slide.init.x0, _super.config.slide.init.x1 ]).step(5)
-          .on("slideend", function(e) {
-            uc.createChart();
-          }).on(
-              "slide",
-              function(evt, value) {
-                $('#from').val('-' + value[1] + 'min');
-                $('#until').val('-' + value[0] + 'min');
-
-                var now = moment.utc();
-                var start_date = moment(now).add('minutes', value[1] * -1);
-                end_date = moment(now).add('minutes', value[0] * -1);
-                $('#datepairExample .date.start').val(
-                    start_date.format("DD/MM/YYYY"));
-                $('#datepairExample .date.end').val(
-                    end_date.format("DD/MM/YYYY"));
-                $('#datepairExample .time.start').val(start_date.format("LT"));
-                $('#datepairExample .time.end').val(end_date.format("LT"));
-              }));
+  var end_date = moment();
+  $('#datepairElem .date.start').val(start_date.format("DD/MM/YYYY"));
+  $('#datepairElem .date.end').val(end_date.format("DD/MM/YYYY"));
+  $('#datepairElem .time.start').val(start_date.format("LT"));
+  $('#datepairElem .time.end').val(end_date.format("LT"));
+  _super.date_start = $('#datepairElem .date.start').val();
+  _super.date_end = $('#datepairElem .date.end').val();
+  _super.time_start = $('#datepairElem .time.start').val();
+  _super.time_end = $('#datepairElem .time.end').val();
 
   // [ updateChart with brushing ]
   _super.update = function() {
@@ -166,6 +167,33 @@ var UptimeChart = function(config) {
       });
     }
   }
+
+  _super.slider = function(val) {
+    d3.selectAll('#slider').remove();
+    $("<div></div>").attr('id', 'slider').appendTo($("#sliderDiv"));
+    d3.select('#slider').call(
+        d3.slider().axis(true).min(0).max(600).step(10).value(val).step(5).on(
+            "slideend", function(e) {
+              uc.createChart();
+            }).on("slide", function(evt, value) {
+          $('#from').val('-' + value[1] + 'min');
+          $('#until').val('-' + value[0] + 'min');
+
+          var now = moment();
+          var start_date = moment(now).add('minutes', value[1] * -1);
+          end_date = moment(now).add('minutes', value[0] * -1);
+          $('#datepairElem .date.start').val(start_date.format("DD/MM/YYYY"));
+          $('#datepairElem .date.end').val(end_date.format("DD/MM/YYYY"));
+          $('#datepairElem .time.start').val(start_date.format("LT"));
+          $('#datepairElem .time.end').val(end_date.format("LT"));
+
+          _super.date_start = $('#datepairElem .date.start').val();
+          _super.date_end = $('#datepairElem .date.end').val();
+          _super.time_start = $('#datepairElem .time.start').val();
+          _super.time_end = $('#datepairElem .time.end').val();
+        }));
+  }
+  _super.slider([ _super.config.slide.init.x0, _super.config.slide.init.x1 ]);
 
   _super.legend = function(g, id, metric) {
     g
@@ -2062,6 +2090,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
 
   if (ghcid) {
     _super.ghcid = ghcid;
+    _super.ajaxMessage('clear', null);
   } else {
     var ghcid = _super.ghcid;
     if (!ghcid) {
@@ -2148,6 +2177,58 @@ UptimeChart.prototype.changeDate = function(from) {
   $("#from").val(from);
   $("#until").val('');
   _super.createChart();
+};
+
+UptimeChart.prototype.changeDateWithDatepair = function() {
+  uc.ajaxMessage('clear', null);
+  var from = $('#datepairElem .date.start').val() + ' '
+      + $('#datepairElem .time.start').val();
+  from = moment(from, "DD/MM/YYYY LT").format('DD/MM/YYYY HH:mm:ss');
+  console.log('from:' + from);
+  var until = $('#datepairElem .date.end').val() + ' '
+      + $('#datepairElem .time.end').val();
+  until = moment(until, "DD/MM/YYYY LT").format('DD/MM/YYYY HH:mm:ss');
+  console.log('until:' + until);
+
+  var now = moment().format('DD/MM/YYYY HH:mm:ss');
+  console.log('now:' + now);
+
+  var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
+      moment(from, "DD/MM/YYYY HH:mm:ss"));
+  var d = moment.duration(ms);
+  var from = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
+  console.log('from:' + from);
+  if (from < 0) {
+    uc.ajaxMessage('error', 'Invalid date!');
+    $('#datepairElem .date.start').val(uc.date_start);
+    $('#datepairElem .date.end').val(uc.date_end);
+    $('#datepairElem .time.start').val(uc.time_start);
+    $('#datepairElem .time.end').val(uc.time_end);
+    return;
+  }
+  $("#from").val(from * -1);
+
+  var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
+      moment(until, "DD/MM/YYYY HH:mm:ss"));
+  var d = moment.duration(ms);
+  until = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
+  console.log('until:' + until);
+  if (until < 0) {
+    uc.ajaxMessage('error', 'Invalid date!');
+    $('#datepairElem .date.start').val(uc.date_start);
+    $('#datepairElem .date.end').val(uc.date_end);
+    $('#datepairElem .time.start').val(uc.time_start);
+    $('#datepairElem .time.end').val(uc.time_end);
+    return;
+  }
+  $("#until").val(until * -1);
+
+  uc.date_start = $('#datepairElem .date.start').val();
+  uc.date_end = $('#datepairElem .date.end').val();
+  uc.time_start = $('#datepairElem .time.start').val();
+  uc.time_end = $('#datepairElem .time.end').val();
+
+  uc.slider([ from, until ]);
 };
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -2354,97 +2435,4 @@ var uptimeConfig = {
 var uc = new UptimeChart(uptimeConfig);
 uc.createChart(1);
 
-// initialize input widgets first
-$('#datepairExample .time').timepicker({
-  'showDuration' : true,
-  'timeFormat' : 'g:ia'
-});
-
-// DD/MM/YYYY
-$('#datepairExample .date').datepicker({
-  'format': 'dd-mm-yyyy',
-  'autoclose' : true
-});
-
-// initialize datepair
-var basicExampleEl = document.getElementById('datepairExample');
-var datepair = new Datepair(basicExampleEl);
-
-var test = function() {
-  var dateCondi = $("#dateCondi").val();
-  if (dateCondi.startsWith('sRange=hour')) {
-    dateCondi = dateCondi.substring(dateCondi.lastIndexOf('=') + 1,
-        dateCondi.length);
-    dateCondi = dateCondi.substring(0, dateCondi.indexOf('hours'));
-    $("#from").val((dateCondi * -1) + "h");
-  } else if (dateCondi.startsWith('sRange=day')) {
-    $("#from").val("-1d");
-  } else if (dateCondi.startsWith('sRange=week')) {
-    $("#from").val("-1w");
-  } else if (dateCondi.startsWith('sRange=2week')) {
-    $("#from").val("-2w");
-  } else if (dateCondi.startsWith('sRange=month')) {
-    month = dateCondi.split('&');
-    var now = new Date();
-    var date = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now
-        .getDate(), now.getHours(), now.getMinutes()));
-    var y = date.getFullYear(), m = date.getMonth();
-    var n = date.getDate();
-    var firstDay, lastDay;
-    if (month[1].split('=')[1] == 'thismonth') {
-      firstDay = $.datepicker.formatDate("yymmdd", new Date(y, m, 1));
-      lastDay = $.datepicker.formatDate("yymmdd", new Date(y, m + 1, 0));
-    } else if (month[1].split('=')[1] == 'lastmonth') {
-      firstDay = $.datepicker.formatDate("yymmdd", new Date(y, m - 1, 1));
-      lastDay = $.datepicker.formatDate("yymmdd", new Date(y, m, 0));
-    } else if (month[1].split('=')[1] == 'last30') {
-      firstDay = $.datepicker.formatDate("yymmdd", new Date(y, m, n - 30));
-      lastDay = $.datepicker.formatDate("yymmdd", date);
-    } else if (month[1].split('=')[1] == 'last60') {
-      firstDay = $.datepicker.formatDate("yymmdd", new Date(y, m, n - 60));
-      lastDay = $.datepicker.formatDate("yymmdd", date);
-    }
-    $("#from").val(firstDay);
-    $("#until").val(lastDay);
-  } else if (dateCondi.startsWith('sRange=custom')) {
-    custom = dateCondi.split('&');
-    var from = custom[1].split('=')[1].replace(/-/g, "");
-    var until = custom[2].split('=')[1].replace(/-/g, "");
-    $("#from").val(from);
-    $("#until").val(until);
-  }
-}
-
-$('#datepairExample').on(
-    'rangeSelected',
-    function() {
-      var start = $('#datepairExample .date.start').val() + ' '
-          + $('#datepairExample .time.start').val();
-      start = moment(start, "DD/MM/YYYY LT").format('DD/MM/YYYY HH:mm:ss');
-      console.log('from:' + start);
-      var end = $('#datepairExample .date.end').val() + ' '
-          + $('#datepairExample .time.end').val();
-      end = moment(end, "DD/MM/YYYY LT").format('DD/MM/YYYY HH:mm:ss');
-      console.log('until:' + end);
-
-      var now = moment.utc().format('DD/MM/YYYY HH:mm:ss');
-      console.log('now:' + now);
-      
-      var ms = moment(now,"DD/MM/YYYY HH:mm:ss").diff(moment(start,"DD/MM/YYYY HH:mm:ss"));
-      var d = moment.duration(ms);
-      var s = (Math.floor(d.asHours()) * 60) + parseInt(moment.utc(ms).format("mm"));
-      console.log('from:' + s);
-      
-      var ms = moment(now,"DD/MM/YYYY HH:mm:ss").diff(moment(end,"DD/MM/YYYY HH:mm:ss"));
-      var d = moment.duration(ms);
-      var s = (Math.floor(d.asHours()) * 60) + parseInt(moment.utc(ms).format("mm"));      
-      console.log('until:' + s);
-      
-    }).on('rangeIncomplete', function() {
-  test();
-}).on('rangeError', function() {
-  debugger;
-  test();
-});
-
-$(document).tooltip();
+// $(document).tooltip();
