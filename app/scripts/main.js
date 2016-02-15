@@ -35,19 +35,6 @@ var UptimeChart = function(config) {
       }).on('rangeError', function() {
   });
 
-  var now = moment();
-  var start_date = moment(now)
-      .add('minutes', _super.config.slider.init.x1 * -1);
-  var end_date = moment();
-  $('#datepairElem .date.start').val(start_date.format("DD/MM/YYYY"));
-  $('#datepairElem .date.end').val(end_date.format("DD/MM/YYYY"));
-  $('#datepairElem .time.start').val(start_date.format("LT"));
-  $('#datepairElem .time.end').val(end_date.format("LT"));
-  _super.date_start = $('#datepairElem .date.start').val();
-  _super.date_end = $('#datepairElem .date.end').val();
-  _super.time_start = $('#datepairElem .time.start').val();
-  _super.time_end = $('#datepairElem .time.end').val();
-
   // [ updateChart with brushing ]
   _super.update = function() {
     var json = [];
@@ -201,6 +188,21 @@ var UptimeChart = function(config) {
                 }));
   }
   _super.slider([ _super.config.slider.init.x0, _super.config.slider.init.x1 ]);
+
+  _super.addMinutes = function(val) {
+    var now = moment();
+    var start_date = moment(now).add('minutes', val * -1);
+    var end_date = moment();
+    $('#datepairElem .date.start').val(start_date.format("DD/MM/YYYY"));
+    $('#datepairElem .date.end').val(end_date.format("DD/MM/YYYY"));
+    $('#datepairElem .time.start').val(start_date.format("LT"));
+    $('#datepairElem .time.end').val(end_date.format("LT"));
+    _super.date_start = $('#datepairElem .date.start').val();
+    _super.date_end = $('#datepairElem .date.end').val();
+    _super.time_start = $('#datepairElem .time.start').val();
+    _super.time_end = $('#datepairElem .time.end').val();
+  }
+  _super.addMinutes(_super.config.slider.init.x1);
 
   _super.legend = function(g, id, metric) {
     g
@@ -2159,8 +2161,8 @@ UptimeChart.prototype.createChart = function(ghcid) {
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
-           d3.json(from, function(error, json) {
-//          d3.json('data.json', function(error, json) {
+          d3.json(from, function(error, json) {
+            // d3.json('data.json', function(error, json) {
             _super.selectView('tot_ms', json);
             setTimeout(function() {
               _super.showChart(true);
@@ -2181,8 +2183,16 @@ UptimeChart.prototype.createChart = function(ghcid) {
 
 UptimeChart.prototype.changeDate = function(from) {
   var _super = this;
-  $("#from").val(from);
-  $("#until").val('');
+  var m;
+  if (from.indexOf('hour') > -1) {
+    m = from.substring(0, from.indexOf('hour'));
+    m = m * 60 * -1;
+  } else if (from.indexOf('d') > -1) {
+    m = from.substring(0, from.indexOf('d'));
+    m = m * 60 * 24 * -1;
+  }
+  _super.addMinutes(m);
+  _super.changeDateWithDatepair();
   _super.createChart();
 };
 
@@ -2203,7 +2213,7 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
   var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
       moment(from, "DD/MM/YYYY HH:mm:ss"));
   var d = moment.duration(ms);
-  var from = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
+  from = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
   console.log('from:' + from);
   if (from < 0) {
     uc.ajaxMessage('error', 'Invalid date!');
