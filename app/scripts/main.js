@@ -13,8 +13,8 @@ var UptimeChart = function(config) {
   _super.formatDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
   _super.parseDate = _super.formatDate.parse;
 
-  $('#from').val('-' + _super.config.slide.init.x1 + 'min');
-  $('#until').val('-' + _super.config.slide.init.x0 + 'min');
+  $('#from').val('-' + _super.config.slider.init.x1 + 'min');
+  $('#until').val('-' + _super.config.slider.init.x0 + 'min');
 
   $('#datepairElem .time').timepicker({
     'showDuration' : true,
@@ -36,7 +36,8 @@ var UptimeChart = function(config) {
   });
 
   var now = moment();
-  var start_date = moment(now).add('minutes', _super.config.slide.init.x1 * -1);
+  var start_date = moment(now)
+      .add('minutes', _super.config.slider.init.x1 * -1);
   var end_date = moment();
   $('#datepairElem .date.start').val(start_date.format("DD/MM/YYYY"));
   $('#datepairElem .date.end').val(end_date.format("DD/MM/YYYY"));
@@ -172,28 +173,34 @@ var UptimeChart = function(config) {
     d3.selectAll('#slider').remove();
     $("<div></div>").attr('id', 'slider').appendTo($("#sliderDiv"));
     d3.select('#slider').call(
-        d3.slider().axis(true).min(0).max(600).step(10).value(val).step(5).on(
-            "slideend", function(e) {
-              uc.createChart();
-            }).on("slide", function(evt, value) {
-          $('#from').val('-' + value[1] + 'min');
-          $('#until').val('-' + value[0] + 'min');
+        d3.slider().axis(d3.svg.axis().orient("bottom").ticks(5)).min(
+            _super.config.slider.range.min).max(_super.config.slider.range.max)
+            .step(_super.config.slider.step).value(val).on("slideend",
+                function(e) {
+                  uc.createChart();
+                }).on(
+                "slide",
+                function(evt, value) {
+                  $('#from').val('-' + value[1] + 'min');
+                  $('#until').val('-' + value[0] + 'min');
 
-          var now = moment();
-          var start_date = moment(now).add('minutes', value[1] * -1);
-          end_date = moment(now).add('minutes', value[0] * -1);
-          $('#datepairElem .date.start').val(start_date.format("DD/MM/YYYY"));
-          $('#datepairElem .date.end').val(end_date.format("DD/MM/YYYY"));
-          $('#datepairElem .time.start').val(start_date.format("LT"));
-          $('#datepairElem .time.end').val(end_date.format("LT"));
+                  var now = moment();
+                  var start_date = moment(now).add('minutes', value[1] * -1);
+                  end_date = moment(now).add('minutes', value[0] * -1);
+                  $('#datepairElem .date.start').val(
+                      start_date.format("DD/MM/YYYY"));
+                  $('#datepairElem .date.end').val(
+                      end_date.format("DD/MM/YYYY"));
+                  $('#datepairElem .time.start').val(start_date.format("LT"));
+                  $('#datepairElem .time.end').val(end_date.format("LT"));
 
-          _super.date_start = $('#datepairElem .date.start').val();
-          _super.date_end = $('#datepairElem .date.end').val();
-          _super.time_start = $('#datepairElem .time.start').val();
-          _super.time_end = $('#datepairElem .time.end').val();
-        }));
+                  _super.date_start = $('#datepairElem .date.start').val();
+                  _super.date_end = $('#datepairElem .date.end').val();
+                  _super.time_start = $('#datepairElem .time.start').val();
+                  _super.time_end = $('#datepairElem .time.end').val();
+                }));
   }
-  _super.slider([ _super.config.slide.init.x0, _super.config.slide.init.x1 ]);
+  _super.slider([ _super.config.slider.init.x0, _super.config.slider.init.x1 ]);
 
   _super.legend = function(g, id, metric) {
     g
@@ -2040,7 +2047,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
       inactive.removeClass("inactive");
       inactive.addClass("active");
     }
-    if ($('#view').find("li.active").text() == 'Response') {
+    if (tabId == 'tot_ms') {
       $('.tot_ms_view').show();
       $('.aggregate_view').hide();
       $("#gmetrices").find('option').each(
@@ -2138,7 +2145,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
           rawJsonData = rawJsonData.substring(rawJsonData.indexOf('>{') + 1,
               rawJsonData.length);
         }
-        _super.selectView(null, jQuery.parseJSON(rawJsonData));
+        _super.selectView('tot_ms', jQuery.parseJSON(rawJsonData));
         _super.showChart(true);
         console.timeEnd("query response time");
       }).error(
@@ -2152,9 +2159,9 @@ UptimeChart.prototype.createChart = function(ghcid) {
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
-          // d3.json(from, function(error, json) {
-          d3.json('data.json', function(error, json) {
-            _super.selectView(null, json);
+           d3.json(from, function(error, json) {
+//          d3.json('data.json', function(error, json) {
+            _super.selectView('tot_ms', json);
             setTimeout(function() {
               _super.showChart(true);
             }, 1000);
@@ -2228,6 +2235,18 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
   uc.time_start = $('#datepairElem .time.start').val();
   uc.time_end = $('#datepairElem .time.end').val();
 
+  if (from > uc.config.slider.range.max) {
+    from = uc.config.slider.range.max;
+  }
+  if (from < 0) {
+    from = uc.config.slider.range.min;
+  }
+  if (until > uc.config.slider.range.max) {
+    until = uc.config.slider.range.max;
+  }
+  if (until < 0) {
+    until = uc.config.slider.range.min;
+  }
   uc.slider([ from, until ]);
 };
 
@@ -2309,11 +2328,16 @@ UptimeChart.prototype.resize = function() {
 // / [configuration]
 // //////////////////////////////////////////////////////////////////////////////
 var uptimeConfig = {
-  "slide" : {
+  "slider" : {
     "init" : {
       "x0" : 0,
-      "x1" : 60
-    }
+      "x1" : 240
+    },
+    "range" : {
+      "min" : 0,
+      "max" : 600
+    },
+    "step" : 5
   },
   "lineChart" : {
     "main" : {

@@ -10,8 +10,6 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
-<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-
 <!-- build:css(.) styles/vendor.css -->
 <!-- bower:css -->
 <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
@@ -82,12 +80,12 @@
 					<div class="col-xs-7">
 						<p id="datepairElem">
 						    <input type="text" class="date start" style="width: 25%; margin-top: 0px;"/>
-						    <input type="text" class="time start" style="width: 15%; margin-top: 0px;"/> ~
+						    <input type="text" class="time start" style="width: 20%; margin-top: 0px;"/> ~
 						    <input type="text" class="date end" style="width: 25%; margin-top: 0px;"/>
-						    <input type="text" class="time end" style="width: 15%; margin-top: 0px;"/>
+						    <input type="text" class="time end" style="width: 20%; margin-top: 0px;"/>
 						</p>
-						<input id='from' type='text' value='-60min' style="width: 40%; margin-top: 0px;"> ~
-						<input id='until' type='text' value='-0min' style="width: 40%; margin-top: 0px;">
+						<input id='from' type='hidden' value='-60min' style="width: 40%; margin-top: 0px;">
+						<input id='until' type='hidden' value='-0min' style="width: 40%; margin-top: 0px;">
 					</div>
 					<div class="col-xs-1" style="padding-left: 0px;" title="You can query again for the latest chart.">
 						<button class="latest" onclick="javascript: uc.changeDate('-1hour')">
@@ -145,13 +143,13 @@
 	<!-- build:js(.) scripts/vendor.js -->
 	<!-- bower:js -->
 	<script src="/bower_components/jquery/dist/jquery.js"></script>
-	<script src="/bower_components/jquery-ui/jquery-ui.js"></script>
-	<script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
 	<script src="/bower_components/datepair.js/dist/datepair.js"></script>
 	<script src="/bower_components/datepair.js/dist/jquery.datepair.js"></script>
 	<script src="/bower_components/jt.timepicker/jquery.timepicker.js"></script>
+	<script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
 	<script src="/bower_components/moment/moment.js"></script>
 	<script src="/bower_components/pikaday/pikaday.js"></script>
+	<script src="/bower_components/jquery-ui/jquery-ui.js"></script>
 	<!-- endbower -->
 	<!-- endbuild -->
 
