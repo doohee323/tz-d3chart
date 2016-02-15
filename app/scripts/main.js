@@ -2049,7 +2049,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
       inactive.removeClass("inactive");
       inactive.addClass("active");
     }
-    if (tabId == 'tot_ms') {
+    if ($('#view').find("li.active").text() == 'Response') {
       $('.tot_ms_view').show();
       $('.aggregate_view').hide();
       $("#gmetrices").find('option').each(
@@ -2147,7 +2147,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
           rawJsonData = rawJsonData.substring(rawJsonData.indexOf('>{') + 1,
               rawJsonData.length);
         }
-        _super.selectView('tot_ms', jQuery.parseJSON(rawJsonData));
+        _super.selectView(null, jQuery.parseJSON(rawJsonData));
         _super.showChart(true);
         console.timeEnd("query response time");
       }).error(
@@ -2163,7 +2163,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
           from = from.substring(1, from.length) + '.json';
           d3.json(from, function(error, json) {
             // d3.json('data.json', function(error, json) {
-            _super.selectView('tot_ms', json);
+            _super.selectView(null, json);
             setTimeout(function() {
               _super.showChart(true);
             }, 1000);
@@ -2171,14 +2171,14 @@ UptimeChart.prototype.createChart = function(ghcid) {
         }
       });
 
-  // window.onerror = function(msg, url, line, col, error) {
-  // if (url == '') {
-  // _super.ajaxMessage('error', 'internal error!');
-  // _super.showChart(true);
-  // }
-  // var suppressErrorAlert = true;
-  // return suppressErrorAlert;
-  // };
+  window.onerror = function(msg, url, line, col, error) {
+    if (url == '') {
+      _super.ajaxMessage('error', 'internal error!');
+      _super.showChart(true);
+    }
+    var suppressErrorAlert = true;
+    return suppressErrorAlert;
+  };
 }
 
 UptimeChart.prototype.changeDate = function(from) {
