@@ -75,17 +75,17 @@
 				</div>
 				<div class="form-group">
 					<div class="col-xs-4">
-						<div id="slider3" title="You can make a query range with dragging."></div>
+						<div id="slider" title="You can make a query range with dragging."></div>
 					</div>
 					<div class="col-xs-7">
 						<p id="datepairExample">
-						    <input type="text" class="date start" style="width: 20%; margin-top: 0px;"/>
-						    <input type="text" class="time start" style="width: 20%; margin-top: 0px;"/> ~
-						    <input type="text" class="date end" style="width: 20%; margin-top: 0px;"/>
-						    <input type="text" class="time end" style="width: 20%; margin-top: 0px;"/>
+						    <input type="text" class="date start" style="width: 25%; margin-top: 0px;"/>
+						    <input type="text" class="time start" style="width: 15%; margin-top: 0px;"/> ~
+						    <input type="text" class="date end" style="width: 25%; margin-top: 0px;"/>
+						    <input type="text" class="time end" style="width: 15%; margin-top: 0px;"/>
 						</p>
-						<input id='from' type='hidden' value='-60min' style="width: 40%; margin-top: 0px;"> 
-						<input id='until' type='hidden' value='-0min' style="width: 40%; margin-top: 0px;">
+						<input id='from' type='text' value='-60min' style="width: 40%; margin-top: 0px;"> ~
+						<input id='until' type='text' value='-0min' style="width: 40%; margin-top: 0px;">
 					</div>
 					<div class="col-xs-1" style="padding-left: 0px;" title="You can query again for the latest chart.">
 						<button class="latest" onclick="javascript: uc.changeDate('-1hour')">
