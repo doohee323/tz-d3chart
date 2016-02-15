@@ -10,9 +10,13 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
 <!-- build:css(.) styles/vendor.css -->
 <!-- bower:css -->
 <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
+<link rel="stylesheet" href="/bower_components/jt.timepicker/jquery.timepicker.css" />
+<link rel="stylesheet" href="/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" />
 <!-- endbower -->
 <!-- endbuild -->
 <!-- build:css(.tmp) styles/main.css -->
@@ -55,7 +59,7 @@
 			<form class="form-horizontal">
 				<div class="form-group">
 					<div class="col-xs-5">
-						<div class="zoom-controls">
+						<div class="zoom-controls" title="You can make a query range with selecting date.">
 							<span class="zoom-button 12h anchor-link"><a
 								href="javascript: uc.changeDate('-12hours')">12h</a></span>&nbsp;&nbsp;
 							<span class="zoom-button 24h anchor-link"><a
@@ -69,16 +73,20 @@
 					<div class="col-xs-9">&nbsp;&nbsp;</div>
 				</div>
 				<div class="form-group">
-					<div class="col-xs-5">
-						<div id="slider3"></div>
+					<div class="col-xs-4">
+						<div id="slider3" title="You can make a query range with dragging."></div>
 					</div>
-					<div class="col-xs-5">
-						<input id='from' type='text' value='-60min'
-							style="width: 40%; margin-top: 0px;"> &nbsp;~&nbsp; <input
-							id='until' type='text' value='-0min'
-							style="width: 40%; margin-top: 0px;">
+					<div class="col-xs-7">
+						<p id="datepairExample">
+						    <input type="text" class="date start" style="width: 20%; margin-top: 0px;"/>
+						    <input type="text" class="time start" style="width: 20%; margin-top: 0px;"/> ~
+						    <input type="text" class="date end" style="width: 20%; margin-top: 0px;"/>
+						    <input type="text" class="time end" style="width: 20%; margin-top: 0px;"/>
+						</p>
+						<input id='from' type='hidden' value='-60min' style="width: 40%; margin-top: 0px;"> 
+						<input id='until' type='hidden' value='-0min' style="width: 40%; margin-top: 0px;">
 					</div>
-					<div class="col-xs-2" style="padding-left: 0px;">
+					<div class="col-xs-1" style="padding-left: 0px;" title="You can query again for the latest chart.">
 						<button class="latest" onclick="javascript: uc.changeDate('-1hour')">
 							<span>Latest</span>
 						</button>
@@ -91,19 +99,21 @@
 			<form class="form-horizontal">
 				<ul class="nav nav-tabs" id="view"
 					style="margin-bottom: 10px; font-size: 11pt;">
-					<li class="active"><a
-						href="javascript: uc.selectView('tot_ms')">Response</a></li>
-					<li class="inactive"><a
-						href="javascript: uc.selectView('aggregate')">Availability</a></li>
+					<li class="active" title="You can see in the response time perspective.">
+						<a href="javascript: uc.selectView('tot_ms')">Response</a>
+					</li>
+					<li class="inactive" title="You can see in the availability perspective.">
+						<a href="javascript: uc.selectView('aggregate')">Availability</a>
+					</li>
 				</ul>
 				<div class="form-group">
 					<label for="gmetrices" class="col-xs-1 control-label">Metric:</label>
-					<div class="col-xs-3">
+					<div class="col-xs-3" title="You can see a specific metric chart.">
 						<select id="gmetrices" name="gmetrices"
 							class="form-control col-sm-3" style="margin-left: 15px;" placeholder="gmetrices"></select>
 					</div>
 					<label for="locs" class="col-xs-1 control-label">Agent:</label>
-					<div class="col-xs-3">
+					<div class="col-xs-3" title="You can see a specific agent in map.">
 						<select id="locs" class="form-control col-sm-3" style="margin-left: 15px;" placeholder="locs"></select>
 					</div>
 				</div>
@@ -122,8 +132,8 @@
 			<!--<div id="googleMap"></div> -->
 
 			<input id='dateCondi' type='hidden' value='' style="width: 60%">
-			<input id='queryUptime' type='hidden' value='Query'> <input
-				id='refreshBtn' type='hidden' value='Stop'>
+			<input id='queryUptime' type='hidden' value='Query'> 
+			<input id='refreshBtn' type='hidden' value='Stop'>
 		</div>
 
 		<div class="footer"></div>
@@ -132,6 +142,10 @@
 	<!-- build:js(.) scripts/vendor.js -->
 	<!-- bower:js -->
 	<script src="/bower_components/jquery/dist/jquery.js"></script>
+	<script src="/bower_components/datepair.js/dist/datepair.js"></script>
+	<script src="/bower_components/datepair.js/dist/jquery.datepair.js"></script>
+	<script src="/bower_components/jt.timepicker/jquery.timepicker.js"></script>
+	<script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
 	<!-- endbower -->
 	<!-- endbuild -->
 
@@ -152,7 +166,7 @@
 
 	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 
-	<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 	<!-- 	<script src="http://maps.googleapis.com/maps/api/js"></script> -->
 	<!-- 	<script type="text/javascript" -->
 	<!-- 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9oB28RSLjXkirKBIvzVBWoLmGNK0pJq0"> -->

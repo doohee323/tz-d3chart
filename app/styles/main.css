@@ -274,12 +274,27 @@ div.lc_tooltip {
 	color: #585956;
 }
 
-path {
-	stroke: #fff;
+div.tooltip {
+	position: absolute;
+	z-index: 1;
+	text-align: left;
+	width: 450px;
+	height: 250px;
+	padding: 4px;
+	font: 11px sans-serif;
+	background: #FFFFFF;
+	border: solid 1px #aaa;
+	border-radius: 8px;
+	color: #585956;
 }
 
-path:hover {
-	opacity: 0.9;
+.tooltip_ifr {
+	position: absolute;
+	z-index: 1;
+	width: 430px;
+	height: 225px;
+	font-size: 11px;
+	border: 0px;
 }
 
 .axis path, .axis line {
@@ -335,6 +350,14 @@ path:hover {
 	height: 100px;
 	margin-top: 20px;
 	float: left;
+}
+
+.gauge_stroke {
+	stroke: #fff;
+}
+
+path:hover {
+	opacity: 0.9;
 }
 
 .gauge {
@@ -415,12 +438,3 @@ path:hover {
 	height: 20px;
 	font-size: 9pt;
 }
-
-
-
-
-
-
-
-
-
