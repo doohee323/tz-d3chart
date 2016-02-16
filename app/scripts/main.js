@@ -418,10 +418,10 @@ var UptimeChart = function(config) {
   _super.showChart = function(status) {
     if (status) {
       $("#nodata").css('display', 'none');
-      $("#loading_modal").hide();
+      $("#loading_data").hide();
     } else {
       $("#nodata").css('display', '');
-      $("#loading_modal").hide();
+      $("#loading_data").hide();
     }
   }
 }
@@ -2156,7 +2156,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
 
   console.time("query response time");
   $("#nodata").css('display', 'none');
-  $("#loading_modal").show();
+  $("#loading_data").show();
 
   var gmetric = $("#gmetrices").val();
   var locs = $("#locs").val();
@@ -2393,7 +2393,7 @@ var uptimeConfig = {
   "slider" : {
     "init" : {
       "x0" : 0,
-      "x1" : 160
+      "x1" : 60
     },
     "range" : {
       "min" : 0,
