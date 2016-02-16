@@ -10,6 +10,8 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
 <!-- build:css(.) styles/vendor.css -->
 <!-- bower:css -->
 <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
@@ -129,6 +131,19 @@
 				<div id="minilineChart2"></div>
 			</div>
 			<div id="graph"></div>
+
+			<div class="map-top">
+				<div class="map-bar map-control">
+					<a class="map-control-zoom-in" href="javascript: uc.map.navi('zoom-in')" title="Zoom in">+</a><a
+						class="map-control-zoom-out" href="javascript: uc.map.navi('zoom-out')" title="Zoom out">-</a>
+				</div>
+				<div class="map-bar map-control">
+					<a class="map-control-navbar-home" href="javascript: uc.map.navi('home')" title="Go to home map view"></a>
+					<a class="map-control-navbar-fwd" href="javascript: uc.map.navi('fwd')" title="Go forward in map view history"></a>
+					<a class="map-control-navbar-back" href="javascript: uc.map.navi('back')" title="Go back in map view history"></a>
+				</div>
+			</div>
+
 			<!--<div id="googleMap"></div> -->
 
 			<input id='dateCondi' type='hidden' value='' style="width: 60%">

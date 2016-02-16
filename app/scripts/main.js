@@ -36,7 +36,7 @@ var UptimeChart = function(config) {
   });
 
   // [ updateChart with brushing ]
-  _super.update = function() {
+  _super.update = function(navi) {
     var json = [];
 
     var startTime = _super.toUTCISOString(_super.mc.brush.extent()[0]);
@@ -64,11 +64,31 @@ var UptimeChart = function(config) {
       _super.sc.update(_super.sc.getData(_super.lineData), function() {
         _super.hst.update(_super.hst.getData(_super.lineData), function(data) {
           _super.gauge.update(data.tot_ms);
+
+          _super.sc.stSvg.append('g').attr('class', 'brushed_range').append(
+              "text")
+              .attr("x", _super.config.lineChart.main.margin.width - 200).attr(
+                  "y", -30).attr("text-anchor", "middle").style(
+                  "text-decoration", "underline").text(
+                  moment(_super.mc.brush.extent()[0]).format(
+                      'DD/MM/YYYY HH:mm:ss')
+                      + ' ~ '
+                      + moment(_super.mc.brush.extent()[1]).format(
+                          'DD/MM/YYYY HH:mm:ss'));
         });
         if (_super.metric) {
           $('#gmetrices').val(_super.metric);
         }
       });
+    } else {
+      _super.lc.lineSvg.append('g').attr('class', 'brushed_range').append(
+          "text").attr("x", _super.config.lineChart.main.margin.width - 200)
+          .attr("y", 10).attr("text-anchor", "middle").style("text-decoration",
+              "underline").text(
+              moment(_super.mc.brush.extent()[0]).format('DD/MM/YYYY HH:mm:ss')
+                  + ' ~ '
+                  + moment(_super.mc.brush.extent()[1]).format(
+                      'DD/MM/YYYY HH:mm:ss'));
     }
 
     // map
@@ -319,7 +339,6 @@ var UptimeChart = function(config) {
           }).on("click", function(d, i) {
             toggle('show', d, i);
           }).style("cursor", "pointer");
-
           li.selectAll("rect").data(items, function(d) {
             return d.key;
           }).call(function(d) {
@@ -1209,6 +1228,24 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
       }
     }
     return val;
+  }
+
+  _super.config.map.scale_bak = _super.config.map.scale;
+  _super.config.map.margin.left_bak = _super.config.map.margin.left;
+  map.navi = function(navi) {
+    if (navi == 'zoom-in') {
+      _super.config.map.scale = _super.config.map.scale * 1.2;
+    } else if (navi == 'zoom-out') {
+      _super.config.map.scale = _super.config.map.scale * 0.8;
+    } else if (navi == 'home') {
+      _super.config.map.scale = _super.config.map.scale_bak;
+      _super.config.map.margin.left = _super.config.map.margin.left_bak;
+    } else if (navi == 'fwd') {
+      _super.config.map.margin.left = _super.config.map.margin.left * 0.8;
+    } else if (navi == 'back') {
+      _super.config.map.margin.left = _super.config.map.margin.left * 1.2;
+    }
+    map.update(map.mapData);
   }
 
   map.update = function(data, loc) {
@@ -2171,14 +2208,14 @@ UptimeChart.prototype.createChart = function(ghcid) {
         }
       });
 
-  window.onerror = function(msg, url, line, col, error) {
-    if (url == '') {
-      _super.ajaxMessage('error', 'internal error!');
-      _super.showChart(true);
-    }
-    var suppressErrorAlert = true;
-    return suppressErrorAlert;
-  };
+  // window.onerror = function(msg, url, line, col, error) {
+  // if (url == '') {
+  // _super.ajaxMessage('error', 'internal error!');
+  // _super.showChart(true);
+  // }
+  // var suppressErrorAlert = true;
+  // return suppressErrorAlert;
+  // };
 }
 
 UptimeChart.prototype.changeDate = function(from) {
@@ -2282,6 +2319,12 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = -140;
     _super.config.map.margin.left = -330;
     _super.config.map.scale = 50;
+    $('.map-top').css({
+      "left" : "10px"
+    });
+    $('.map-top').css({
+      "top" : "1050px"
+    });
   } else if (width >= 360 && width <= 500) {
     device = 'nexus4'; // iphone6(391) iphone6_plus(429)
     _super.config.lineChart.main.margin.width = 400;
@@ -2293,6 +2336,12 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = -120;
     _super.config.map.margin.left = -280;
     _super.config.map.scale = 65;
+    $('.map-top').css({
+      "left" : "10px"
+    });
+    $('.map-top').css({
+      "top" : "1050px"
+    });
   } else if (width > 500 && width <= 700) {
     device = 'nexus7'; // 615
     _super.config.lineChart.main.margin.width = 600;
@@ -2304,7 +2353,13 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = -100;
     _super.config.map.margin.left = -180;
     _super.config.map.scale = 95;
-  } else if (width > 700 && width <= 770) {
+    $('.map-top').css({
+      "left" : "10px"
+    });
+    $('.map-top').css({
+      "top" : "920px"
+    });
+  } else if (width > 700 && width <= 970) {
     device = 'ipad'; // 768
     _super.config.lineChart.main.margin.width = 750;
     _super.config.lineChart.mini.margin.width = 670;
@@ -2315,6 +2370,12 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = -30;
     _super.config.map.margin.left = -130;
     _super.config.map.scale = 115;
+    $('.map-top').css({
+      "left" : "10px"
+    });
+    $('.map-top').css({
+      "top" : "920px"
+    });
   } else {
     device = 'desktop';
     _super.config.lineChart.main.margin.width = 950;
@@ -2326,6 +2387,12 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = 0;
     _super.config.map.margin.left = 0;
     _super.config.map.scale = 135;
+    $('.map-top').css({
+      "left" : "350px"
+    });
+    $('.map-top').css({
+      "top" : "850px"
+    });
   }
   if (device != _super.device) {
     _super.device = device;
