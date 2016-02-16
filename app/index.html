@@ -42,14 +42,6 @@
 				<div style="margin-left: 50px" id="serverMessages"></div>
 			</div>
 
-			<!-- Loading Modal -->
-			<div id="loading_modal" class="modal" role="dialog"
-				style="left: 10%;">
-				<div class="modal-dialog"
-					style="margin-top: 40%; width: 30%; text-align: center;">
-					<img width="100pt" height="100pt" src="loading_spinner.gif">
-				</div>
-			</div>
 			<div id="nodata" style="display: none;">
 				<div style="height: 75px"></div>
 				<div class="alert alert-block">
@@ -57,23 +49,14 @@
 				</div>
 			</div>
 
-			<form class="form-horizontal">
-				<div class="form-group">
-					<div class="col-xs-3">
-						<div class="period-controls" title="You can make a query range with selecting date.">
-							<span class="anchor-link"><a
-								href="javascript: uc.changeDate('-12hours')">12h</a></span>&nbsp;&nbsp;
-							<span class="anchor-link"><a
-								href="javascript: uc.changeDate('-24hours')">24h</a></span>&nbsp;&nbsp;
-							<span class="anchor-link"><a
-								href="javascript: uc.changeDate('-7d')">7d</a></span>&nbsp;&nbsp; <span
-								class="anchor-link"><a
-								href="javascript: uc.changeDate('-14d')">14d</a></span>
-						</div>
-					</div>
-					<div class="col-xs-1">&nbsp;&nbsp;</div>
-					<div class="col-xs-8"></div>
-				</div>
+			<p>
+				<button class="btn btn-default btn-xs" onclick="uc.changeDate('-12hours')">12h</button>
+				<button class="btn btn-default btn-xs" onclick="uc.changeDate('-24hours')">24h</button>
+				<button class="btn btn-default btn-xs" onclick="uc.changeDate('-7d')">7d</button>
+				<button class="btn btn-default btn-xs" onclick="uc.changeDate('-14d')">14d</button>
+			</p>
+
+			<form class="form-inline">
 				<div class="form-group">
 					<div class="col-xs-4">
 						<div id="sliderDiv" title="You can make a query range with dragging.">
@@ -90,8 +73,8 @@
 						<input id='from' type='hidden' value='-60min' style="width: 40%; margin-top: 0px;">
 						<input id='until' type='hidden' value='-0min' style="width: 40%; margin-top: 0px;">
 					</div>
-					<div class="col-xs-1" style="padding-left: 0px;" title="You can query again for the latest chart.">
-						<button class="latest" onclick="javascript: uc.changeDate('-1hour')">
+					<div class="col-xs-1" style="padding-left: 0px;" title="Reload Data">
+						<button class="btn btn-default btn-sm" onclick="javascript: uc.changeDate('-1hour')">
 							<span>Latest</span>
 						</button>
 					</div>
@@ -100,7 +83,7 @@
 		</div>
 
 		<div class="row" id="frame">
-			<form class="form-horizontal">
+			<form class="form-inline">
 				<ul class="nav nav-tabs" id="view"
 					style="margin-bottom: 10px; font-size: 11pt;">
  					<li class="active"><a
@@ -120,6 +103,14 @@
 					</div>
 				</div>
 			</form>
+			<!-- Loading Modal -->
+			<div id="loading_data" class="modal" role="dialog"
+				style="left: 10%;">
+				<div class="modal-dialog"
+					style="margin-top: 40%; width: 30%; text-align: center;">
+					<img width="100pt" height="100pt" src="loading_spinner.gif">
+				</div>
+			</div>
 			<div class="tot_ms_view">
 				<div id="stackedChart"></div>
 				<div id="minilineChart"></div>
