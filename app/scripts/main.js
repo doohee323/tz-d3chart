@@ -391,8 +391,8 @@ var UptimeChart = function(config) {
     var html = '<div>' + txt + '</div>';
     var tooltip = d3.select("body").append("div")
         .attr('pointer-events', 'none').attr("class", "tooltip").style(
-            "opacity", 1).html(html).style("left", (d3.event.x + 2 + "px"))
-        .style("top", (d3.event.y + 160 + "px"));
+            "opacity", 1).html(html).style("left", (d3.event.pageX + 2 + "px"))
+        .style("top", (d3.event.pageY + 2 + "px"));
     $('#jsonview').contents().find('html').html(input);
     $(document.getElementById('jsonview').contentWindow.document.body).css(
         'font-size', '12px')
@@ -609,8 +609,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     var html = '<div style="width: 250px;">' + txt + '</div>';
     var tooltip = d3.select("body").append("div")
         .attr('pointer-events', 'none').attr("class", "lc_tooltip").style(
-            "opacity", 1).html(html).style("left", (d3.event.x + 10 + "px"))
-        .style("top", (d3.event.y + 10 + "px"));
+            "opacity", 1).html(html).style("left", (d3.event.pageX + 2 + "px"))
+        .style("top", (d3.event.pageY + 2 + "px"));
   }
 
   lc.update = function(data, metric) {
@@ -1301,8 +1301,8 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
           var div = d3.select("body").append("div").attr('pointer-events',
               'none').attr("class", "map_tooltip").style("opacity", 1).html(
               html).style("left",
-              (d3.event.x + _super.config.map.tooltip.x + "px")).style("top",
-              (d3.event.y + _super.config.map.tooltip.y + "px"));
+              (d3.event.pageX + _super.config.map.tooltip.x + "px")).style(
+              "top", (d3.event.pageY + _super.config.map.tooltip.y + "px"));
         }).on("mouseout", function(d) {
       d3.select(this).style("fill", _super.map.getCircleColor(d));
       d3.select("body").select('div.map_tooltip').remove();
@@ -2493,8 +2493,8 @@ var uptimeConfig = {
     },
     "scale" : 135,
     "tooltip" : {
-      "x" : 20,
-      "y" : 260
+      "x" : 2,
+      "y" : 2
     },
     "combo" : {
       "id" : "locs",
