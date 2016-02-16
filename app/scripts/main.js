@@ -5,7 +5,6 @@ var UptimeChart = function(config) {
   var _super = this;
   _super.config = config;
 
-  _super.resize();
   d3.select(window).on("resize", function() {
     _super.resize();
   });
@@ -1249,14 +1248,25 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   }
 
   map.update = function(data, loc) {
-    d3.select("[id='" + map.mapElem + "']").remove();
-    map.mapSvg = d3.select(map.mapElem).append("svg").attr('id', map.mapElem)
-        .attr("width", _super.config.map.margin.width).attr("height",
-            _super.config.map.margin.height);
+    d3.select("[id='map']").remove();
+    map.mapSvg = d3.select(map.mapElem).append("svg").attr('id', 'map').attr(
+        "width", _super.config.map.margin.width).attr("height",
+        _super.config.map.margin.height);
     map.states = map.mapSvg.append("g").attr("id", "states").attr(
         "transform",
         "translate(" + _super.config.map.margin.left + ","
             + _super.config.map.margin.top + ")");
+
+    var mapTool = d3.select('.map-top').html();
+    d3.select('.map-top').remove();
+    var div = d3.select("[id='graph']").append("div").attr('class', 'map-top')
+        .html(mapTool);
+
+    if (_super.width < 500) {
+      $('.map-top').css({
+        "top" : "-150px"
+      });
+    }
 
     map.circles = map.mapSvg.append("g").attr("id", "circles").attr(
         "transform",
@@ -2194,16 +2204,21 @@ UptimeChart.prototype.createChart = function(ghcid) {
           var msg = ($P.property_exists(tmp, 'message')) ? tmp.message
               : XMLHttpRequest.responseText;
           _super.ajaxMessage('error', 'Unable to load data: ' + msg);
-          showChart(false);
+          _super.showChart(false);
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
           d3.json(from, function(error, json) {
             // d3.json('data.json', function(error, json) {
-            _super.selectView(null, json);
-            setTimeout(function() {
-              _super.showChart(true);
-            }, 1000);
+            if (!json) {
+              _super.ajaxMessage('error', 'Unable to load data from server!');
+              _super.showChart(false);
+            } else {
+              _super.selectView(null, json);
+              setTimeout(function() {
+                _super.showChart(true);
+              }, 1000);
+            }
           });
         }
       });
@@ -2303,12 +2318,12 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
 UptimeChart.prototype.resize = function() {
   var _super = this;
 
-  var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+  _super.width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
   var height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
 
   // debugger;
   var device = '';
-  if (width < 360) {
+  if (_super.width < 360) {
     device = 'iphone_mini';
     _super.config.lineChart.main.margin.width = 350;
     _super.config.lineChart.mini.margin.width = 270;
@@ -2319,13 +2334,7 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = -140;
     _super.config.map.margin.left = -330;
     _super.config.map.scale = 50;
-    $('.map-top').css({
-      "left" : "10px"
-    });
-    $('.map-top').css({
-      "top" : "1050px"
-    });
-  } else if (width >= 360 && width <= 500) {
+  } else if (_super.width >= 360 && _super.width <= 500) {
     device = 'nexus4'; // iphone6(391) iphone6_plus(429)
     _super.config.lineChart.main.margin.width = 400;
     _super.config.lineChart.mini.margin.width = 330;
@@ -2336,13 +2345,7 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = -120;
     _super.config.map.margin.left = -280;
     _super.config.map.scale = 65;
-    $('.map-top').css({
-      "left" : "10px"
-    });
-    $('.map-top').css({
-      "top" : "1050px"
-    });
-  } else if (width > 500 && width <= 700) {
+  } else if (_super.width > 500 && _super.width <= 700) {
     device = 'nexus7'; // 615
     _super.config.lineChart.main.margin.width = 600;
     _super.config.lineChart.mini.margin.width = 520;
@@ -2353,13 +2356,7 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = -100;
     _super.config.map.margin.left = -180;
     _super.config.map.scale = 95;
-    $('.map-top').css({
-      "left" : "10px"
-    });
-    $('.map-top').css({
-      "top" : "920px"
-    });
-  } else if (width > 700 && width <= 970) {
+  } else if (_super.width > 700 && _super.width <= 970) {
     device = 'ipad'; // 768
     _super.config.lineChart.main.margin.width = 750;
     _super.config.lineChart.mini.margin.width = 670;
@@ -2370,12 +2367,6 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = -30;
     _super.config.map.margin.left = -130;
     _super.config.map.scale = 115;
-    $('.map-top').css({
-      "left" : "10px"
-    });
-    $('.map-top').css({
-      "top" : "920px"
-    });
   } else {
     device = 'desktop';
     _super.config.lineChart.main.margin.width = 950;
@@ -2387,16 +2378,10 @@ UptimeChart.prototype.resize = function() {
     _super.config.map.margin.top = 0;
     _super.config.map.margin.left = 0;
     _super.config.map.scale = 135;
-    $('.map-top').css({
-      "left" : "350px"
-    });
-    $('.map-top').css({
-      "top" : "850px"
-    });
   }
   if (device != _super.device) {
     _super.device = device;
-    console.log(width + ' -> ' + _super.device);
+    console.log(_super.width + ' -> ' + _super.device);
     _super.createChart();
   }
 }
@@ -2408,7 +2393,7 @@ var uptimeConfig = {
   "slider" : {
     "init" : {
       "x0" : 0,
-      "x1" : 240
+      "x1" : 160
     },
     "range" : {
       "min" : 0,

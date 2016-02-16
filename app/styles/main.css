@@ -59,6 +59,14 @@ body {
 	}
 }
 
+.tot_ms_view {
+	height: 450px;
+}
+
+.graph {
+	height: 350px;
+}
+
 .axis path, .axis line {
 	fill: none;
 	stroke: #000;
@@ -400,7 +408,7 @@ path:hover {
 	margin-left: 40px;
 }
 
-.zoom-controls {
+.period-controls {
 	float: left;
 	font-size: 11px;
 	line-height: 15px;
@@ -427,7 +435,7 @@ path:hover {
 	height: 26px;
 	padding-top: 2px;
 	padding-left: 4px;
-    padding-right: 4px;
+	padding-right: 4px;
 	display: block;
 	font-size: 14px;
 	line-height: 1.42857143;
@@ -447,54 +455,68 @@ path:hover {
 }
 
 .map-top {
-    position: absolute;
+	position: relative;
+    z-index: 1;
+    float: left;
+    left: 10px;
+    top: -300px;
 }
+
 .map-control {
-    margin-top: 10px;
+	margin-top: 10px;
 }
+
 .map-bar {
-    box-shadow: 0 1px 5px rgba(0,0,0,0.65);
-    border-radius: 4px;
+	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+	border-radius: 4px;
 }
+
 .map-popup-pane, .map-control {
-    cursor: auto;
+	cursor: auto;
 }
+
 .map-control {
-    float: right;
-    clear: both;
+	float: right;
+	clear: both;
 }
+
 .map-control {
-    position: relative;
-    z-index: 7;
-    pointer-events: auto;
+	position: relative;
+	z-index: 7;
+	pointer-events: auto;
 }
+
 .map-control-zoom-in, .map-control-zoom-out {
-    font: bold 18px 'Lucida Console', Monaco, monospace;
-    text-indent: 1px;
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
 }
+
 .map-bar a, .map-control-layers-toggle {
-    background-position: 50% 50%;
-    background-repeat: no-repeat;
-    display: block;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
 }
+
 .map-bar a, .map-bar a:hover {
-    background-color: #fff;
-    border-bottom: 1px solid #ccc;
-    width: 26px;
-    height: 26px;
-    line-height: 26px;
-    display: block;
-    text-align: center;
-    text-decoration: none;
-    color: black;
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
 }
+
 .map-control-navbar-home {
-    background-image: url("home.png");
+	background-image: url("home.png");
 }
 
 .map-control-navbar-fwd {
-    background-image: url("arrow_right.png");
+	background-image: url("arrow_right.png");
 }
+
 .map-control-navbar-back {
-    background-image: url("arrow_left.png");
+	background-image: url("arrow_left.png");
 }

@@ -60,14 +60,14 @@
 			<form class="form-horizontal">
 				<div class="form-group">
 					<div class="col-xs-3">
-						<div class="zoom-controls" title="You can make a query range with selecting date.">
-							<span class="zoom-button 12h anchor-link"><a
+						<div class="period-controls" title="You can make a query range with selecting date.">
+							<span class="anchor-link"><a
 								href="javascript: uc.changeDate('-12hours')">12h</a></span>&nbsp;&nbsp;
-							<span class="zoom-button 24h anchor-link"><a
+							<span class="anchor-link"><a
 								href="javascript: uc.changeDate('-24hours')">24h</a></span>&nbsp;&nbsp;
-							<span class="zoom-button 7d anchor-link"><a
+							<span class="anchor-link"><a
 								href="javascript: uc.changeDate('-7d')">7d</a></span>&nbsp;&nbsp; <span
-								class="zoom-button 14d anchor-link"><a
+								class="anchor-link"><a
 								href="javascript: uc.changeDate('-14d')">14d</a></span>
 						</div>
 					</div>
@@ -130,20 +130,19 @@
 				<div id="lineChart"></div>
 				<div id="minilineChart2"></div>
 			</div>
-			<div id="graph"></div>
-
-			<div class="map-top">
-				<div class="map-bar map-control">
-					<a class="map-control-zoom-in" href="javascript: uc.map.navi('zoom-in')" title="Zoom in">+</a><a
-						class="map-control-zoom-out" href="javascript: uc.map.navi('zoom-out')" title="Zoom out">-</a>
-				</div>
-				<div class="map-bar map-control">
-					<a class="map-control-navbar-home" href="javascript: uc.map.navi('home')" title="Go to home map view"></a>
-					<a class="map-control-navbar-fwd" href="javascript: uc.map.navi('fwd')" title="Go forward in map view"></a>
-					<a class="map-control-navbar-back" href="javascript: uc.map.navi('back')" title="Go back in map view"></a>
+			<div id="graph">
+				<div class="map-top" style='display:none'>
+					<div class="map-bar map-control">
+						<a class="map-control-zoom-in" href="javascript: uc.map.navi('zoom-in')" title="Zoom in">+</a><a
+							class="map-control-zoom-out" href="javascript: uc.map.navi('zoom-out')" title="Zoom out">-</a>
+					</div>
+					<div class="map-bar map-control">
+						<a class="map-control-navbar-home" href="javascript: uc.map.navi('home')" title="Go to home map view"></a>
+						<a class="map-control-navbar-fwd" href="javascript: uc.map.navi('fwd')" title="Go forward in map view"></a>
+						<a class="map-control-navbar-back" href="javascript: uc.map.navi('back')" title="Go back in map view"></a>
+					</div>
 				</div>
 			</div>
-
 			<!--<div id="googleMap"></div> -->
 
 			<input id='dateCondi' type='hidden' value='' style="width: 60%">
