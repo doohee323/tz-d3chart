@@ -193,7 +193,7 @@ var UptimeChart = function(config) {
 
                   var now = moment();
                   var start_date = moment(now).add('minutes', value[1] * -1);
-                  end_date = moment(now).add('minutes', value[0] * -1);
+                  var end_date = moment(now).add('minutes', value[0] * -1);
                   $('#datepairElem .date.start').val(
                       start_date.format("DD/MM/YYYY"));
                   $('#datepairElem .date.end').val(
