@@ -42,13 +42,6 @@
 				<div style="margin-left: 50px" id="serverMessages"></div>
 			</div>
 
-			<div id="nodata" style="display: none;">
-				<div style="height: 75px"></div>
-				<div class="alert alert-block">
-					<b>No Data:</b> There is no data to display for your selection.
-				</div>
-			</div>
-
 			<p>
 				<button class="btn btn-default btn-xs" onclick="uc.changeDate('-12hours')">12h</button>
 				<button class="btn btn-default btn-xs" onclick="uc.changeDate('-24hours')">24h</button>
@@ -77,12 +70,13 @@
 						<button class="btn btn-default btn-sm" onclick="javascript: uc.changeDate('-1hour')">
 							<span>Latest</span>
 						</button>
+						<input id='dateCondi' type='hidden' value='' style="width: 60%"/>
 					</div>
 				</div>
 			</form> 
 		</div>
 
-		<div class="row" id="frame">
+		<div class="row" id="frame" style="display:none;">
 			<form class="form-inline">
 				<ul class="nav nav-tabs" id="view"
 					style="margin-bottom: 10px; font-size: 11pt;">
@@ -95,50 +89,54 @@
 					<label for="gmetrices" class="col-xs-1 control-label">Metric:</label>
 					<div class="col-xs-3" title="You can see a specific metric chart.">
 						<select id="gmetrices" name="gmetrices"
-							class="form-control col-sm-3" style="margin-left: 15px;" placeholder="gmetrices"></select>
+							class="form-control col-sm-3" style="margin-left: 10px;" placeholder="gmetrices"></select>
 					</div>
-					<label for="locs" class="col-xs-1 control-label">Agent:</label>
+					<label for="locs" class="col-xs-1 control-label" style="margin-left: 20px;" >Agent:</label>
 					<div class="col-xs-3" title="You can see a specific agent in map.">
-						<select id="locs" class="form-control col-sm-3" style="margin-left: 15px;" placeholder="locs"></select>
+						<select id="locs" class="form-control col-sm-3" style="margin-left: 10px;" placeholder="locs"></select>
 					</div>
 				</div>
 			</form>
-			<!-- Loading Modal -->
-			<div id="loading_data" class="modal" role="dialog"
-				style="left: 10%;">
-				<div class="modal-dialog"
-					style="margin-top: 40%; width: 30%; text-align: center;">
-					<img width="100pt" height="100pt" src="loading_spinner.gif">
+		</div>
+		<div class="row">
+		  <div id="loading_data" style="margin-top: 1%; width: 80%; text-align: center;">
+				<img width="100px" height="100px" src="loading_spinner.gif">
+			  <div class="alert alert-block" style='height: 100px'>
+			    <b/>
+			  </div>
+		  </div>
+			<div id="nodata" style="display:none;margin-top: 1%">
+			  <div class="alert alert-block" style='height: 100px'>
+			    <b>No Data:</b>
+			    There is no data to display for your selection.
+			  </div>
+			</div>
+			<div id='result'>
+				<div class="tot_ms_view">
+					<div id="stackedChart"></div>
+					<div id="minilineChart"></div>
+					<div id='histogram'></div>
+					<div id="gauge"></div>
 				</div>
-			</div>
-			<div class="tot_ms_view">
-				<div id="stackedChart"></div>
-				<div id="minilineChart"></div>
-				<div id='histogram'></div>
-				<div id="gauge"></div>
-			</div>
-			<div class="aggregate_view">
-				<div id="lineChart"></div>
-				<div id="minilineChart2"></div>
-			</div>
-			<div id="graph">
-				<div class="map-top" style='display:none'>
-					<div class="map-bar map-control">
-						<a class="map-control-zoom-in" href="javascript: uc.map.navi('zoom-in')" title="Zoom in">+</a><a
-							class="map-control-zoom-out" href="javascript: uc.map.navi('zoom-out')" title="Zoom out">-</a>
-					</div>
-					<div class="map-bar map-control">
-						<a class="map-control-navbar-home" href="javascript: uc.map.navi('home')" title="Go to home map view"></a>
-						<a class="map-control-navbar-fwd" href="javascript: uc.map.navi('fwd')" title="Go forward in map view"></a>
-						<a class="map-control-navbar-back" href="javascript: uc.map.navi('back')" title="Go back in map view"></a>
+				<div class="aggregate_view">
+					<div id="lineChart"></div>
+					<div id="minilineChart2"></div>
+				</div>
+				<div id="graph">
+					<div class="map-top" style='display:none'>
+						<div class="map-bar map-control">
+							<a class="map-control-zoom-in" href="javascript: uc.map.navi('zoom-in')" title="Zoom in">+</a><a
+								class="map-control-zoom-out" href="javascript: uc.map.navi('zoom-out')" title="Zoom out">-</a>
+						</div>
+						<div class="map-bar map-control">
+							<a class="map-control-navbar-home" href="javascript: uc.map.navi('home')" title="Go to home map view"></a>
+							<a class="map-control-navbar-fwd" href="javascript: uc.map.navi('fwd')" title="Go forward in map view"></a>
+							<a class="map-control-navbar-back" href="javascript: uc.map.navi('back')" title="Go back in map view"></a>
+						</div>
 					</div>
 				</div>
 			</div>
 			<!--<div id="googleMap"></div> -->
-
-			<input id='dateCondi' type='hidden' value='' style="width: 60%">
-			<input id='queryUptime' type='hidden' value='Query'> 
-			<input id='refreshBtn' type='hidden' value='Stop'>
 		</div>
 
 		<div class="footer"></div>

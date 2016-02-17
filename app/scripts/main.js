@@ -210,7 +210,7 @@ var UptimeChart = function(config) {
 
   _super.addMinutes = function(val) {
     var now = moment();
-    var start_date = moment(now).add('minutes', val * -1);
+    var start_date = moment(now).add(val * -1, 'minutes');
     var end_date = moment();
     $('#datepairElem .date.start').val(start_date.format("DD/MM/YYYY"));
     $('#datepairElem .date.end').val(end_date.format("DD/MM/YYYY"));
@@ -417,12 +417,15 @@ var UptimeChart = function(config) {
 
   _super.showChart = function(status) {
     if (status) {
-      $("#nodata").css('display', 'none');
-      $("#loading_data").hide();
+      $("#nodata").hide();
+      $("#frame").show();
+      $("#result").show();
     } else {
-      $("#nodata").css('display', '');
-      $("#loading_data").hide();
+      $("#nodata").show();
+      $("#frame").hide();
+      $("#result").hide();
     }
+    $("#loading_data").hide();
   }
 }
 
@@ -742,7 +745,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     }
     lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(
         main_yAxisLeft).append("text").attr("transform", "rotate(-90)").attr(
-        "y", 6).attr("dy", ".71em").style("text-anchor", "end").text("( ms )");
+        "y", 6).attr("dy", ".71em").style("text-anchor", "end").text("(ms)");
 
     // /[ main right y ]///////////////////////////
     if (lc.main_y[_super.config.lineChart.main.yAxis.right]) {
@@ -753,7 +756,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           "transform", "translate(" + lc.main_width + ", 0)").call(
           main_yAxisRight).append("text").attr("transform", "rotate(-90)")
           .attr("y", 6).attr("dy", ".71em").style("text-anchor", "end").text(
-              "( ms )");
+              "(ms)");
     }
 
     // /[ focus ]///////////////////////////
@@ -2155,9 +2158,9 @@ UptimeChart.prototype.createChart = function(ghcid) {
   }
 
   console.time("query response time");
-  $("#nodata").css('display', 'none');
+  $("#nodata").hide();
   $("#loading_data").show();
-
+  
   var gmetric = $("#gmetrices").val();
   var locs = $("#locs").val();
 
@@ -2186,7 +2189,6 @@ UptimeChart.prototype.createChart = function(ghcid) {
   } else {
     req_url += '&until=' + $("#until").val();
   }
-
   $.get(
       req_url,
       function(rawJsonData) {
@@ -2194,7 +2196,15 @@ UptimeChart.prototype.createChart = function(ghcid) {
           rawJsonData = rawJsonData.substring(rawJsonData.indexOf('>{') + 1,
               rawJsonData.length);
         }
-        _super.selectView(null, jQuery.parseJSON(rawJsonData));
+        var json = jQuery.parseJSON(rawJsonData);
+        if (json.data.metric.length == 0) {
+        	_super.showChart(false);
+        	$('.tot_ms_view').css({'height': '100px'});
+            console.timeEnd("query response time");
+        	return;
+        }        
+    	$('.tot_ms_view').css({'height': '450px'});
+        _super.selectView(null, json);
         _super.showChart(true);
         console.timeEnd("query response time");
       }).error(
@@ -2214,8 +2224,8 @@ UptimeChart.prototype.createChart = function(ghcid) {
               _super.ajaxMessage('error', 'Unable to load data from server!');
               _super.showChart(false);
             } else {
-              _super.selectView(null, json);
               setTimeout(function() {
+	              _super.selectView(null, json);
                 _super.showChart(true);
               }, 1000);
             }

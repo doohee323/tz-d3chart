@@ -412,10 +412,10 @@ path:hover {
 
 .map-top {
 	position: relative;
-    z-index: 1;
-    float: left;
-    left: 10px;
-    top: -300px;
+  z-index: 1;
+  float: left;
+  left: 10px;
+  top: -300px;
 }
 
 .map-control {
@@ -476,3 +476,4 @@ path:hover {
 .map-control-navbar-back {
 	background-image: url("arrow_left.png");
 }
+
