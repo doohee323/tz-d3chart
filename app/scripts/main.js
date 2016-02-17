@@ -2160,6 +2160,8 @@ UptimeChart.prototype.createChart = function(ghcid) {
   console.time("query response time");
   $("#nodata").hide();
   $("#loading_data").show();
+  $("#frame").hide();
+  $("#result").hide();
   
   var gmetric = $("#gmetrices").val();
   var locs = $("#locs").val();
@@ -2218,6 +2220,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
+          console.log(from);
           d3.json(from, function(error, json) {
             // d3.json('data.json', function(error, json) {
             if (!json) {
@@ -2252,6 +2255,9 @@ UptimeChart.prototype.changeDate = function(from) {
   } else if (from.indexOf('d') > -1) {
     m = from.substring(0, from.indexOf('d'));
     m = m * 60 * 24 * -1;
+  } else if (from.indexOf('m') > -1) {
+    m = from.substring(0, from.indexOf('m'));
+    m = m * 30 * 60 * 24 * -1;
   }
   _super.addMinutes(m);
   _super.changeDateWithDatepair();
