@@ -2292,24 +2292,14 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
   var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
       moment(from, "DD/MM/YYYY HH:mm:ss"));
   var d = moment.duration(ms);
-  from = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
-  console.log('from:' + from);
-  if (from < 0) {
-    uc.ajaxMessage('error', 'Invalid date!');
-    $('#datepairElem .date.start').val(uc.date_start);
-    $('#datepairElem .date.end').val(uc.date_end);
-    $('#datepairElem .time.start').val(uc.time_start);
-    $('#datepairElem .time.end').val(uc.time_end);
-    return;
-  }
-  $("#from").val(from * -1);
-
+  var end = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
+  console.log('end:' + end);
   var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
       moment(until, "DD/MM/YYYY HH:mm:ss"));
   var d = moment.duration(ms);
-  until = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
-  console.log('until:' + until);
-  if (until < 0) {
+  var start = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
+  console.log('start:' + start);
+  if (start > end) {
     uc.ajaxMessage('error', 'Invalid date!');
     $('#datepairElem .date.start').val(uc.date_start);
     $('#datepairElem .date.end').val(uc.date_end);
@@ -2317,28 +2307,29 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
     $('#datepairElem .time.end').val(uc.time_end);
     return;
   }
-  $("#until").val(until * -1);
+  $("#until").val(start * -1);
+  $("#from").val(end * -1);
 
   uc.date_start = $('#datepairElem .date.start').val();
   uc.date_end = $('#datepairElem .date.end').val();
   uc.time_start = $('#datepairElem .time.start').val();
   uc.time_end = $('#datepairElem .time.end').val();
 
-  if (from > uc.config.slider.range.max) {
-    from = uc.config.slider.range.max;
+  if (end > uc.config.slider.range.max) {
+    end = uc.config.slider.range.max;
   }
-  if (from < 0) {
-    from = uc.config.slider.range.min;
+  if (end < 0) {
+    end = uc.config.slider.range.min;
   }
-  if (until > uc.config.slider.range.max) {
-    until = uc.config.slider.range.max;
+  if (start > uc.config.slider.range.max) {
+    start = uc.config.slider.range.max;
   }
-  if (until < 0) {
-    until = uc.config.slider.range.min;
+  if (start < 0) {
+    start = uc.config.slider.range.min;
   }
-  if(uc.slider.values != [ until, from ]) {
-    uc.slider([ until, from ]);
-    uc.slider.values = [ until, from ];
+  if(uc.slider.values != [ start, end ]) {
+    uc.slider([ start, end ]);
+    uc.slider.values = [ start, end ];
   }
 };
 
