@@ -17,7 +17,7 @@ var UptimeChart = function(config) {
 
   $('#datepairElem .time').timepicker({
     'showDuration' : true,
-    'timeFormat' : 'g:ia'
+    'timeFormat' : 'g:i A'
   });
 
   $('#datepairElem .date').datepicker({
@@ -28,10 +28,12 @@ var UptimeChart = function(config) {
   var basicExampleEl = document.getElementById('datepairElem');
   var datepair = new Datepair(basicExampleEl);
 
-  $('#datepairElem').on('rangeSelected', _super.changeDateWithDatepair).on(
-      'changeTime', _super.changeDateWithDatepair).on('rangeIncomplete',
-      function() {
-      }).on('rangeError', function() {
+  $('#datepairElem').on('rangeSelected', function(e) {
+    _super.changeDateWithDatepair();
+  }).on('changeTime', function(e) {
+    _super.changeDateWithDatepair();
+  }).on('rangeIncomplete', function() {
+  }).on('rangeError', function() {
   });
 
   // [ updateChart with brushing ]
@@ -187,6 +189,7 @@ var UptimeChart = function(config) {
                 }).on(
                 "slide",
                 function(evt, value) {
+                  _super.slider.values = value;
                   $('#from').val('-' + value[1] + 'min');
                   $('#until').val('-' + value[0] + 'min');
 
@@ -205,6 +208,7 @@ var UptimeChart = function(config) {
                   _super.time_start = $('#datepairElem .time.start').val();
                   _super.time_end = $('#datepairElem .time.end').val();
                 }));
+    _super.slider.values = val;
   }
   _super.slider([ _super.config.slider.init.x0, _super.config.slider.init.x1 ]);
 
@@ -2332,7 +2336,10 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
   if (until < 0) {
     until = uc.config.slider.range.min;
   }
-  uc.slider([ from, until ]);
+  if(uc.slider.values != [ until, from ]) {
+    uc.slider([ until, from ]);
+    uc.slider.values = [ until, from ];
+  }
 };
 
 // ///////////////////////////////////////////////////////////////////////////////
