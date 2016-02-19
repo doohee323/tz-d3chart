@@ -5,6 +5,7 @@ var UptimeChart = function(config) {
   var _super = this;
   _super.config = config;
 
+  _super.resize();
   d3.select(window).on("resize", function() {
     _super.resize();
   });
@@ -2023,10 +2024,10 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
   };
 
   gauge.render = function(newValue) {
-    d3.select("[id='" + id + "']").remove();
-    svg = d3.select(id).append('svg:svg').attr("id", id).attr('class', 'gauge')
-        .attr('width', defaultConfig.clipWidth).attr('height',
-            defaultConfig.clipHeight);
+    d3.select("[id='gauge']").remove();
+    svg = d3.select('#histogram').append("span").attr('class', 'gauge').append(
+        "svg").attr('id', 'gauge').attr('width', defaultConfig.clipWidth).attr(
+        'height', defaultConfig.clipHeight);
     var centerTx = function() {
       return 'translate(' + r + ',' + r + ')';
     }
@@ -2339,72 +2340,52 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
 UptimeChart.prototype.resize = function() {
   var _super = this;
 
-  _super.width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+  _super.width = ($('.row').width() > 0) ? $('.row').width() : screen.width;
   var height = (window.innerHeight > 0) ? window.innerHeight : screen.height;
 
-  // debugger;
+  _super.config.lineChart.main.margin.width = _super.width;
+  _super.config.lineChart.mini.margin.width = _super.width - 80;
+  _super.config.histogram.margin.width = _super.width;
+  _super.config.stackedChart.margin.width = _super.width;
+  _super.config.map.margin.width = _super.width;
+
   var device = '';
   if (_super.width < 360) {
     device = 'iphone_mini';
-    _super.config.lineChart.main.margin.width = 350;
-    _super.config.lineChart.mini.margin.width = 270;
-    _super.config.histogram.margin.width = 350;
-    _super.config.stackedChart.margin.width = 350;
-    _super.config.map.margin.width = 350;
     _super.config.map.margin.height = 200;
     _super.config.map.margin.top = -140;
     _super.config.map.margin.left = -330;
     _super.config.map.scale = 50;
   } else if (_super.width >= 360 && _super.width <= 500) {
     device = 'nexus4'; // iphone6(391) iphone6_plus(429)
-    _super.config.lineChart.main.margin.width = 400;
-    _super.config.lineChart.mini.margin.width = 330;
-    _super.config.histogram.margin.width = 400;
-    _super.config.stackedChart.margin.width = 400;
-    _super.config.map.margin.width = 400;
     _super.config.map.margin.height = 200;
     _super.config.map.margin.top = -120;
     _super.config.map.margin.left = -280;
     _super.config.map.scale = 65;
   } else if (_super.width > 500 && _super.width <= 700) {
     device = 'nexus7'; // 615
-    _super.config.lineChart.main.margin.width = 600;
-    _super.config.lineChart.mini.margin.width = 520;
-    _super.config.histogram.margin.width = 600;
-    _super.config.stackedChart.margin.width = 600;
-    _super.config.map.margin.width = 600;
     _super.config.map.margin.height = 300;
     _super.config.map.margin.top = -100;
     _super.config.map.margin.left = -180;
     _super.config.map.scale = 95;
-  } else if (_super.width > 700 && _super.width <= 970) {
+  } else if (_super.width > 700 && _super.width <= 900) {
     device = 'ipad'; // 768
-    _super.config.lineChart.main.margin.width = 750;
-    _super.config.lineChart.mini.margin.width = 670;
-    _super.config.histogram.margin.width = 750;
-    _super.config.stackedChart.margin.width = 750;
-    _super.config.map.margin.width = 750;
     _super.config.map.margin.height = 400;
     _super.config.map.margin.top = -30;
     _super.config.map.margin.left = -130;
     _super.config.map.scale = 115;
   } else {
     device = 'desktop';
-    _super.config.lineChart.main.margin.width = 950;
-    _super.config.lineChart.mini.margin.width = 870;
-    _super.config.histogram.margin.width = 950;
-    _super.config.stackedChart.margin.width = 950;
-    _super.config.map.margin.width = 950;
     _super.config.map.margin.height = 400;
     _super.config.map.margin.top = 0;
     _super.config.map.margin.left = 0;
     _super.config.map.scale = 135;
   }
-  if (device != _super.device) {
-    _super.device = device;
-    console.log(_super.width + ' -> ' + _super.device);
+  if (_super.device && device != _super.device) {
     _super.createChart();
   }
+  console.log(_super.width + ' -> ' + _super.device);
+  _super.device = device;
 }
 
 // //////////////////////////////////////////////////////////////////////////////
