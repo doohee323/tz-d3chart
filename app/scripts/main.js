@@ -274,13 +274,13 @@ var UptimeChart = function(config) {
 
           // set judge first in array
           var items2 = new Array();
-          var ritem = items.find(function(element, index, array) {
-            if (element.key == _super.config.lineChart.main.yAxis.right) {
-              return element;
-            } else {
-              return false;
+          var ritem;
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].key == _super.config.lineChart.main.yAxis.right) {
+              ritem = items[i];
+              break;
             }
-          });
+          }
           if (ritem) {
             items2.push(ritem);
           }
@@ -2298,7 +2298,8 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
   var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
       moment(until, "DD/MM/YYYY HH:mm:ss"));
   var d = moment.duration(ms);
-  var start = (Math.floor(d.asHours()) * 60) + parseInt(moment(ms).format("mm"));
+  var start = (Math.floor(d.asHours()) * 60)
+      + parseInt(moment(ms).format("mm"));
   console.log('start:' + start);
   if (start > end) {
     uc.ajaxMessage('error', 'Invalid date!');
@@ -2328,7 +2329,7 @@ UptimeChart.prototype.changeDateWithDatepair = function() {
   if (start < 0) {
     start = uc.config.slider.range.min;
   }
-  if(uc.slider.values != [ start, end ]) {
+  if (uc.slider.values != [ start, end ]) {
     uc.slider([ start, end ]);
     uc.slider.values = [ start, end ];
   }
