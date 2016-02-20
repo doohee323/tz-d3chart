@@ -1248,9 +1248,9 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
       _super.config.map.scale = _super.config.map.scale_bak;
       _super.config.map.margin.left = _super.config.map.margin.left_bak;
     } else if (navi == 'fwd') {
-      _super.config.map.margin.left = _super.config.map.margin.left * 0.8;
+      _super.config.map.margin.left = _super.config.map.margin.left + 30;
     } else if (navi == 'back') {
-      _super.config.map.margin.left = _super.config.map.margin.left * 1.2;
+      _super.config.map.margin.left = _super.config.map.margin.left - 30;
     }
     map.update(map.mapData);
   }
