@@ -649,6 +649,15 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         .style("top", (d3.event.pageY + 2 + "px"));
   }
 
+  lc.brush = function() {
+    _super.lc.main_x.domain(_super.extent);
+    for ( var key in _super.lc.main_y) {
+      _super.lc.main.select(".line" + key)
+          .attr("d", _super.lc.main_line[key]);
+    }
+    _super.lc.main.select(".x.axis").call(_super.lc.main_xAxis);
+  }
+  
   lc.update = function(data, metric) {
     if (d3.selectAll('#lineSvg').length >= 1) {
       d3.selectAll('#lineSvg').remove();
@@ -814,7 +823,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         return;
       var x0 = lc.main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0, 1), d0 = data[i - 1];
       var d1 = data[i];
-      if (d1.date) {
+      if (d1 && d1.date) {
         var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
         for ( var key in lc.main_y) {
           if (key != metric)
@@ -838,7 +847,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
                     break;
                   }
                 }
-                if (j > 0) {
+                if (j > 0 && _super.metric_data[i].description[j]) {
                   // availability = metric(#2) / (active(#1) + include(#3))
                   var active = _super.metric_data[i].description[j].v1;
                   var metric = _super.metric_data[i].description[j].v2;
@@ -999,12 +1008,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
         _super.extent = _super.mc.brush.empty() ? _super.mc.mini_x
             .domain() : _super.mc.brush.extent();
       }
-      _super.lc.main_x.domain(_super.extent);
-      for ( var key in _super.lc.main_y) {
-        _super.lc.main.select(".line" + key)
-            .attr("d", _super.lc.main_line[key]);
-      }
-      _super.lc.main.select(".x.axis").call(_super.lc.main_xAxis);
+      _super.lc.brush();
     }
 
     var brushstart = function() {
