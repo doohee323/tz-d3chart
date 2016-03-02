@@ -275,11 +275,9 @@ div.map_tooltip {
 	color: #585956;
 }
 
-div.lc_tooltip {
+div.tooltip {
 	position: absolute;
 	text-align: left;
-	width: 250px;
-	height: 150px;
 	padding: 8px;
 	font: 11px sans-serif;
 	background: #FFFFFF;
@@ -289,7 +287,7 @@ div.lc_tooltip {
 	color: #585956;
 }
 
-div.tooltip {
+div.debug {
 	position: absolute;
 	z-index: 1;
 	text-align: left;
@@ -303,7 +301,7 @@ div.tooltip {
 	color: #585956;
 }
 
-.tooltip_ifr {
+.debug_ifr {
 	position: absolute;
 	z-index: 1;
 	width: 430px;
@@ -413,10 +411,10 @@ path:hover {
 
 .map-top {
 	position: relative;
-  z-index: 1;
-  float: left;
-  left: 10px;
-  top: -300px;
+	z-index: 1;
+	float: left;
+	left: 10px;
+	top: -300px;
 }
 
 .map-control {
@@ -477,4 +475,3 @@ path:hover {
 .map-control-navbar-back {
 	background-image: url("arrow_left.png");
 }
-
