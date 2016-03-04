@@ -2468,9 +2468,9 @@ UptimeChart.prototype.resize = function() {
   } else {
     device = 'desktop';
     _super.config.map.margin.height = 400;
-    _super.config.map.margin.top = 230;
-    _super.config.map.margin.left = 390;
-    _super.config.map.scale = 135;
+    _super.config.map.margin.top = 250;
+    _super.config.map.margin.left = 550;
+    _super.config.map.scale = 150;
   }
   if (_super.device && device != _super.device) {
     _super.createChart();
