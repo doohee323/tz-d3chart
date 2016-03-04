@@ -129,27 +129,7 @@ var UptimeChart = function(config) {
     }
 
     _super.map.mapData = _super.map.getData(_super.resultset, metric, loc);
-    var startTime = _super.toUTCISOString(_super.extent[0]);
-    var endTime = _super.toUTCISOString(_super.extent[1]);
-    if (_super.extent) {
-      for (var i = 0; i < _super.map.mapData.length; i++) {
-        var obj = {};
-        for ( var key in _super.map.mapData[i]) {
-          if (key == 'loc' || key == 'latitude' || key == 'longitude') {
-            obj[key] = _super.map.mapData[i][key];
-          } else {
-            if (new Date(key) >= new Date(startTime)
-                && new Date(key) <= new Date(endTime)) {
-              obj[key] = _super.map.mapData[i][key];
-            }
-          }
-        }
-        json.push(obj);
-      }
-    } else {
-      json = jQuery.extend(true, [], _super.map.mapData);
-    }
-
+    json = _super.map.getBrushedData();
     _super.map.update(json, metric);
   }
 
@@ -333,7 +313,6 @@ var UptimeChart = function(config) {
 
           var toggle = function(showFg, d, i) {
             var metric = d.key;
-            debugger;
             if (metric == 'state') {
               _super.metric = null;
               _super.map.metric = 'state';
@@ -1307,6 +1286,31 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     map.update(map.mapData);
   }
 
+  map.getBrushedData = function() {
+    var json = new Array();
+    var startTime = _super.toUTCISOString(_super.extent[0]);
+    var endTime = _super.toUTCISOString(_super.extent[1]);
+    if (_super.extent) {
+      for (var i = 0; i < _super.map.mapData.length; i++) {
+        var obj = {};
+        for ( var key in _super.map.mapData[i]) {
+          if (key == 'loc' || key == 'latitude' || key == 'longitude') {
+            obj[key] = _super.map.mapData[i][key];
+          } else {
+            if (new Date(key) >= new Date(startTime)
+                && new Date(key) <= new Date(endTime)) {
+              obj[key] = _super.map.mapData[i][key];
+            }
+          }
+        }
+        json.push(obj);
+      }
+    } else {
+      json = jQuery.extend(true, [], _super.map.mapData);
+    }
+    return json;
+  }
+
   map.update = function(data, loc) {
     d3.select("[id='map']").remove();
     map.mapSvg = d3.select(map.mapElem).append("svg").attr('id', 'map').attr(
@@ -1383,7 +1387,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         d3.select("body").select('div.map_tooltip').remove();
       }).style("fill", function(d) {
         return _super.map.getCircleColor(d);
-      }).style("z-index", 1).on("click", function() {
+      }).on("click", function() {
         _super.debug(JSON.stringify(data));
       });
 
@@ -1402,10 +1406,8 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
       map.mapSvg.call(zoom);
     });
   }
-
   _super.map = map;
-  map.update(map.mapData, _super.config.map.combo.init);
-
+  map.update(map.getBrushedData(), _super.config.map.combo.init);
   return map;
 }
 
