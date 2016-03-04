@@ -638,16 +638,14 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         _super.metric = metric;
       }
     } else { // aggregate
-      if (metric == 'aggregate' || metric == '*') {
+      if (metric == '*') {
+        _super.map.metric = 'state';
         _super.metric = null;
       } else {
         _super.metric = metric;
+        _super.map.metric = metric;
       }
     }
-    if (metric == '*') {
-      metric = null;
-    }
-    _super.map.metric = metric;
     var loc = $('#locs').val();
     if (loc == '*') {
       loc = null;
@@ -1152,8 +1150,12 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     data = resultset.data.metric;
     locs = resultset.meta.locs;
 
-    if (metric == null) {
-      metric = 'tot_ms';
+    if (metric == null || metric == '*') {
+      if ($('#view').find("li.active").text() == 'Response') {
+        metric = 'tot_ms';
+      } else {
+        metric = 'state';
+      }
     }
     var mapData = new Array();
     for (var i = 0; i < locs.length; i++) {
