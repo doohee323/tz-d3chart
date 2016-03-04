@@ -1325,8 +1325,9 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         "top" : "-150px"
       });
     }
-    var offset = [_super.config.map.margin.left, _super.config.map.margin.top];
-    var projection = d3.geo.equirectangular().scale(_super.config.map.scale).translate(offset);
+    var offset = [ _super.config.map.margin.left, _super.config.map.margin.top ];
+    var projection = d3.geo.equirectangular().scale(_super.config.map.scale)
+        .translate(offset);
     var path = d3.geo.path().projection(projection);
     d3.json("countries.json", function(data1) {
       map.states.selectAll("path").data(data1.features).enter().append("path")
@@ -1725,7 +1726,7 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
       return d3.format(",")(d.sum);
     });
     tr.append("td").attr("class", 'legendTbMean').text(function(d) {
-      return d3.format(",")(Math.round(d.mean));
+      return d3.format(",")(Math.round(d.mean ? d.mean : 0));
     });
     tr.append("td").attr("class", 'legendTbPerc').text(function(d) {
       return getLegend(d, lD);
@@ -1796,6 +1797,10 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
         }
       }
     } else {
+      data = jQuery.extend(true, [], json);
+    }
+    _super.rowcount = data.length;
+    if (data.length == 0) {
       data = jQuery.extend(true, [], json);
     }
     var data2 = new Array();
@@ -1964,6 +1969,9 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
         }
       }
     } else {
+      data = jQuery.extend(true, [], json);
+    }
+    if (data.length == 0) {
       data = jQuery.extend(true, [], json);
     }
     var input = new Array();
@@ -2227,10 +2235,12 @@ UptimeChart.prototype.selectView = function(tabId, json) {
           });
       $('#gmetrices').val("aggregate");
       _super.miniLineChart("#minilineChart2", json, function(data) {
-        _super.mc.brushEvent(_super.extent);
-        setTimeout(function() {
-          _super.brushRange();
-        }, 100);
+        if (_super.rowcount > 0) {
+          _super.mc.brushEvent(_super.extent);
+          setTimeout(function() {
+            _super.brushRange();
+          }, 100);
+        }
       });
       _super.mapChart("#graph", json, 'state');
     }
