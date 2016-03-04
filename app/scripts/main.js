@@ -4,7 +4,6 @@
 var UptimeChart = function(config) {
   var _super = this;
   _super.config = config;
-
   _super.resize();
   d3.select(window).on("resize", function() {
     _super.resize();
@@ -1316,23 +1315,18 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     map.mapSvg = d3.select(map.mapElem).append("svg").attr('id', 'map').attr(
         "width", _super.config.map.margin.width).attr("height",
         _super.config.map.margin.height);
-    map.states = map.mapSvg.append("g").attr("id", "states").attr(
-        "transform",
-        "translate(" + _super.config.map.margin.left + ","
-            + _super.config.map.margin.top + ")");
-
+    map.states = map.mapSvg.append("g").attr("id", "states");
     var mapTool = d3.select('.map-top').html();
     d3.select('.map-top').remove();
     var div = d3.select("[id='graph']").append("div").attr('class', 'map-top')
         .html(mapTool);
-
     if (_super.width < 500) {
       $('.map-top').css({
         "top" : "-150px"
       });
     }
-
-    var projection = d3.geo.equirectangular().scale(_super.config.map.scale);
+    var offset = [_super.config.map.margin.left, _super.config.map.margin.top];
+    var projection = d3.geo.equirectangular().scale(_super.config.map.scale).translate(offset);
     var path = d3.geo.path().projection(projection);
     d3.json("countries.json", function(data1) {
       map.states.selectAll("path").data(data1.features).enter().append("path")
@@ -2440,38 +2434,38 @@ UptimeChart.prototype.resize = function() {
   if (_super.width < 360) {
     device = 'iphone_mini';
     _super.config.map.margin.height = 200;
-    _super.config.map.margin.top = -140;
-    _super.config.map.margin.left = -330;
-    _super.config.map.scale = 50;
+    _super.config.map.margin.top = 130;
+    _super.config.map.margin.left = 250;
+    _super.config.map.scale = 90;
   } else if (_super.width >= 360 && _super.width <= 500) {
     device = 'nexus4'; // iphone6(391) iphone6_plus(429)
     _super.config.map.margin.height = 200;
-    _super.config.map.margin.top = -120;
-    _super.config.map.margin.left = -280;
-    _super.config.map.scale = 65;
+    _super.config.map.margin.top = 130;
+    _super.config.map.margin.left = 250;
+    _super.config.map.scale = 90;
   } else if (_super.width > 500 && _super.width <= 700) {
     device = 'nexus7'; // 615
     _super.config.map.margin.height = 300;
-    _super.config.map.margin.top = -100;
-    _super.config.map.margin.left = -180;
+    _super.config.map.margin.top = 150;
+    _super.config.map.margin.left = 330;
     _super.config.map.scale = 95;
   } else if (_super.width > 700 && _super.width <= 900) {
     device = 'ipad'; // 768
     _super.config.map.margin.height = 400;
-    _super.config.map.margin.top = -30;
-    _super.config.map.margin.left = -130;
-    _super.config.map.scale = 115;
+    _super.config.map.margin.top = 230;
+    _super.config.map.margin.left = 380;
+    _super.config.map.scale = 125;
   } else {
     device = 'desktop';
     _super.config.map.margin.height = 400;
-    _super.config.map.margin.top = 0;
-    _super.config.map.margin.left = 0;
+    _super.config.map.margin.top = 230;
+    _super.config.map.margin.left = 390;
     _super.config.map.scale = 135;
   }
   if (_super.device && device != _super.device) {
     _super.createChart();
   }
-  console.log(_super.width + ' -> ' + _super.device);
+  console.log(_super.width + ' -> ' + device);
   _super.device = device;
 }
 
@@ -2556,8 +2550,8 @@ var uptimeConfig = {
     "margin" : {
       "width" : 950,
       "height" : 400,
-      "top" : 0,
-      "left" : 0
+      "top" : 200,
+      "left" : 390
     },
     "circle_scale" : 0.5,
     "circle" : {
