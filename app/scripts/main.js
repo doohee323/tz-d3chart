@@ -1326,19 +1326,10 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
       });
     }
 
-    map.circles = map.mapSvg.append("g").attr("id", "circles").attr(
-        "transform",
-        "translate(" + _super.config.map.margin.left + ","
-            + _super.config.map.margin.top + ")");
-    map.labels = map.mapSvg.append("g").attr("id", "labels").attr(
-        "transform",
-        "translate(" + _super.config.map.margin.left + ","
-            + _super.config.map.margin.top + ")");
-    var xy = d3.geo.equirectangular().scale(_super.config.map.scale);
-    var path = d3.geo.path().projection(xy);
-
-    d3.json("countries.json", function(data) {
-      map.states.selectAll("path").data(data.features).enter().append("path")
+    var projection = d3.geo.equirectangular().scale(_super.config.map.scale);
+    var path = d3.geo.path().projection(projection);
+    d3.json("countries.json", function(data1) {
+      map.states.selectAll("path").data(data1.features).enter().append("path")
           .attr("d", path).on(
               "mouseover",
               function(d) {
@@ -1347,56 +1338,67 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
               }).on("mouseout", function(d) {
             d3.select(this).style("fill", "#ccc");
           })
-    });
-    
-    var brush = d3.svg.brush().x(xy).on("brush", brushEvent).on(
-        'brushstart', brushstart).on('brushend', brushend);
+      var zoom = d3.behavior.zoom()
+          .on(
+              "zoom",
+              function() {
+                map.states.attr("transform", "translate("
+                    + d3.event.translate.join(",") + ")scale(" + d3.event.scale
+                    + ")");
+                map.states.selectAll("circle").attr("d",
+                    path.projection(projection));
+                map.states.selectAll("path").attr("d",
+                    path.projection(projection));
+              });
 
-    map.circles.selectAll("circle").data(data).enter().append("g").append(
-        "circle").style("stroke", "black").attr("cx", function(d, i) {
-      return xy([ +d["longitude"], +d["latitude"] ])[0];
-    }).attr("cy", function(d, i) {
-      return xy([ +d["longitude"], +d["latitude"] ])[1];
-    }).attr("r", function(d) {
-      return _super.map.getCircleSize(d);
-    }).on(
-        "mouseover",
-        function(d, i) {
-          d3.select(this).style("fill", "#FC0");
-          var html = '<div>';
-          html += '<div>* Site: ' + d["loc"];
-          html += '</div>';
-          html += '<div>* ' + _super.getLabelFullName(map.metric) + ': '
-              + Math.round(_super.map.getCircleTotal(d));
-          if (map.metric != 'state') {
-            html += ' (ms)';
-          }
-          html += '</div></div>';
-          var div = d3.select("body").append("div").attr('pointer-events',
-              'none').attr("class", "map_tooltip").style("opacity", 1).html(
-              html).style("left",
-              (d3.event.pageX + _super.config.map.tooltip.x + "px")).style(
-              "top", (d3.event.pageY + _super.config.map.tooltip.y + "px"));
-        }).on("mouseout", function(d) {
-      d3.select(this).style("fill", _super.map.getCircleColor(d));
-      d3.select("body").select('div.map_tooltip').remove();
-    }).style("fill", function(d) {
-      return _super.map.getCircleColor(d);
-    }).on("click", function() {
-      _super.debug(JSON.stringify(data));
-    });
+      map.states.selectAll("circle").data(data).enter().append("g").append(
+          "circle").style("stroke", "black").attr("cx", function(d, i) {
+        return projection([ +d["longitude"], +d["latitude"] ])[0];
+      }).attr("cy", function(d, i) {
+        return projection([ +d["longitude"], +d["latitude"] ])[1];
+      }).attr("r", function(d) {
+        return _super.map.getCircleSize(d);
+      }).on(
+          "mouseover",
+          function(d, i) {
+            d3.select(this).style("fill", "#FC0");
+            var html = '<div>';
+            html += '<div>* Site: ' + d["loc"];
+            html += '</div>';
+            html += '<div>* ' + _super.getLabelFullName(map.metric) + ': '
+                + Math.round(_super.map.getCircleTotal(d));
+            if (map.metric != 'state') {
+              html += ' (ms)';
+            }
+            html += '</div></div>';
+            var div = d3.select("body").append("div").attr('pointer-events',
+                'none').attr("class", "map_tooltip").style("opacity", 1).html(
+                html).style("left",
+                (d3.event.pageX + _super.config.map.tooltip.x + "px")).style(
+                "top", (d3.event.pageY + _super.config.map.tooltip.y + "px"));
+          }).on("mouseout", function(d) {
+        d3.select(this).style("fill", _super.map.getCircleColor(d));
+        d3.select("body").select('div.map_tooltip').remove();
+      }).style("fill", function(d) {
+        return _super.map.getCircleColor(d);
+      }).style("z-index", 1).on("click", function() {
+        _super.debug(JSON.stringify(data));
+      });
 
-    map.labels.selectAll("labels").data(data).enter().append("text").attr(
-        "fill", "#585956").attr("x", function(d, i) {
-      return xy([ +d["longitude"], +d["latitude"] ])[0];
-    }).attr("y", function(d, i) {
-      return xy([ +d["longitude"], +d["latitude"] ])[1];
-    }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d, i) {
-      return Math.round(_super.map.getCircleTotal(d));
-    }).style({
-      'fill' : 'red',
-      'font' : '10px sans-serif'
-    }).attr("d", path)
+      map.states.selectAll("labels").data(data).enter().append("text").attr(
+          "fill", "#585956").attr("x", function(d, i) {
+        return projection([ +d["longitude"], +d["latitude"] ])[0];
+      }).attr("y", function(d, i) {
+        return projection([ +d["longitude"], +d["latitude"] ])[1];
+      }).attr("dy", "0.3em").attr("text-anchor", "middle").text(function(d, i) {
+        return Math.round(_super.map.getCircleTotal(d));
+      }).style({
+        'fill' : 'red',
+        'font' : '10px sans-serif'
+      }).attr("d", path);
+
+      map.mapSvg.call(zoom);
+    });
   }
 
   _super.map = map;
