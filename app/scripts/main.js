@@ -331,38 +331,46 @@ var UptimeChart = function(config) {
           }
           items = items2;
 
-          var toggle = function(metric, d, i) {
-            _super.metric = d.key;
-            if (metric == 'show') {
+          var toggle = function(showFg, d, i) {
+            var metric = d.key;
+            debugger;
+            if (metric == 'state') {
+              _super.metric = null;
+              _super.map.metric = 'state';
+            } else {
+              _super.metric = metric;
+            }
+            _super.map.metric = metric;
+            if (showFg == 'show') {
               if ('#FFFFFF' == _super.convertRGBDecimalToHex(d3.select(
-                  ".line" + d.key).style("stroke"))) {
-                if (_super.metric == _super.config.lineChart.main.yAxis.right
-                    || _super.metric == 'state') {
-                  d3.select(".line" + d.key).style("stroke", d.color).style(
+                  ".line" + metric).style("stroke"))) {
+                if (metric == _super.config.lineChart.main.yAxis.right
+                    || metric == 'state') {
+                  d3.select(".line" + metric).style("stroke", d.color).style(
                       "fill", d.color);
                 } else {
-                  d3.select(".line" + d.key).style("stroke", d.color);
+                  d3.select(".line" + metric).style("stroke", d.color);
                 }
-                d3.select("circle.y" + d.key).style("stroke", d.color);
-                d3.select("line.y" + d.key).style("stroke", d.color);
+                d3.select("circle.y" + metric).style("stroke", d.color);
+                d3.select("line.y" + metric).style("stroke", d.color);
               }
-            } else if (metric == 'hide') {
+            } else if (showFg == 'hide') {
               var pickColor = _super.convertRGBDecimalToHex(d3.select(
-                  ".line" + d.key).style("stroke"));
+                  ".line" + metric).style("stroke"));
               if (pickColor != '#FFFFFF') {
                 d.color = pickColor;
-                if (_super.metric == _super.config.lineChart.main.yAxis.right
-                    || _super.metric == 'state') {
-                  d3.select(".line" + d.key).style("stroke", '#FFFFFF').style(
+                if (metric == _super.config.lineChart.main.yAxis.right
+                    || metric == 'state') {
+                  d3.select(".line" + metric).style("stroke", '#FFFFFF').style(
                       "fill", "white");
                 } else {
-                  d3.select(".line" + d.key).style("stroke", '#FFFFFF');
+                  d3.select(".line" + metric).style("stroke", '#FFFFFF');
                 }
-                d3.select("circle.y" + d.key).style("stroke", '#FFFFFF');
-                d3.select("line.y" + d.key).style("stroke", '#FFFFFF');
+                d3.select("circle.y" + metric).style("stroke", '#FFFFFF');
+                d3.select("line.y" + metric).style("stroke", '#FFFFFF');
               }
             }
-            _super.update();
+            _super.update(null, metric, null);
           }
 
           li.selectAll("text").data(items, function(d) {
@@ -382,6 +390,7 @@ var UptimeChart = function(config) {
           }).on("click", function(d, i) {
             toggle('show', d, i);
           }).style("cursor", "pointer");
+
           li.selectAll("rect").data(items, function(d) {
             return d.key;
           }).call(function(d) {
@@ -622,21 +631,23 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
   lc.combo(metrices, _super.config.lineChart.combo.id, function(metric) {
     if ($('#view').find("li.active").text() == 'Response') {
-      if ($('#gmetrices').val() == 'tot_ms') {
+      if (metric == 'tot_ms') {
         _super.metric = null;
-        _super.map.metric = 'tot_ms';
+        metric = 'tot_ms';
       } else {
-        _super.metric = $('#gmetrices').val();
+        _super.metric = metric;
       }
     } else { // aggregate
-      if ($('#gmetrices').val() == 'state') {
+      if (metric == 'aggregate' || metric == '*') {
         _super.metric = null;
-        _super.map.metric = 'state';
       } else {
-        _super.metric = $('#gmetrices').val();
+        _super.metric = metric;
       }
     }
-    _super.map.metric = $('#gmetrices').val();
+    if (metric == '*') {
+      metric = null;
+    }
+    _super.map.metric = metric;
     var loc = $('#locs').val();
     if (loc == '*') {
       loc = null;
@@ -1337,6 +1348,9 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
             d3.select(this).style("fill", "#ccc");
           })
     });
+    
+    var brush = d3.svg.brush().x(xy).on("brush", brushEvent).on(
+        'brushstart', brushstart).on('brushend', brushend);
 
     map.circles.selectAll("circle").data(data).enter().append("g").append(
         "circle").style("stroke", "black").attr("cx", function(d, i) {
@@ -2091,9 +2105,9 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
 
   gauge.render = function(newValue) {
     d3.select("[id='gaugeSvg']").remove();
-    svg = d3.select('#histogram').append("span").attr('class', 'gauge').attr('id', 'gaugeSvg').append(
-        "svg").attr('width', defaultConfig.clipWidth).attr(
-        'height', defaultConfig.clipHeight);
+    svg = d3.select('#histogram').append("span").attr('class', 'gauge').attr(
+        'id', 'gaugeSvg').append("svg").attr('width', defaultConfig.clipWidth)
+        .attr('height', defaultConfig.clipHeight);
     var centerTx = function() {
       return 'translate(' + r + ',' + r + ')';
     }
