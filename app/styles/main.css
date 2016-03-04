@@ -264,7 +264,7 @@ circle {
 div.map_tooltip {
 	position: absolute;
 	text-align: left;
-	width: 100px;
+	width: 200px;
 	height: 70px;
 	padding: 8px;
 	font: 11px sans-serif;
