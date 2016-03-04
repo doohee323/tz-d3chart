@@ -2090,9 +2090,9 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
   };
 
   gauge.render = function(newValue) {
-    d3.select("[id='gauge']").remove();
-    svg = d3.select('#histogram').append("span").attr('class', 'gauge').append(
-        "svg").attr('id', 'gauge').attr('width', defaultConfig.clipWidth).attr(
+    d3.select("[id='gaugeSvg']").remove();
+    svg = d3.select('#histogram').append("span").attr('class', 'gauge').attr('id', 'gaugeSvg').append(
+        "svg").attr('width', defaultConfig.clipWidth).attr(
         'height', defaultConfig.clipHeight);
     var centerTx = function() {
       return 'translate(' + r + ',' + r + ')';

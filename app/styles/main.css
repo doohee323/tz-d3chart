@@ -380,26 +380,26 @@ path:hover {
 	opacity: 0.9;
 }
 
-#gauge g.arc {
+.gauge g.arc {
 	fill: steelblue;
 }
 
-#gauge g.pointer {
+.gauge g.pointer {
 	fill: #e85116;
 	stroke: #b64011;
 }
 
-#gauge g.label text {
+.gauge g.label text {
 	font: 12px sans-serif;
 	fill: #585956;
 }
 
-#gauge g.title text {
+.gauge g.title text {
 	font: 12px sans-serif;
 	fill: #585956;
 }
 
-#gauge g.art text {
+.gauge g.art text {
 	font: 12px sans-serif;
 	fill: #ff0f1e;
 }
