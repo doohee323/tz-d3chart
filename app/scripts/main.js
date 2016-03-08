@@ -77,7 +77,7 @@ var UptimeChart = function(config) {
   }
 
   // [ updateChart with brushing ]
-  _super.update = function(extent, metric, loc) {
+  _super.update = function(extent, metric) {
     var json = [];
 
     if (!_super.isBrushed()) {
@@ -127,7 +127,7 @@ var UptimeChart = function(config) {
       }
     }
 
-    _super.map.mapData = _super.map.getData(_super.resultset, metric, loc);
+    _super.map.mapData = _super.map.getData(_super.resultset, metric);
     json = _super.map.getBrushedData();
     _super.map.update(json, metric);
   }
@@ -348,7 +348,7 @@ var UptimeChart = function(config) {
                 d3.select("line.y" + metric).style("stroke", '#FFFFFF');
               }
             }
-            _super.update(null, metric, null);
+            _super.update(null, metric);
           }
 
           li.selectAll("text").data(items, function(d) {
@@ -628,7 +628,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     if (loc == '*') {
       loc = null;
     }
-    _super.update(null, metric, loc);
+    _super.loc = loc;
+    _super.update(null, metric);
   });
 
   lc.init = function() {
@@ -1124,7 +1125,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   var locs = resultset.meta.locs;
 
   // make mapData for lineChart from maxtrix, locs
-  map.getData = function(resultset, metric, aloc) {
+  map.getData = function(resultset, metric) {
     data = resultset.data.metric;
     locs = resultset.meta.locs;
 
@@ -1184,12 +1185,12 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
       }
     }
 
-    if (aloc) {
+    if (_super.loc) {
       var data2 = new Array();
-      if (aloc != '*') {
+      if (_super.loc != '*') {
         var data = mapData;
         for (var i = 0; i < data.length; i++) {
-          if (data[i].loc == aloc) {
+          if (data[i].loc == _super.loc) {
             data2[data2.length] = data[i];
           }
         }
@@ -1203,9 +1204,11 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   map.mapData = map.getData(resultset, map.metric);
 
   _super.mapCombo(locs, _super.config.map.combo.id, function(loc) {
-    if (loc == '*')
+    if (loc == '*') {
       loc = null;
-    _super.update(null, null, loc);
+    }
+    _super.loc = loc;
+    _super.createChart();
   });
 
   map.getCircleSize = function(d, loc) {
@@ -1962,10 +1965,12 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
     var data = new Array();
 
     if (_super.extent) {
-      for (var i = 0; i < json.length; i++) {
-        if (json[i].date >= _super.extent[0]
-            && json[i].date <= _super.extent[1]) {
-          data.push(json[i]);
+      if (_super.extent) {
+        for (var i = 0; i < json.length; i++) {
+          if (json[i].date >= _super.extent[0]
+              && json[i].date <= _super.extent[1]) {
+            data.push(json[i]);
+          }
         }
       }
     } else {
