@@ -408,10 +408,14 @@ var UptimeChart = function(config) {
     return g;
   }
 
-  _super.toUTCISOString = function(st) {
-    st = new Date(Date.UTC(st.getFullYear(), st.getMonth(), st.getDate(), st
-        .getHours(), st.getMinutes()));
-    return st.toISOString();
+  _super.toUTCString = function(st) {
+    return this.toUTC(st).toString();
+  }
+
+  _super.toUTC = function(date) {
+    return new Date(date.getUTCFullYear(), date.getUTCMonth(), date
+        .getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date
+        .getUTCSeconds(), date.getUTCMilliseconds());
   }
 
   _super.debug = function(input) {
@@ -509,7 +513,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       var avail = 0;
       var sum = 0;
       var jsonRow = {
-        date : new Date(metric[0].datapoints[q][1] * 1000)
+        date : _super.toUTC(new Date(metric[0].datapoints[q][1] * 1000))
       };
       for (var i = 0; i < metric.length; i++) {
         var target = metric[i].target;
@@ -834,8 +838,9 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
                 var type = _super.metric_data[i].target;
                 var j = 0;
                 for (j = 0; j < _super.metric_data[i].datapoints.length; j++) {
-                  if (new Date(_super.metric_data[i].datapoints[j][1] * 1000)
-                      .toString() == d.date.toString()) {
+                  if (_super.toUTCString(new Date(
+                      _super.metric_data[i].datapoints[j][1] * 1000)) == d.date
+                      .toString()) {
                     break;
                   }
                 }
@@ -1147,8 +1152,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         if (data[j].target == loc + '.' + metric) {
           var datapoints = data[j].datapoints;
           for (var p = 0; p < datapoints.length; p++) {
-            var dt = new Date(datapoints[p][1] * 1000);
-            var t = _super.toUTCISOString(dt);
+            var t = _super.toUTCString(new Date(datapoints[p][1] * 1000));
             if (datapoints[p][0]) {
               row[t] = datapoints[p][0];
             } else {
@@ -1290,8 +1294,8 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
 
   map.getBrushedData = function() {
     var json = new Array();
-    var startTime = _super.toUTCISOString(_super.extent[0]);
-    var endTime = _super.toUTCISOString(_super.extent[1]);
+    var startTime = _super.toUTCString(_super.extent[0]);
+    var endTime = _super.toUTCString(_super.extent[1]);
     if (_super.extent) {
       for (var i = 0; i < _super.map.mapData.length; i++) {
         var obj = {};
@@ -1965,12 +1969,10 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
     var data = new Array();
 
     if (_super.extent) {
-      if (_super.extent) {
-        for (var i = 0; i < json.length; i++) {
-          if (json[i].date >= _super.extent[0]
-              && json[i].date <= _super.extent[1]) {
-            data.push(json[i]);
-          }
+      for (var i = 0; i < json.length; i++) {
+        if (json[i].date >= _super.extent[0]
+            && json[i].date <= _super.extent[1]) {
+          data.push(json[i]);
         }
       }
     } else {
@@ -2010,7 +2012,7 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
     data = new Array();
     input.forEach(function(d) {
       var tmp = {};
-      tmp.date = new Date(d.date * 1000);
+      tmp.date = _super.toUTC(new Date(d.date * 1000));
       if (_super.metric) {
         tmp[_super.metric] = d[_super.metric];
       } else {
@@ -2332,8 +2334,8 @@ UptimeChart.prototype.createChart = function(ghcid) {
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
-          d3.json(from, function(error, json) {
-            // d3.json('data.json', function(error, json) {
+          // d3.json(from, function(error, json) {
+          d3.json('data.json', function(error, json) {
             if (!json) {
               d3.json('data.json', function(error, json) {
                 _super.selectView(null, json);
