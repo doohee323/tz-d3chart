@@ -66,8 +66,8 @@ var UptimeChart = function(config) {
     var ori_end = moment(
         _super.resultset.data.active[0].datapoints[_super.resultset.data.active[0].datapoints.length - 1][1] * 1000)
         .toDate();
-    var brush_start = moment(_super.extent[0]).toDate();
-    var brush_end = moment(_super.extent[1]).toDate();
+    var brush_start = _super.extent[0];
+    var brush_end = _super.extent[1];
     var a = moment(ori_start).diff(moment(brush_start), 'minutes');
     var b = moment(ori_end).diff(moment(brush_end), 'minutes');
     if ((Math.abs(a) + Math.abs(b)) <= 1) {
@@ -143,8 +143,9 @@ var UptimeChart = function(config) {
     }
     _super.diff = moment(end * 1000).diff(moment(start * 1000), 'minutes');
     if (_super.diff > 10) {
-      _super.extent = [ moment(end * 1000).add(-10, 'minutes').toDate(),
-          moment(end * 1000).toDate() ];
+      _super.extent = [
+          _super.toUTC(moment(end * 1000).add(-10, 'minutes').toDate()),
+          _super.toUTC(moment(end * 1000).toDate()) ];
     }
   }
 
