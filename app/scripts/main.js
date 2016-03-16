@@ -2335,8 +2335,8 @@ UptimeChart.prototype.createChart = function(ghcid) {
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
-          // d3.json(from, function(error, json) {
-          d3.json('data.json', function(error, json) {
+          d3.json(from, function(error, json) {
+            // d3.json('data.json', function(error, json) {
             if (!json) {
               d3.json('data.json', function(error, json) {
                 _super.selectView(null, json);
