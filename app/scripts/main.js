@@ -98,7 +98,13 @@ var UptimeChart = function(config) {
         }
       });
     } else {
-      _super.brushRange();
+      _super.lc.init();
+      _super.metric = !_super.metric ? _super.config.lineChart.combo.init
+          : _super.metric;
+      _super.lc.update(_super.lc.getRangeData(_super.lineData), _super.metric,
+          function() {
+            _super.brushRange();
+          });
     }
 
     if ($('#view').find("li.active").text() == 'Response') {
@@ -255,8 +261,6 @@ var UptimeChart = function(config) {
           var legendPadding = g.attr("data-style-padding") || 10;
           var lb = g.selectAll(".legend-box").data([ true ]);
           var li = g.selectAll(".legend-items").data([ true ]);
-
-          lb.enter().append("rect").classed("legend-box", true);
           li.enter().append("g").classed("legend-items", true);
 
           d3
@@ -498,6 +502,22 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
   lc.mainChartElem = chartElem;
 
+  lc.getRangeData = function(json) {
+    var data = new Array();
+
+    if (_super.extent) {
+      for (var i = 0; i < json.length; i++) {
+        if (json[i].date >= _super.extent[0]
+            && json[i].date <= _super.extent[1]) {
+          data.push(json[i]);
+        }
+      }
+    } else {
+      data = jQuery.extend(true, [], json);
+    }
+    return data;
+  }
+
   // make chartData for Chart
   lc.getData = function(resultset) {
     var max = 0;
@@ -654,7 +674,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     _super.lc.main.select(".x.axis").call(_super.lc.main_xAxis);
   }
 
-  lc.update = function(data, metric) {
+  lc.update = function(data, metric, cb) {
     if (d3.selectAll('#lineSvg').length >= 1) {
       d3.selectAll('#lineSvg').remove();
       lc.lineSvg = d3.select(lc.mainChartElem).append("svg").attr("id",
@@ -914,6 +934,10 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     var legend = lc.main.append("g").attr("class", "legend").attr("transform",
         "translate(40, " + _super.config.legend.y + ")").call(_super.legend,
         lc.mainChartElem, metric);
+
+    if (cb) {
+      cb.call();
+    }
   }
 
   // "nsl_ms" : "DNS Time", // DNS Lookup
@@ -1005,9 +1029,6 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       } else {
         _super.extent = _super.mc.brush.empty() ? _super.mc.mini_x.domain()
             : _super.mc.brush.extent();
-      }
-      if ($('#view').find("li.active").text() == 'Availability') {
-        _super.lc.brush();
       }
     }
 
