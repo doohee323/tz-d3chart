@@ -271,7 +271,7 @@ var UptimeChart = function(config) {
                     var self = d3.select(this);
                     if (metric == '*') {
                       items[self.attr("data-legend")] = {
-                        pos : self.attr("data-legend-pos") || this.getBBox().y,
+                        pos : self.attr("data-legend-pos") || _super.getBBox(this).y,
                         color : self.attr("data-legend-color") != undefined ? self
                             .attr("data-legend-color")
                             : self.style("fill") != 'none' ? self.style("fill")
@@ -282,7 +282,7 @@ var UptimeChart = function(config) {
                           || self.attr("data-legend") == _super.config.lineChart.main.yAxis.right) {
                         items[self.attr("data-legend")] = {
                           pos : self.attr("data-legend-pos")
-                              || this.getBBox().y,
+                              || _super.getBBox(this).y,
                           color : self.attr("data-legend-color") != undefined ? self
                               .attr("data-legend-color")
                               : self.style("fill") != 'none' ? self
@@ -404,7 +404,7 @@ var UptimeChart = function(config) {
             toggle('hide', d, i);
           }).style("cursor", "pointer");
 
-          var lbbox = li[0][0].getBBox();
+          var lbbox = _super.getBBox(li[0][0]);
           lb.attr("x", (lbbox.x - legendPadding)).attr("y",
               (lbbox.y - legendPadding)).attr("height",
               (lbbox.height + 2 * legendPadding)).attr("width",
@@ -421,6 +421,22 @@ var UptimeChart = function(config) {
     return new Date(date.getUTCFullYear(), date.getUTCMonth(), date
         .getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date
         .getUTCSeconds(), date.getUTCMilliseconds());
+  }
+
+  _super.getBBox = function(obj) {
+    var bbox = {};
+    try {
+      bbox = obj.getBBox();
+      if (navigator.userAgent.indexOf("MSIE") == -1 && !bbox.x && !bbox.y && !bbox.height && !bbox.width) {
+        bbox.x = obj.attr('x');
+        bbox.y = obj.attr('y');
+      }
+    } catch (e) {
+      // for firefox
+    } finally {
+      bbox = bbox || {};
+      return bbox;
+    }
   }
 
   _super.debug = function(input) {
