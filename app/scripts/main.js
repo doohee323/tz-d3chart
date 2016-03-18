@@ -1901,6 +1901,26 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
         - _super.config.stackedChart.margin.top
         - _super.config.stackedChart.margin.bottom;
 
+    sc.stackedColor = d3.scale.ordinal().range(
+        [ "#81bc00", "#7e7f74", "#ffa400" ]);
+
+    sc.stackedColor.domain(d3.keys(data[0]).filter(function(key) {
+      return key !== "date";
+    }));
+    
+    data.forEach(function(d) {
+      var y0 = 0;
+      d.metrics = sc.stackedColor.domain().map(function(key) {
+        return {
+          date : d.date,
+          key : key,
+          y0 : y0,
+          y1 : y0 += +d[key]
+        };
+      });
+      d.total = d.metrics[d.metrics.length - 1].y1;
+    });
+    
     var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .1);
     var y = d3.scale.linear().rangeRound([ height, 0 ]);
 
@@ -1917,25 +1937,6 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
         "transform",
         "translate(" + _super.config.stackedChart.margin.left + ","
             + _super.config.stackedChart.margin.top + ")");
-
-    sc.stackedColor = d3.scale.ordinal().range(
-        [ "#81bc00", "#7e7f74", "#ffa400" ]);
-
-    sc.stackedColor.domain(d3.keys(data[0]).filter(function(key) {
-      return key !== "date";
-    }));
-    data.forEach(function(d) {
-      var y0 = 0;
-      d.metrics = sc.stackedColor.domain().map(function(key) {
-        return {
-          date : d.date,
-          key : key,
-          y0 : y0,
-          y1 : y0 += +d[key]
-        };
-      });
-      d.total = d.metrics[d.metrics.length - 1].y1;
-    });
 
     x.domain(data.map(function(d) {
       return d.date;
