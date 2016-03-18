@@ -271,7 +271,8 @@ var UptimeChart = function(config) {
                     var self = d3.select(this);
                     if (metric == '*') {
                       items[self.attr("data-legend")] = {
-                        pos : self.attr("data-legend-pos") || _super.getBBox(this).y,
+                        pos : self.attr("data-legend-pos")
+                            || _super.getBBox(this).y,
                         color : self.attr("data-legend-color") != undefined ? self
                             .attr("data-legend-color")
                             : self.style("fill") != 'none' ? self.style("fill")
@@ -427,7 +428,8 @@ var UptimeChart = function(config) {
     var bbox = {};
     try {
       bbox = obj.getBBox();
-      if (navigator.userAgent.indexOf("MSIE") == -1 && !bbox.x && !bbox.y && !bbox.height && !bbox.width) {
+      if (navigator.userAgent.indexOf("MSIE") == -1 && !bbox.x && !bbox.y
+          && !bbox.height && !bbox.width) {
         bbox.x = obj.attr('x');
         bbox.y = obj.attr('y');
       }
@@ -733,6 +735,13 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       }
     }
 
+    var left_y;
+    if (metric != '*') {
+      left_y = metric;
+    } else {
+      left_y = _super.config.lineChart.main.yAxis.left;
+    }
+
     // /[ line definition ]///////////////////////////
     var chart_type = _super.config.lineChart.main.type;
     // I need to enumerate instead of above fancy way.
@@ -744,32 +753,32 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
-        return lc.main_y[metric](d[metric]);
+        return lc.main_y[left_y](d[metric]);
       });
     } else {
       lc.main_line['nsl_ms'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
-        return lc.main_y['nsl_ms'](d['nsl_ms']);
+        return lc.main_y[left_y](d['nsl_ms']);
       });
       lc.main_line['con_ms'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
-        return lc.main_y['con_ms'](d['con_ms']);
+        return lc.main_y[left_y](d['con_ms']);
       });
       lc.main_line['tfb_ms'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
-        return lc.main_y['tfb_ms'](d['tfb_ms']);
+        return lc.main_y[left_y](d['tfb_ms']);
       });
       lc.main_line['tot_ms'] = d3.svg.line().interpolate(chart_type).x(
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
-        return lc.main_y['tot_ms'](d['tot_ms']);
+        return lc.main_y[left_y](d['tot_ms']);
       });
       lc.main_line['state'] = d3.svg.line().interpolate("step").x(function(d) {
         return lc.main_x(d.date);
@@ -780,19 +789,19 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           function(d) {
             return lc.main_x(d.date);
           }).y(function(d) {
-        return lc.main_y['aggregate'](d['aggregate']);
+        return lc.main_y[left_y](d['aggregate']);
       });
     }
     lc.main_line['judge'] = d3.svg.line().interpolate("step").x(function(d) {
       return lc.main_x(d.date);
     }).y(function(d) {
-      return lc.main_y['judge'](d['judge']);
+      return lc.main_y['state'](d['judge']);
     });
 
     lc.main_x.domain([ data[0].date, data[data.length - 1].date ]);
 
     for ( var key in lc.main_y) {
-      lc.main_y[key].domain(d3.extent(data, function(d) {
+      lc.main_y[left_y].domain(d3.extent(data, function(d) {
         return d[key];
       }));
     }
@@ -811,28 +820,20 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         "transform", "translate(0," + lc.main_height + ")").call(lc.main_xAxis);
     // /[ main left y ]///////////////////////////
     var main_yAxisLeft;
-    if (metric != '*') {
-      main_yAxisLeft = d3.svg.axis().scale(lc.main_y[metric]).orient("left");
-    } else {
-      main_yAxisLeft = d3.svg.axis().scale(
-          lc.main_y[_super.config.lineChart.main.yAxis.left]).orient("left");
-    }
+    main_yAxisLeft = d3.svg.axis().scale(lc.main_y[left_y]).orient("left");
+
     lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(
         main_yAxisLeft).append("text").attr("transform", "translate(5, -25)")
         .attr("y", 6).attr("dy", ".71em").style("text-anchor", "end").text(
             "(ms)");
 
     // /[ main right y ]///////////////////////////
-    if (lc.main_y[_super.config.lineChart.main.yAxis.right]) {
-      var main_yAxisRight = d3.svg.axis().scale(
-          lc.main_y[_super.config.lineChart.main.yAxis.right]).orient("right")
-          .ticks(1);
-      lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
-          "transform", "translate(" + lc.main_width + ", 0)").call(
-          main_yAxisRight).append("text").attr("transform", "rotate(-90)")
-          .attr("y", 6).attr("dy", ".71em").style("text-anchor", "end").text(
-              "(ms)");
-    }
+    var main_yAxisRight = d3.svg.axis().scale(lc.main_y['state']).orient(
+        "right").ticks(1);
+    lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
+        "transform", "translate(" + lc.main_width + ", 0)").call(
+        main_yAxisRight).append("text").attr("transform", "rotate(-90)").attr(
+        "y", 6).attr("dy", ".71em").style("text-anchor", "end").text("(ms)");
 
     // /[ focus ]///////////////////////////
     var focus = lc.main.append("g").attr("class", "focus").style("display",
@@ -852,22 +853,20 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
     var mousemove = function() {
       var metric = $('#' + _super.config.lineChart.combo.id).val();
-      if (metric == '*')
-        return;
       var x0 = lc.main_x.invert(d3.mouse(this)[0]), i = bisectDate(data, x0, 1), d0 = data[i - 1];
       var d1 = data[i];
       if (d1 && d1.date) {
         var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
         for ( var key in lc.main_y) {
-          if (key != metric)
+          if (key != metric && '*' != metric)
             continue;
           if (key != _super.config.lineChart.main.yAxis.right
               && '#FFFFFF' != _super.convertRGBDecimalToHex(d3.select(
                   ".line" + key).style("stroke"))) {
             focus.select("circle.y" + key).attr(
                 "transform",
-                "translate(" + lc.main_x(d.date) + "," + lc.main_y[key](d[key])
-                    + ")");
+                "translate(" + lc.main_x(d.date) + ","
+                    + lc.main_y[left_y](d[key]) + ")");
             if (key == 'aggregate') {
               var descript = '[Availability] \n';
               var sum = 0;
@@ -911,22 +910,24 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
                   + descript;
               _super.tooltip(descript, 250);
             }
-            var formatOutput = _super.getLabelFullName(key) + " - "
-                + formatDate2(d.date) + " - " + d[key] + " ms";
-            focus.select("text.y" + key).attr(
-                "transform",
-                "translate(" + lc.main_x(d.date) + "," + lc.main_y[key](d[key])
-                    + ")").text(formatOutput);
-            focus.select(".y" + key).attr(
-                "transform",
-                "translate(" + lc.main_width * -1 + ", "
-                    + lc.main_y[key](d[key]) + ")").attr("x2",
-                lc.main_width + lc.main_x(d.date));
+            if (key != metric && '*' != metric) {
+              var formatOutput = _super.getLabelFullName(key) + " - "
+                  + formatDate2(d.date) + " - " + d[key] + " ms";
+              focus.select("text.y" + key).attr(
+                  "transform",
+                  "translate(" + lc.main_x(d.date) + ","
+                      + lc.main_y[left_y](d[key]) + ")").text(formatOutput);
+              focus.select(".y" + key).attr(
+                  "transform",
+                  "translate(" + lc.main_width * -1 + ", "
+                      + lc.main_y[left_y](d[key]) + ")").attr("x2",
+                  lc.main_width + lc.main_x(d.date));
+            }
           } else {
             focus.select("text.y" + key).attr(
                 "transform",
-                "translate(" + lc.main_x(d.date) + "," + lc.main_y[key](d[key])
-                    + ")").text('');
+                "translate(" + lc.main_x(d.date) + ","
+                    + lc.main_y[left_y](d[key]) + ")").text('');
           }
         }
         focus.select(".x").attr("transform",
@@ -1101,7 +1102,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
           // d3.svg.line().interpolate(chart_type).x(function(d) {
           // return _super.lc.main_x(d.date);
           // }).y(function(d) {
-          // return _super.lc.main_y[key](d[key]);
+          // return _super.lc.main_y[left_y](d[key]);
           // });
         }
       }
@@ -1126,8 +1127,14 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
 
     mc.mini_x.domain(_super.lc.main_x.domain());
 
+    var left_y;
+    if (metric != '*') {
+      left_y = metric;
+    } else {
+      left_y = _super.config.lineChart.main.yAxis.left;
+    }
     for ( var key in _super.lc.main_y) {
-      mc.mini_y[key].domain(_super.lc.main_y[key].domain());
+      mc.mini_y[key].domain(_super.lc.main_y[left_y].domain());
     }
 
     // /[ mc.mini lineChart ]///////////////////////////
@@ -2373,8 +2380,8 @@ UptimeChart.prototype.createChart = function(ghcid) {
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
-//          d3.json(from, function(error, json) {
-             d3.json('data.json', function(error, json) {
+          d3.json(from, function(error, json) {
+            // d3.json('data.json', function(error, json) {
             if (!json) {
               d3.json('data.json', function(error, json) {
                 _super.selectView(null, json);
