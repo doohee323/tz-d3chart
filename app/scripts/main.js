@@ -1924,6 +1924,13 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
     var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], .1);
     var y = d3.scale.linear().rangeRound([ height, 0 ]);
 
+    x.domain(data.map(function(d) {
+      return d.date;
+    }));
+    y.domain([ 0, d3.max(data, function(d) {
+      return d.total;
+    }) ]);
+
     var xAxis = d3.svg.axis().scale(x).tickFormat(
         d3.time.format(_super.axisFormat)).orient("bottom");
     var yAxis = d3.svg.axis().scale(y).orient("left").tickFormat(
@@ -1937,13 +1944,6 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
         "transform",
         "translate(" + _super.config.stackedChart.margin.left + ","
             + _super.config.stackedChart.margin.top + ")");
-
-    x.domain(data.map(function(d) {
-      return d.date;
-    }));
-    y.domain([ 0, d3.max(data, function(d) {
-      return d.total;
-    }) ]);
 
     // sc.stSvg.append("g").attr("class", "x axis").attr("fill",
     // "#585956").attr(
