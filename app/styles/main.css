@@ -140,6 +140,12 @@ circle {
 	stroke: #fff;
 }
 
+.line.area {
+	stroke: steelblue;
+	fill-opacity: .1;
+	fill: steelblue;
+}
+
 /* judge */
 .line.linejudge {
 	stroke: #dc291e;
