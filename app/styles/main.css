@@ -225,21 +225,22 @@ circle {
 
 /* aggregate */
 .line.lineaggregate {
-	stroke: #236093;
+	stroke: red;
+	stroke-width: 1.5;
 }
 
 .line.areaaggregate {
-	stroke: #236093;
+	stroke: red;
 	fill-opacity: .5;
 	fill: white;
 }
 
 .focus circle.yaggregate {
-	stroke: #236093;
+	stroke: red;
 }
 
 .focus line.yaggregate {
-	stroke: #236093;
+	stroke: red;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }

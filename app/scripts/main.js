@@ -41,8 +41,8 @@ var UptimeChart = function(config) {
     d3.selectAll('.brushed_range').remove();
     if ($('#view').find("li.active").text() == 'Response') {
       _super.sc.stSvg.append('g').attr('class', 'brushed_range').append("text")
-          .attr("x", _super.config.lineChart.main.margin.width - 170).attr("y",
-              -25).attr("text-anchor", "middle").style("text-decoration",
+          .attr("x", _super.config.lineChart.main.margin.width - 200).attr("y",
+              -10).attr("text-anchor", "middle").style("text-decoration",
               "underline").text(
               moment(_super.extent[0]).format(_super.config.format.full_date)
                   + ' ~ '
@@ -50,8 +50,8 @@ var UptimeChart = function(config) {
                       _super.config.format.full_date));
     } else {
       _super.lc.lineSvg.append('g').attr('class', 'brushed_range').append(
-          "text").attr("x", _super.config.lineChart.main.margin.width - 130)
-          .attr("y", 25).attr("text-anchor", "middle").style("text-decoration",
+          "text").attr("x", _super.config.lineChart.main.margin.width - 160)
+          .attr("y", 40).attr("text-anchor", "middle").style("text-decoration",
               "underline").text(
               moment(_super.extent[0]).format(_super.config.format.full_date)
                   + ' ~ '
@@ -637,11 +637,20 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         options = select.attr('options');
       }
       $('option', select).remove();
-      options[options.length] = new Option('Select', '*');
+      if ('*' == _super.config.lineChart.combo.init) {
+        options[options.length] = new Option('Select', '*', true, true);
+      } else {
+        options[options.length] = new Option('Select', '*', false);
+      }
       $.each(ds, function(key, obj) {
         if (key != 'date') {
-          options[options.length] = new Option(_super.getLabelFullName(key),
-              key);
+          if (key == _super.config.lineChart.combo.init) {
+            options[options.length] = new Option(_super.getLabelFullName(key),
+                key, true, true);
+          } else {
+            options[options.length] = new Option(_super.getLabelFullName(key),
+                key, false);
+          }
         }
       });
       select.change(function(e) {
@@ -728,18 +737,17 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       return a.date - b.date;
     });
 
-    for ( var key in data[0]) {
-      if (key != 'date') {
-        // if (key == 'judge' || key == 'nsl_ms') {
-        lc.main_y[key] = d3.scale.sqrt().range([ lc.main_height, 0 ]);
-      }
-    }
-
     var left_y;
     if (metric != '*') {
       left_y = metric;
     } else {
       left_y = _super.config.lineChart.main.yAxis.left;
+    }
+    for ( var key in data[0]) {
+      if (key != 'date') {
+        // if (key == 'judge' || key == 'nsl_ms') {
+        lc.main_y[key] = d3.scale.sqrt().range([ lc.main_height, 0 ]);
+      }
     }
 
     // /[ line definition ]///////////////////////////
@@ -832,8 +840,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         "right").ticks(1);
     lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
         "transform", "translate(" + lc.main_width + ", 0)").call(
-        main_yAxisRight).append("text").attr("transform", "rotate(-90)").attr(
-        "y", 6).attr("dy", ".71em").style("text-anchor", "end").text("(ms)");
+        main_yAxisRight).append("text").attr("x", 16).attr("y", -16).attr(
+        "dy", ".71em").style("text-anchor", "end").text("(ms)");
 
     // /[ focus ]///////////////////////////
     var focus = lc.main.append("g").attr("class", "focus").style("display",
@@ -949,7 +957,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
     // /[ legend ]///////////////////////////
     var legend = lc.main.append("g").attr("class", "legend").attr("transform",
-        "translate(40, " + _super.config.legend.y + ")").call(_super.legend,
+        "translate(0, " + _super.config.legend.y + ")").call(_super.legend,
         lc.mainChartElem, metric);
 
     if (cb) {
@@ -1077,42 +1085,25 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       return a.date - b.date;
     });
 
-    for ( var key in data[0]) {
-      if (key != 'date') {
-        // if (key == 'judge' || key == 'nsl_ms') {
-        mc.mini_y[key] = d3.scale.sqrt().range([ mc.mini_height, 0 ]);
-      }
+    var left_y;
+    if (metric != '*') {
+      left_y = metric;
+    } else {
+      left_y = _super.config.lineChart.main.yAxis.left;
     }
+    mc.mini_y[left_y] = d3.scale.sqrt().range([ mc.mini_height, 0 ]);
 
     // /[ line definition ]///////////////////////////
     var chart_type = _super.config.lineChart.mini.type; // linear, step, basis,
     // monotone, bundle,
     // cardinal,
-    if (metric == '*') {
-      for ( var key in _super.lc.main_y) {
-        if (_super.config.lineChart.main.yAxis.right != key) {
-          mc.mini_line[key] = d3.svg.line().interpolate(chart_type).x(
-              function(d) {
-                return _super.mc.mini_x(d.date);
-              }).y(function(d) {
-            return _super.mc.mini_y[key](d[key]);
-          });
-          // it doesn't work for brushing
-          // _super.lc.main_line[key] =
-          // d3.svg.line().interpolate(chart_type).x(function(d) {
-          // return _super.lc.main_x(d.date);
-          // }).y(function(d) {
-          // return _super.lc.main_y[left_y](d[key]);
-          // });
-        }
-      }
-    } else {
+    for ( var key in _super.lc.main_y) {
       if (_super.config.lineChart.main.yAxis.right != key) {
-        mc.mini_line[metric] = d3.svg.line().interpolate(chart_type).x(
+        mc.mini_line[key] = d3.svg.line().interpolate(chart_type).x(
             function(d) {
               return _super.mc.mini_x(d.date);
             }).y(function(d) {
-          return _super.mc.mini_y[metric](d[metric]);
+          return _super.mc.mini_y[left_y](d[key]);
         });
       }
     }
@@ -1121,20 +1112,13 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
           return _super.mc.mini_x(d.date);
         }).y(
             function(d) {
-              return _super.mc.mini_y[_super.config.lineChart.main.yAxis.right]
+              return _super.mc.mini_y[left_y]
                   (d[_super.config.lineChart.main.yAxis.right]);
             });
 
     mc.mini_x.domain(_super.lc.main_x.domain());
-
-    var left_y;
-    if (metric != '*') {
-      left_y = metric;
-    } else {
-      left_y = _super.config.lineChart.main.yAxis.left;
-    }
     for ( var key in _super.lc.main_y) {
-      mc.mini_y[key].domain(_super.lc.main_y[left_y].domain());
+      mc.mini_y[left_y].domain(_super.lc.main_y[left_y].domain());
     }
 
     // /[ mc.mini lineChart ]///////////////////////////
@@ -2003,7 +1987,7 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
 
     // /[ legend ]///////////////////////////
     var legend = sc.stSvg.append("g").attr("class", "legend").attr("transform",
-        "translate(40, " + _super.config.legend.y + ")").call(_super.legend,
+        "translate(0, " + _super.config.legend.y + ")").call(_super.legend,
         sc.stackedChartElem, "*");
 
     cb.call(null);
@@ -2286,7 +2270,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
               $(opt).show();
             }
           });
-      $('#gmetrices').val("aggregate");
+      $('#gmetrices').val(_super.config.lineChart.combo.init);
       _super.miniLineChart("#minilineChart2", json, function(data) {
         if (_super.rowcount > 0) {
           _super.mc.brushEvent(_super.extent);
@@ -2576,7 +2560,7 @@ var uptimeConfig = {
     },
     "combo" : {
       "id" : "gmetrices",
-      "init" : "aggregate"
+      "init" : "*"
     }
   },
   "histogram" : {
