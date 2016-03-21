@@ -744,23 +744,26 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     var left_y;
     if (metric != '*') {
       left_y = metric;
-      lc.main_y[left_y] = d3.scale.linear().rangeRound([ lc.main_height, 0 ]);
     } else {
       left_y = _super.config.lineChart.main.yAxis.left;
-    }
-    for ( var key in data[0]) {
-      if (key != 'date') {
-        // if (key == 'judge' || key == 'nsl_ms') {
-        lc.main_y[key] = d3.scale.sqrt().range([ lc.main_height, 0 ]);
+      for ( var key in data[0]) {
+        if (key != 'date') {
+          lc.main_y[key] = d3.scale.sqrt().range([ lc.main_height, 0 ]);
+        }
       }
+    }
+    lc.main_y[left_y] = d3.scale.linear().rangeRound([ lc.main_height, 0 ]);
+    if (data[0][_super.config.lineChart.main.yAxis.right]) {
+      lc.main_y[_super.config.lineChart.main.yAxis.right] = d3.scale.linear()
+          .rangeRound([ lc.main_height, 0 ]);
     }
 
     // /[ line definition ]///////////////////////////
-    var chart_type = _super.config.lineChart.main.type;
+    var chart_type;
     // I need to enumerate instead of above fancy way.
     for ( var key in lc.main_y) {
       if (key == _super.config.lineChart.main.yAxis.right || key == 'state') {
-        chart_type = 'step'
+        chart_type = 'step';
       } else {
         chart_type = _super.config.lineChart.main.type;
       }
@@ -770,6 +773,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         return lc.main_y[key](d[key]);
       });
     }
+
     lc.main_x.domain([ data[0].date, data[data.length - 1].date ]);
     for ( var key in lc.main_y) {
       lc.main_y[key].domain(d3.extent(data, function(d) {
@@ -778,13 +782,11 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     }
     // /[ main lineChart ]///////////////////////////
     for ( var key in lc.main_y) {
-      if (data[0][key]) {
-        lc.main.append("path").datum(data).attr("clip-path", "url(#clip)")
-            .attr("class", "line line" + key).attr("d", lc.main_line[key])
-            .attr("data-legend", function(d) {
-              return key;
-            });
-      }
+      lc.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
+          "class", "line line" + key).attr("d", lc.main_line[key]).attr(
+          "data-legend", function(d) {
+            return key;
+          });
     }
 
     // /[ main left x ]///////////////////////////
@@ -1068,7 +1070,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     var chart_type;
     for ( var key in mc.mini_y) {
       if (key == _super.config.lineChart.main.yAxis.right || key == 'state') {
-        chart_type = 'step'
+        chart_type = 'step';
       } else {
         chart_type = _super.config.lineChart.mini.type;
       }
@@ -1079,9 +1081,6 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       });
     }
     mc.mini_x.domain(_super.range);
-    mc.mini_x.domain(d3.extent(data, function(d) {
-      return d.date;
-    }));
     for ( var key in mc.mini_y) {
       mc.mini_y[key].domain(d3.extent(data, function(d) {
         return d[key];
