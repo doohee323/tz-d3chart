@@ -737,9 +737,9 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       }
     });
 
-    data.sort(function(a, b) {
-      return a.date - b.date;
-    });
+    // data.sort(function(a, b) {
+    // return a.date - b.date;
+    // });
 
     var left_y;
     if (metric != '*') {
@@ -758,31 +758,18 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     // /[ line definition ]///////////////////////////
     var chart_type = _super.config.lineChart.main.type;
     // I need to enumerate instead of above fancy way.
-    if (metric != '*') {
-      if (metric == 'state') {
-        chart_type = 'step';
+    for ( var key in lc.main_y) {
+      if (key == _super.config.lineChart.main.yAxis.right || key == 'state') {
+        chart_type = 'step'
+      } else {
+        chart_type = _super.config.lineChart.main.type;
       }
-      lc.main_line[metric] = d3.svg.line().interpolate(chart_type).x(
-          function(d) {
-            return lc.main_x(d.date);
-          }).y(function(d) {
-        return lc.main_y[left_y](d[metric]);
+      lc.main_line[key] = d3.svg.line().interpolate(chart_type).x(function(d) {
+        return lc.main_x(d.date);
+      }).y(function(d) {
+        return lc.main_y[key](d[key]);
       });
-    } else {
-      for ( var key in lc.main_y) {
-        lc.main_line[key] = d3.svg.line().interpolate(chart_type).x(
-            function(d) {
-              return lc.main_x(d.date);
-            }).y(function(d) {
-          return lc.main_y[left_y](d[key]);
-        });
-      }
     }
-    lc.main_line[metric] = d3.svg.line().interpolate(chart_type).x(function(d) {
-      return lc.main_x(d.date);
-    }).y(function(d) {
-      return lc.main_y[left_y](d[metric]);
-    });
     lc.main_x.domain([ data[0].date, data[data.length - 1].date ]);
     for ( var key in lc.main_y) {
       lc.main_y[key].domain(d3.extent(data, function(d) {
@@ -1058,9 +1045,9 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       }
     });
 
-    data.sort(function(a, b) {
-      return a.date - b.date;
-    });
+    // data.sort(function(a, b) {
+    // return a.date - b.date;
+    // });
 
     var left_y;
     if (metric != '*') {
