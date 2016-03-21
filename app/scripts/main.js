@@ -624,10 +624,10 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     _super.lineData = lc.getData(resultset);
   }
 
-  var metrices = {};
+  _super.metrices = {};
   for ( var key in _super.lineData[0]) {
     if (key != _super.config.lineChart.main.yAxis.right) {
-      metrices[key] = key;
+      _super.metrices[key] = key;
     }
   }
 
