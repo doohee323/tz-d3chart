@@ -1052,7 +1052,6 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
         "transform",
         "translate(" + _super.config.lineChart.mini.margin.left + ","
             + _super.config.lineChart.mini.margin.top + ")");
-    var mini_xAxis = d3.svg.axis().scale(mc.mini_x).orient("bottom");
 
     mc.brushEvent = function(extent) {
       if (extent) {
@@ -1122,10 +1121,13 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
                   (d[_super.config.lineChart.main.yAxis.right]);
             });
     mc.mini_x.domain(_super.range);
-    for ( var key in _super.lc.main_y) {
-      mc.mini_y[left_y].domain(_super.lc.main_y[left_y].domain());
-    }
-
+    mc.mini_x.domain(d3.extent(data, function(d) {
+      return d.date;
+    }));
+    mc.mini_y[left_y].domain(d3.extent(data, function(d) {
+      return d[left_y];
+    }));
+    
     // /[ mc.mini lineChart ]///////////////////////////
     mc.mini.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
         "transform", "translate(0," + mc.mini_height + ")").call(
@@ -1134,7 +1136,6 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       mc.mini.append("path").datum(data).attr("class", "line area").attr("d",
           mc.mini_line[key]);
     }
-
     mc.mini.append("g").attr("class", "x brush").call(mc.brush).selectAll(
         "rect").attr("y", -6).attr("height", mc.mini_height + 7);
   }
