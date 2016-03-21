@@ -744,6 +744,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     var left_y;
     if (metric != '*') {
       left_y = metric;
+      lc.main_y[left_y] = d3.scale.linear().rangeRound([ lc.main_height, 0 ]);
     } else {
       left_y = _super.config.lineChart.main.yAxis.left;
     }
@@ -768,63 +769,35 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         return lc.main_y[left_y](d[metric]);
       });
     } else {
-      lc.main_line['nsl_ms'] = d3.svg.line().interpolate(chart_type).x(
-          function(d) {
-            return lc.main_x(d.date);
-          }).y(function(d) {
-        return lc.main_y[left_y](d['nsl_ms']);
-      });
-      lc.main_line['con_ms'] = d3.svg.line().interpolate(chart_type).x(
-          function(d) {
-            return lc.main_x(d.date);
-          }).y(function(d) {
-        return lc.main_y[left_y](d['con_ms']);
-      });
-      lc.main_line['tfb_ms'] = d3.svg.line().interpolate(chart_type).x(
-          function(d) {
-            return lc.main_x(d.date);
-          }).y(function(d) {
-        return lc.main_y[left_y](d['tfb_ms']);
-      });
-      lc.main_line['tot_ms'] = d3.svg.line().interpolate(chart_type).x(
-          function(d) {
-            return lc.main_x(d.date);
-          }).y(function(d) {
-        return lc.main_y[left_y](d['tot_ms']);
-      });
-      lc.main_line['state'] = d3.svg.line().interpolate("step").x(function(d) {
-        return lc.main_x(d.date);
-      }).y(function(d) {
-        return lc.main_y['state'](d['state']);
-      });
-      lc.main_line['aggregate'] = d3.svg.line().interpolate(chart_type).x(
-          function(d) {
-            return lc.main_x(d.date);
-          }).y(function(d) {
-        return lc.main_y[left_y](d['aggregate']);
-      });
+      for ( var key in lc.main_y) {
+        lc.main_line[key] = d3.svg.line().interpolate(chart_type).x(
+            function(d) {
+              return lc.main_x(d.date);
+            }).y(function(d) {
+          return lc.main_y[left_y](d[key]);
+        });
+      }
     }
-    lc.main_line['judge'] = d3.svg.line().interpolate("step").x(function(d) {
+    lc.main_line[metric] = d3.svg.line().interpolate(chart_type).x(function(d) {
       return lc.main_x(d.date);
     }).y(function(d) {
-      return lc.main_y['state'](d['judge']);
+      return lc.main_y[left_y](d[metric]);
     });
-
     lc.main_x.domain([ data[0].date, data[data.length - 1].date ]);
-    lc.main_y[left_y].domain(d3.extent(data, function(d) {
-      return d[left_y];
-    }));
-    lc.main_y['state'].domain(d3.extent(data, function(d) {
-      return d['state'];
-    }));
-
+    for ( var key in lc.main_y) {
+      lc.main_y[key].domain(d3.extent(data, function(d) {
+        return d[key];
+      }));
+    }
     // /[ main lineChart ]///////////////////////////
     for ( var key in lc.main_y) {
-      lc.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
-          "class", "line line" + key).attr("d", lc.main_line[key]).attr(
-          "data-legend", function(d) {
-            return key;
-          });
+      if (data[0][key]) {
+        lc.main.append("path").datum(data).attr("clip-path", "url(#clip)")
+            .attr("class", "line line" + key).attr("d", lc.main_line[key])
+            .attr("data-legend", function(d) {
+              return key;
+            });
+      }
     }
 
     // /[ main left x ]///////////////////////////
@@ -1094,38 +1067,39 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       left_y = metric;
     } else {
       left_y = _super.config.lineChart.main.yAxis.left;
-    }
-    mc.mini_y[left_y] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
-
-    // /[ line definition ]///////////////////////////
-    var chart_type = _super.config.lineChart.mini.type; // linear, step, basis,
-    // monotone, bundle,
-    // cardinal,
-    for ( var key in _super.lc.main_y) {
-      if (_super.config.lineChart.main.yAxis.right != key) {
-        mc.mini_line[key] = d3.svg.line().interpolate(chart_type).x(
-            function(d) {
-              return _super.mc.mini_x(d.date);
-            }).y(function(d) {
-          return _super.mc.mini_y[left_y](d[key]);
-        });
+      for ( var key in _super.lc.main_y) {
+        mc.mini_y[key] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
       }
     }
-    mc.mini_line[_super.config.lineChart.main.yAxis.right] = d3.svg.line()
-        .interpolate("step").x(function(d) {
-          return _super.mc.mini_x(d.date);
-        }).y(
-            function(d) {
-              return _super.mc.mini_y[left_y]
-                  (d[_super.config.lineChart.main.yAxis.right]);
-            });
+    mc.mini_y[left_y] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
+    if (data[0][_super.config.lineChart.main.yAxis.right]) {
+      mc.mini_y[_super.config.lineChart.main.yAxis.right] = d3.scale.linear()
+          .rangeRound([ mc.mini_height, 0 ]);
+    }
+
+    // /[ line definition ]///////////////////////////
+    var chart_type;
+    for ( var key in mc.mini_y) {
+      if (key == _super.config.lineChart.main.yAxis.right || key == 'state') {
+        chart_type = 'step'
+      } else {
+        chart_type = _super.config.lineChart.mini.type;
+      }
+      mc.mini_line[key] = d3.svg.line().interpolate(chart_type).x(function(d) {
+        return _super.mc.mini_x(d.date);
+      }).y(function(d) {
+        return mc.mini_y[key](d[key]);
+      });
+    }
     mc.mini_x.domain(_super.range);
     mc.mini_x.domain(d3.extent(data, function(d) {
       return d.date;
     }));
-    mc.mini_y[left_y].domain(d3.extent(data, function(d) {
-      return d[left_y];
-    }));
+    for ( var key in mc.mini_y) {
+      mc.mini_y[key].domain(d3.extent(data, function(d) {
+        return d[key];
+      }));
+    }
 
     // /[ mc.mini lineChart ]///////////////////////////
     mc.mini.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
