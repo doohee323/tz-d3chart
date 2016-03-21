@@ -203,7 +203,10 @@ var UptimeChart = function(config) {
             obj.loc);
       });
       select.change(function(e) {
-        cb.call(e, $(id).val());
+        try {
+          cb.call(e, $(id).val());
+        } catch (e) {
+        }
       });
     }
   }
@@ -628,10 +631,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     }
   }
 
-  lc.combo = function(ds, id, cb) {
+  lc.combo = function(ds, id, all, cb) {
     id = '#' + id;
-    if ($(id + " option").length > 0)
-      return;
     var select = $(id);
     if (select.length > 0) {
       var options;
@@ -641,10 +642,12 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         options = select.attr('options');
       }
       $('option', select).remove();
-      if ('*' == _super.config.lineChart.combo.init) {
-        options[options.length] = new Option('Select', '*', true, true);
-      } else {
-        options[options.length] = new Option('Select', '*', false);
+      if (all) {
+        if ('*' == _super.config.lineChart.combo.init) {
+          options[options.length] = new Option('Select', '*', true, true);
+        } else {
+          options[options.length] = new Option('Select', '*', false);
+        }
       }
       $.each(ds, function(key, obj) {
         if (key != 'date') {
@@ -658,12 +661,16 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         }
       });
       select.change(function(e) {
-        cb.call(e, $(id).val());
+        try {
+          cb.call(e, $(id).val());
+        } catch (e) {
+        }
       });
     }
   }
 
-  lc.combo(metrices, _super.config.lineChart.combo.id, function(metric) {
+  lc.combo(_super.metrices, _super.config.lineChart.combo.id, false, function(
+      metric) {
     if ($('#view').find("li.active").text() == 'Response') {
       if (metric == 'tot_ms') {
         _super.metric = null;
@@ -2233,17 +2240,12 @@ UptimeChart.prototype.selectView = function(tabId, json) {
     if ($('#view').find("li.active").text() == 'Response') {
       $('.tot_ms_view').show();
       $('.aggregate_view').hide();
-      $("#gmetrices").find('option').each(
-          function(i, opt) {
-            if (opt.value == '*' || opt.value == 'aggregate'
-                || opt.value == 'state') {
-              $(opt).hide();
-            }
-            if (opt.value == 'nsl_ms' || opt.value == 'con_ms'
-                || opt.value == 'tfb_ms' || opt.value == 'tot_ms') {
-              $(opt).show();
-            }
-          });
+      _super.lc.combo({
+        nsl_ms : 'nsl_ms',
+        con_ms : 'con_ms',
+        tfb_ms : 'tfb_ms',
+        tot_ms : 'tot_ms'
+      }, _super.config.lineChart.combo.id, false);
       $('#gmetrices').val("tot_ms");
       _super.miniLineChart("#minilineChart", json, function(data) {
       });
@@ -2263,13 +2265,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
     } else { // aggregate
       $('.tot_ms_view').hide();
       $('.aggregate_view').show();
-      $("#gmetrices").find('option').each(
-          function(i, opt) {
-            if (opt.value == '*' || opt.value == 'aggregate'
-                || opt.value == 'state') {
-              $(opt).show();
-            }
-          });
+      _super.lc.combo(_super.metrices, _super.config.lineChart.combo.id, true);
       $('#gmetrices').val(_super.config.lineChart.combo.init);
       _super.miniLineChart("#minilineChart2", json, function(data) {
         if (_super.rowcount > 0) {
