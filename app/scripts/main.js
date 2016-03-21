@@ -527,7 +527,6 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
   lc.getRangeData = function(json) {
     var data = new Array();
-
     if (_super.extent) {
       for (var i = 0; i < json.length; i++) {
         if (json[i].date >= _super.extent[0]
@@ -812,12 +811,12 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     });
 
     lc.main_x.domain([ data[0].date, data[data.length - 1].date ]);
-
-    for ( var key in lc.main_y) {
-      lc.main_y[left_y].domain(d3.extent(data, function(d) {
-        return d[key];
-      }));
-    }
+    lc.main_y[left_y].domain(d3.extent(data, function(d) {
+      return d[left_y];
+    }));
+    lc.main_y['state'].domain(d3.extent(data, function(d) {
+      return d['state'];
+    }));
 
     // /[ main lineChart ]///////////////////////////
     for ( var key in lc.main_y) {
@@ -1127,7 +1126,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     mc.mini_y[left_y].domain(d3.extent(data, function(d) {
       return d[left_y];
     }));
-    
+
     // /[ mc.mini lineChart ]///////////////////////////
     mc.mini.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
         "transform", "translate(0," + mc.mini_height + ")").call(
