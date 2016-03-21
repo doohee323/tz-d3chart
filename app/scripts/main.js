@@ -1559,7 +1559,6 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
         - _super.config.histogram.margin.left
         - _super.config.histogram.margin.right;
     var height = _super.config.histogram.margin.height;
-    var ratio = _super.config.histogram.ratio;
 
     var x = d3.scale.ordinal().rangeRoundBands([ 0, width ], 0.1).domain(
         fD.map(function(d) {
@@ -1581,22 +1580,15 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
     // _super.hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top / 2))
     // .attr("text-anchor", "middle").style("text-decoration", "underline")
     // .text("Average Response Time");
-    var max = 0;
-    fD.forEach(function(d) {
-      if (max < d[1]) {
-        max = d[1];
-      }
-    });
-    ratio = 1 - (max - _super.sc.max) / max * ratio;
     var y = d3.scale.linear().range([ height, 0 ]).domain([ 0, _super.sc.max ]);
     var bars = _super.hgsvg.selectAll(".bar").data(fD).enter().append("g")
         .attr("class", "bar");
     bars.append("rect").style("opacity", 0.2).attr("x", function(d) {
       return x(d[0]);
     }).attr("y", function(d) {
-      return y(d[1] * ratio);
+      return y(d[1]);
     }).attr("width", x.rangeBand()).attr("height", function(d) {
-      return height - y(d[1] * ratio);
+      return height - y(d[1]);
     }).attr('fill', barColor).style("cursor", "pointer").on("mouseover",
         mouseover).on("mouseout", mouseout).on("click", function() {
       _super.debug(JSON.stringify(fD));
@@ -1607,7 +1599,7 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
     }).attr("x", function(d) {
       return x(d[0]) + x.rangeBand() / 2;
     }).attr("y", function(d) {
-      return y(d[1] * ratio) + 15;
+      return y(d[1]) + 15;
     }).attr("text-anchor", "middle").style({
       'fill' : 'black',
       'font' : '10px sans-serif'
@@ -1634,23 +1626,20 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
     }
 
     hg.update = function(nd, color) {
-      y.domain([ 0, d3.max(nd, function(d) {
-        return d[1];
-      }) ]);
-
+      y.domain([ 0, _super.sc.max ]);
       var bars = _super.hgsvg.selectAll(".bar").data(nd);
-      bars.select("rect").style("opacity", 0.6).transition().duration(500)
+      bars.select("rect").style("opacity", 0.2).transition().duration(300)
           .attr("y", function(d) {
-            return y(d[1] * ratio);
+            return y(d[1]);
           }).attr("height", function(d) {
-            return height - y(d[1] * ratio);
+            return height - y(d[1]);
           }).attr("fill", color);
 
       if (fD.length < _super.config.histogram.max_bar) {
         bars.select("text").transition().duration(500).text(function(d) {
           return d3.format(",")(d[1])
         }).attr("y", function(d) {
-          return y(d[1] * ratio) + 15;
+          return y(d[1]) + 15;
         });
       }
     }
@@ -2584,7 +2573,6 @@ var uptimeConfig = {
       "right" : 40,
       "left" : 40
     },
-    "ratio" : 0.9,
     "max_bar" : 20
   },
   "stackedChart" : {
