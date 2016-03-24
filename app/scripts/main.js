@@ -175,10 +175,10 @@ var UptimeChart = function(config) {
   }
 
   _super.getLabelFullName = function(akey) {
-    for (var i = 0; i < _super.resultset.meta.metrices.length; i++) {
-      var key = Object.keys(_super.resultset.meta.metrices[i])[0];
+    var mapping = _super.config.mapping;
+    for ( var key in mapping) {
       if (key == akey) {
-        return _super.resultset.meta.metrices[i][key].replace("(ms)", "");
+        return mapping[key];
       }
     }
     return akey;
@@ -2632,6 +2632,15 @@ var uptimeConfig = {
     "y" : -3,
     "width" : 18,
     "height" : 18
+  },
+  "mapping" : {
+    "nsl_ms" : "DNS Time", // DNS Lookup #81bc00
+    "con_ms" : "Connect Time", // Time To Connect #7e7f74
+    "tfb_ms" : "Wait Time", // Time To 1st Byte #ffa400
+    "tot_ms" : "Response Time", // Roundtrip Time #7D602B
+    "state" : "Service State",
+    "aggregate" : "Aggregation",
+    "judge" : "Up/Down"
   },
   "format" : {
     "full_date" : "DD/MM/YYYY HH:mm:ss"
