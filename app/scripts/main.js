@@ -37,9 +37,21 @@ var UptimeChart = function(config) {
   }).on('rangeError', function() {
   });
 
+  _super.selectedTab = function() {
+    if ($('#response').is(':visible')) {
+      if ($('#view').find("li.active").text() == 'Response') {
+        return 'Response';
+      } else {
+        return 'Availability';
+      }
+    } else {
+      return 'Availability';
+    }
+  }
+
   _super.brushRange = function(type) {
     d3.selectAll('.brushed_range').remove();
-    if ($('#view').find("li.active").text() == 'Response') {
+    if (_super.selectedTab() == 'Response') {
       _super.sc.stSvg.append('g').attr('class', 'brushed_range').append("text")
           .attr("x", _super.config.lineChart.main.margin.width - 200).attr("y",
               -5).attr("text-anchor", "middle").style("text-decoration",
@@ -82,19 +94,19 @@ var UptimeChart = function(config) {
 
     if (!_super.isBrushed()) {
       _super.getExtent(_super.resultset.data.active[0].datapoints);
-      if ($('#view').find("li.active").text() == 'Availability') {
+      if (_super.selectedTab() == 'Availability') {
         _super.mc.brushEvent(_super.extent);
       }
     }
 
-    if ($('#view').find("li.active").text() == 'Response') {
+    if (_super.selectedTab() == 'Response') {
       _super.sc.update(_super.sc.getData(_super.lineData), function() {
         _super.hst.update(_super.hst.getData(_super.lineData), function(data) {
           _super.gauge.update(data.tot_ms);
           _super.brushRange();
         });
         if (_super.metric) {
-          $('#gmetrices').val(_super.metric);
+          $('#' + _super.config.lineChart.combo.id).val(_super.metric);
         }
       });
     } else {
@@ -107,7 +119,7 @@ var UptimeChart = function(config) {
           });
     }
 
-    if ($('#view').find("li.active").text() == 'Response') {
+    if (_super.selectedTab() == 'Response') {
     } else {
       var data2 = new Array();
       if (metric == '*') {
@@ -333,35 +345,6 @@ var UptimeChart = function(config) {
               _super.metric = metric;
             }
             _super.map.metric = metric;
-            if (showFg == 'show') {
-              if ('#FFFFFF' == _super.convertRGBDecimalToHex(d3.select(
-                  ".line" + metric).style("stroke"))) {
-                if (metric == _super.config.lineChart.main.yAxis.right
-                    || metric == 'state') {
-                  d3.select(".line" + metric).style("stroke", d.color).style(
-                      "fill", d.color);
-                } else {
-                  d3.select(".line" + metric).style("stroke", d.color);
-                }
-                d3.select("circle.y" + metric).style("stroke", d.color);
-                d3.select("line.y" + metric).style("stroke", d.color);
-              }
-            } else if (showFg == 'hide') {
-              var pickColor = _super.convertRGBDecimalToHex(d3.select(
-                  ".line" + metric).style("stroke"));
-              if (pickColor != '#FFFFFF') {
-                d.color = pickColor;
-                if (metric == _super.config.lineChart.main.yAxis.right
-                    || metric == 'state') {
-                  d3.select(".line" + metric).style("stroke", '#FFFFFF').style(
-                      "fill", "white");
-                } else {
-                  d3.select(".line" + metric).style("stroke", '#FFFFFF');
-                }
-                d3.select("circle.y" + metric).style("stroke", '#FFFFFF');
-                d3.select("line.y" + metric).style("stroke", '#FFFFFF');
-              }
-            }
             _super.update(null, metric);
           }
 
@@ -381,6 +364,7 @@ var UptimeChart = function(config) {
             return _super.getLabelFullName(d.key);
           }).on("click", function(d, i) {
             toggle('show', d, i);
+            $('#' + _super.config.lineChart.combo.id).val(d.key);
           }).style("cursor", "pointer");
 
           li.selectAll("rect").data(items, function(d) {
@@ -411,6 +395,7 @@ var UptimeChart = function(config) {
             return d.value.color;
           }).on("click", function(d, i) {
             toggle('hide', d, i);
+            $('#' + _super.config.lineChart.combo.id).val(d.key);
           }).style("cursor", "pointer");
 
           var lbbox = _super.getBBox(li[0][0]);
@@ -673,7 +658,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
   lc.combo(_super.metrices, _super.config.lineChart.combo.id, false, function(
       metric) {
-    if ($('#view').find("li.active").text() == 'Response') {
+    if (_super.selectedTab() == 'Response') {
       if (metric == 'tot_ms') {
         _super.metric = null;
         metric = 'tot_ms';
@@ -810,13 +795,21 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         .attr("y", 12).attr("dy", ".71em").style("text-anchor", "end").text(
             "(ms)");
 
+    // /[ legend ]///////////////////////////
+    var legend = lc.main.append("g").attr("class", "legend").attr("transform",
+        "translate(0, " + _super.config.legend.y + ")").call(_super.legend,
+        lc.mainChartElem, metric);
+
     // /[ main right y ]///////////////////////////
-    var main_yAxisRight = d3.svg.axis().scale(lc.main_y['state']).orient(
-        "right").ticks(1);
-    lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
-        "transform", "translate(" + lc.main_width + ", 0)").call(
-        main_yAxisRight).append("text").attr("x", 16).attr("y", -15).attr("dy",
-        ".71em").style("text-anchor", "end").text("(ms)");
+    if (lc.main_y['state']) {
+      var main_yAxisRight = d3.svg.axis().scale(lc.main_y['state']).orient(
+          "right").ticks(1);
+
+      lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
+          "transform", "translate(" + lc.main_width + ", 0)").call(
+          main_yAxisRight).append("text").attr("x", 16).attr("y", -15).attr(
+          "dy", ".71em").style("text-anchor", "end").text("(ms)");
+    }
 
     // /[ focus ]///////////////////////////
     var focus = lc.main.append("g").attr("class", "focus").style("display",
@@ -929,11 +922,6 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         }).on("mousemove", mousemove).on("click", function() {
           _super.debug(JSON.stringify(data));
         });
-
-    // /[ legend ]///////////////////////////
-    var legend = lc.main.append("g").attr("class", "legend").attr("transform",
-        "translate(0, " + _super.config.legend.y + ")").call(_super.legend,
-        lc.mainChartElem, metric);
 
     if (cb) {
       cb.call();
@@ -1137,7 +1125,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     locs = resultset.meta.locs;
 
     if (metric == null || metric == '*') {
-      if ($('#view').find("li.active").text() == 'Response') {
+      if (_super.selectedTab() == 'Response') {
         metric = 'tot_ms';
       } else {
         metric = 'state';
@@ -1585,6 +1573,9 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
                       }
                       return true;
                     })).tickFormat(d3.time.format(_super.axisFormat)));
+    if (_super.metric) {
+      return;
+    }
 
     // _super.hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top / 2))
     // .attr("text-anchor", "middle").style("text-decoration", "underline")
@@ -1668,7 +1659,7 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
             "height", pieDim.height).append("g").attr("transform",
             "translate(120,60)");
     var arc = d3.svg.arc().outerRadius(pieDim.right - 10).innerRadius(0);
-    var pie = d3.layout.pie().sort(null).value(function(d) {
+    var pie = d3.layout.pie().value(function(d) {
       return d.sum;
     });
 
@@ -1951,13 +1942,17 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
         return y(d.y + d.y0);
       });
 
-      var ageGroup = sc.stSvg.selectAll(".valgroup").data(newDataset).enter()
+      var stGroup = sc.stSvg.selectAll(".valgroup").data(newDataset).enter()
           .append("g").attr("class", "valgroup").style("fill", function(d, i) {
             return sc.stackedColor(i);
           }).attr("data-legend", function(d, i) {
-            return d3.keys(data[0])[i + 1];
+            if (_super.metric) {
+              return _super.metric;
+            } else {
+              return d3.keys(data[0])[i + 1];
+            }
           }).style("opacity", 0.7);
-      ageGroup.append("path").attr("d", function(d) {
+      stGroup.append("path").attr("d", function(d) {
         return area(d);
       });
     } else {
@@ -1971,7 +1966,11 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
           function(d) {
             return y(d.y1);
           }).attr("data-legend", function(d) {
-        return d.key;
+        if (_super.metric) {
+          return _super.metric;
+        } else {
+          return d.key;
+        }
       }).attr("height", function(d) {
         return y(d.y0) - y(d.y1);
       }).style("fill", function(d) {
@@ -2231,7 +2230,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
   _super.getExtent(json.data.active[0].datapoints);
   _super.closeDebug();
   if (json.meta.test_class == 'Http_get' || json.meta.test_class == 'Http_post') {
-    $('#availability').show();
+    $('#response').show();
     _super.config.lineChart.main.yAxis.left = 'tot_ms';
     _super.lineChart("#lineChart", json, function(data) {
       if (tabId) {
@@ -2242,7 +2241,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
         inactive.removeClass("inactive");
         inactive.addClass("active");
       }
-      if ($('#view').find("li.active").text() == 'Response') {
+      if (_super.selectedTab() == 'Response') {
         $('.tot_ms_view').show();
         $('.aggregate_view').hide();
         _super.lc.combo({
@@ -2251,7 +2250,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
           tfb_ms : 'tfb_ms',
           tot_ms : 'tot_ms'
         }, _super.config.lineChart.combo.id, false);
-        $('#gmetrices').val("tot_ms");
+        $('#' + _super.config.lineChart.combo.id).val("tot_ms");
         _super.miniLineChart("#minilineChart", json, function(data) {
         });
         _super.stackedChart('#stackedChart', data, function() {
@@ -2272,7 +2271,8 @@ UptimeChart.prototype.selectView = function(tabId, json) {
         $('.aggregate_view').show();
         _super.lc
             .combo(_super.metrices, _super.config.lineChart.combo.id, true);
-        $('#gmetrices').val(_super.config.lineChart.combo.init);
+        $('#' + _super.config.lineChart.combo.id).val(
+            _super.config.lineChart.combo.init);
         _super.miniLineChart("#minilineChart2", json, function(data) {
           if (_super.rowcount > 0) {
             _super.mc.brushEvent(_super.extent);
@@ -2285,7 +2285,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
       }
     });
   } else {
-    $('#availability').hide();
+    $('#response').hide();
     if (json.meta.test_class == 'Ping') {
       _super.config.lineChart.main.yAxis.left = 'rt_max';
     } else {
@@ -2295,7 +2295,8 @@ UptimeChart.prototype.selectView = function(tabId, json) {
       $('.tot_ms_view').hide();
       $('.aggregate_view').show();
       _super.lc.combo(_super.metrices, _super.config.lineChart.combo.id, true);
-      $('#gmetrices').val(_super.config.lineChart.combo.init);
+      $('#' + _super.config.lineChart.combo.id).val(
+          _super.config.lineChart.combo.init);
       _super.miniLineChart("#minilineChart2", json, function(data) {
         if (_super.rowcount > 0) {
           _super.mc.brushEvent(_super.extent);
