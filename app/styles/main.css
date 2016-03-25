@@ -230,24 +230,114 @@ circle {
 	opacity: .5;
 }
 
+/* time_ms */
+.line.linetime_ms {
+	stroke: #7D602B;
+}
+
+.focus circle.ytime_ms {
+	stroke: #7D602B;
+}
+
+.focus line.ytime_ms {
+	stroke: #7D602B;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* rt_min */
+.line.linert_min {
+	stroke: #660099;
+}
+
+.focus circle.yrt_min {
+	stroke: #660099;
+}
+
+.focus line.yrt_min {
+	stroke: #660099;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* rt_max */
+.line.linert_max {
+	stroke: #669900;
+}
+
+.focus circle.yrt_max {
+	stroke: #669900;
+}
+
+.focus line.yrt_max {
+	stroke: #669900;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* rt_avg */
+.line.linert_avg {
+	stroke: #333333;
+}
+
+.focus circle.yrt_avg {
+	stroke: #333333;
+}
+
+.focus line.yrt_avg {
+	stroke: #333333;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* rt_std */
+.line.linert_std {
+	stroke: #FF9900;
+}
+
+.focus circle.yrt_std {
+	stroke: #FF9900;
+}
+
+.focus line.yrt_std {
+	stroke: #FF9900;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
+/* loss_ */
+.line.lineloss_ {
+	stroke: #CC0000;
+}
+
+.focus circle.yloss_ {
+	stroke: #CC0000;
+}
+
+.focus line.yloss_ {
+	stroke: #CC0000;
+	stroke-dasharray: 3 3;
+	opacity: .5;
+}
+
 /* aggregate */
 .line.lineaggregate {
-	stroke: red;
+	stroke: #CC0000;
 	stroke-width: 1.5;
 }
 
 .line.areaaggregate {
-	stroke: red;
+	stroke: #CC0000;
 	fill-opacity: .5;
 	fill: white;
 }
 
 .focus circle.yaggregate {
-	stroke: red;
+	stroke: #CC0000;
 }
 
 .focus line.yaggregate {
-	stroke: red;
+	stroke: #CC0000;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }

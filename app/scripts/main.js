@@ -42,7 +42,7 @@ var UptimeChart = function(config) {
     if ($('#view').find("li.active").text() == 'Response') {
       _super.sc.stSvg.append('g').attr('class', 'brushed_range').append("text")
           .attr("x", _super.config.lineChart.main.margin.width - 200).attr("y",
-              -10).attr("text-anchor", "middle").style("text-decoration",
+              -5).attr("text-anchor", "middle").style("text-decoration",
               "underline").text(
               moment(_super.extent[0]).format(_super.config.format.full_date)
                   + ' ~ '
@@ -51,7 +51,7 @@ var UptimeChart = function(config) {
     } else {
       _super.lc.lineSvg.append('g').attr('class', 'brushed_range').append(
           "text").attr("x", _super.config.lineChart.main.margin.width - 160)
-          .attr("y", 40).attr("text-anchor", "middle").style("text-decoration",
+          .attr("y", 45).attr("text-anchor", "middle").style("text-decoration",
               "underline").text(
               moment(_super.extent[0]).format(_super.config.format.full_date)
                   + ' ~ '
@@ -546,6 +546,8 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
   // make chartData for Chart
   lc.getData = function(resultset) {
     var max = 0;
+    _super.test_class = resultset.meta.test_class;
+    $('#test_class').text("[" + _super.test_class.toUpperCase() + "]");
     var locMetric = resultset.data.metric;
     var metric = resultset.data.avgMetric;
     var judge = resultset.data.judge;
@@ -626,7 +628,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
   _super.metrices = {};
   for ( var key in _super.lineData[0]) {
-    if (key != _super.config.lineChart.main.yAxis.right) {
+    if (key != 'date' && key != _super.config.lineChart.main.yAxis.right) {
       _super.metrices[key] = key;
     }
   }
@@ -805,7 +807,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
     lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(
         main_yAxisLeft).append("text").attr("transform", "translate(5, -25)")
-        .attr("y", 6).attr("dy", ".71em").style("text-anchor", "end").text(
+        .attr("y", 12).attr("dy", ".71em").style("text-anchor", "end").text(
             "(ms)");
 
     // /[ main right y ]///////////////////////////
@@ -813,7 +815,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         "right").ticks(1);
     lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").attr(
         "transform", "translate(" + lc.main_width + ", 0)").call(
-        main_yAxisRight).append("text").attr("x", 16).attr("y", -16).attr("dy",
+        main_yAxisRight).append("text").attr("x", 16).attr("y", -15).attr("dy",
         ".71em").style("text-anchor", "end").text("(ms)");
 
     // /[ focus ]///////////////////////////
@@ -1928,7 +1930,7 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
     // "transform", "translate(0," + height + ")").call(xAxis);
     sc.stSvg.append("g").attr("class", "y axis").attr("fill", "#585956").call(
         yAxis).append("text").attr("transform", "translate(5, -25)").attr("y",
-        6).attr("dy", ".71em").style("text-anchor", "end").text("(ms)");
+        10).attr("dy", ".71em").style("text-anchor", "end").text("(ms)");
 
     if (_super.config.stackedChart.type == 'line') {
       var newDataset = [ "con_ms", "nsl_ms", "tfb_ms" ].map(function(n) {
@@ -2028,9 +2030,9 @@ UptimeChart.prototype.stackedChart = function(id, data, cb) {
       if (_super.metric) {
         tmp[_super.metric] = d[_super.metric];
       } else {
-        tmp.nsl_ms = d.nsl_ms;
-        tmp.con_ms = d.con_ms;
-        tmp.tfb_ms = d.tfb_ms;
+        tmp.nsl_ms = d.nsl_ms ? d.nsl_ms : 0;
+        tmp.con_ms = d.con_ms ? d.con_ms : 0;
+        tmp.tfb_ms = d.tfb_ms ? d.tfb_ms : 0;
       }
       input.push(tmp);
     });
@@ -2228,41 +2230,68 @@ UptimeChart.prototype.selectView = function(tabId, json) {
   _super.metric = null;
   _super.getExtent(json.data.active[0].datapoints);
   _super.closeDebug();
-  _super.lineChart("#lineChart", json, function(data) {
-    if (tabId) {
-      var active = $('#view').find("li.active");
-      var inactive = $('#view').find("li.inactive");
-      active.removeClass("active");
-      active.addClass("inactive");
-      inactive.removeClass("inactive");
-      inactive.addClass("active");
-    }
-    if ($('#view').find("li.active").text() == 'Response') {
-      $('.tot_ms_view').show();
-      $('.aggregate_view').hide();
-      _super.lc.combo({
-        nsl_ms : 'nsl_ms',
-        con_ms : 'con_ms',
-        tfb_ms : 'tfb_ms',
-        tot_ms : 'tot_ms'
-      }, _super.config.lineChart.combo.id, false);
-      $('#gmetrices').val("tot_ms");
-      _super.miniLineChart("#minilineChart", json, function(data) {
-      });
-      _super.stackedChart('#stackedChart', data, function() {
-        _super.histogramChart('#histogram', null, function(data) {
-          var gauge = _super.gaugeChart('#gauge', uptimeConfig.gauge);
-          gauge.render();
-          gauge.update(data.tot_ms);
-          setTimeout(function() {
-            _super.brushRange();
-          }, 100);
+  if (json.meta.test_class == 'Http_get' || json.meta.test_class == 'Http_post') {
+    $('#availability').show();
+    _super.config.lineChart.main.yAxis.left = 'tot_ms';
+    _super.lineChart("#lineChart", json, function(data) {
+      if (tabId) {
+        var active = $('#view').find("li.active");
+        var inactive = $('#view').find("li.inactive");
+        active.removeClass("active");
+        active.addClass("inactive");
+        inactive.removeClass("inactive");
+        inactive.addClass("active");
+      }
+      if ($('#view').find("li.active").text() == 'Response') {
+        $('.tot_ms_view').show();
+        $('.aggregate_view').hide();
+        _super.lc.combo({
+          nsl_ms : 'nsl_ms',
+          con_ms : 'con_ms',
+          tfb_ms : 'tfb_ms',
+          tot_ms : 'tot_ms'
+        }, _super.config.lineChart.combo.id, false);
+        $('#gmetrices').val("tot_ms");
+        _super.miniLineChart("#minilineChart", json, function(data) {
         });
-      });
-      _super.mapChart("#graph", json, 'tot_ms');
-      d3.select("[id='#graph']").style('margin-top', -40);
-      d3.select("[id='#gauge']").style('margin-top', 0);
-    } else { // aggregate
+        _super.stackedChart('#stackedChart', data, function() {
+          _super.histogramChart('#histogram', null, function(data) {
+            var gauge = _super.gaugeChart('#gauge', uptimeConfig.gauge);
+            gauge.render();
+            gauge.update(data.tot_ms);
+            setTimeout(function() {
+              _super.brushRange();
+            }, 100);
+          });
+        });
+        _super.mapChart("#graph", json, 'tot_ms');
+        d3.select("[id='#graph']").style('margin-top', -40);
+        d3.select("[id='#gauge']").style('margin-top', 0);
+      } else { // aggregate
+        $('.tot_ms_view').hide();
+        $('.aggregate_view').show();
+        _super.lc
+            .combo(_super.metrices, _super.config.lineChart.combo.id, true);
+        $('#gmetrices').val(_super.config.lineChart.combo.init);
+        _super.miniLineChart("#minilineChart2", json, function(data) {
+          if (_super.rowcount > 0) {
+            _super.mc.brushEvent(_super.extent);
+            setTimeout(function() {
+              _super.brushRange();
+            }, 100);
+          }
+        });
+        _super.mapChart("#graph", json, 'state');
+      }
+    });
+  } else {
+    $('#availability').hide();
+    if (json.meta.test_class == 'Ping') {
+      _super.config.lineChart.main.yAxis.left = 'rt_max';
+    } else {
+      _super.config.lineChart.main.yAxis.left = 'time_ms';
+    }
+    _super.lineChart("#lineChart", json, function(data) {
       $('.tot_ms_view').hide();
       $('.aggregate_view').show();
       _super.lc.combo(_super.metrices, _super.config.lineChart.combo.id, true);
@@ -2276,8 +2305,8 @@ UptimeChart.prototype.selectView = function(tabId, json) {
         }
       });
       _super.mapChart("#graph", json, 'state');
-    }
-  });
+    });
+  }
 }
 
 UptimeChart.prototype.createChart = function(ghcid) {
@@ -2335,6 +2364,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
               rawJsonData.length);
         }
         var json = jQuery.parseJSON(rawJsonData);
+        $("#csv_export")[0].target = req_url;
         if (json.data.metric.length == 0) {
           _super.showChart(false);
           $('.tot_ms_view').css({
@@ -2353,7 +2383,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
       function(XMLHttpRequest, textStatus, errorThrown) {
         try {
           var tmp = $P.json_decode(XMLHttpRequest.responseText);
-          var msg = ($P.property_exists(tmp, 'message')) ? tmp.message
+          var msg = (tmp && $P.property_exists(tmp, 'message')) ? tmp.message
               : XMLHttpRequest.responseText;
           _super.ajaxMessage('error', 'Unable to load data: ' + msg);
           _super.showChart(false);
@@ -2538,7 +2568,6 @@ var uptimeConfig = {
         "left" : 40
       },
       "yAxis" : {
-        "left" : "tot_ms",
         "right" : "judge"
       },
       "type" : "cardinal",
@@ -2628,18 +2657,24 @@ var uptimeConfig = {
     }
   },
   "legend" : {
-    "x" : 10,
+    "x" : 9,
     "y" : -3,
     "width" : 18,
     "height" : 18
   },
   "mapping" : {
-    "nsl_ms" : "DNS Time", // DNS Lookup #81bc00
-    "con_ms" : "Connect Time", // Time To Connect #7e7f74
-    "tfb_ms" : "Wait Time", // Time To 1st Byte #ffa400
-    "tot_ms" : "Response Time", // Roundtrip Time #7D602B
-    "state" : "Service State",
-    "aggregate" : "Aggregation",
+    "nsl_ms" : "DNS", // DNS Lookup #81bc00
+    "con_ms" : "Connect", // Time To Connect #7e7f74
+    "tfb_ms" : "Wait", // Time To 1st Byte #ffa400
+    "tot_ms" : "Response", // Roundtrip Time #7D602B
+    "time_ms" : "Response", // Roundtrip Time
+    "rt_min" : "RT MIN", // Roundtrip Time Minimum (ms)
+    "rt_max" : "RT MAX", // Roundtrip Time Maximum (ms)
+    "rt_avg" : "RT AVG", // Roundtrip Time Average (ms)
+    "rt_std" : "RT STD", // Roundtrip Time Standard (ms)
+    "loss_" : "LOSS", // Loss Percentage (%)
+    "state" : "SVC",
+    "aggregate" : "AGG",
     "judge" : "Up/Down"
   },
   "format" : {

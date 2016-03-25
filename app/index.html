@@ -85,18 +85,21 @@
 			<form class="form-inline">
 				<ul class="nav nav-tabs" id="view"
 					style="margin-bottom: 10px; font-size: 11pt;">
- 					<li class="active"><a
+ 					<li class="active" id='response'><a
 						href="javascript: uc.selectView('tot_ms')"  title="You can see in the response time perspective.">Response</a></li>
-					<li class="inactive"><a
+					<li class="inactive" id='availability'><a
 						href="javascript: uc.selectView('aggregate')" title="You can see in the availability perspective.">Availability</a></li>
 				</ul>
 				<div class="form-group">
-					<label for="gmetrices" class="col-xs-1 control-label">Metric:</label>
+					<label class="col-xs-2 control-label" style="margin-top: 10px;">
+						<p id="test_class"></p>
+					</label>
+					<label for="gmetrices" class="col-xs-1 control-label" style="margin-top: 10px;">Metric:</label>
 					<div class="col-xs-3" title="You can see a specific metric chart.">
 						<select id="gmetrices" name="gmetrices"
 							class="form-control col-sm-3" style="margin-left: 10px;" placeholder="gmetrices"></select>
 					</div>
-					<label for="locs" class="col-xs-1 control-label" style="margin-left: 20px;" >Agent:</label>
+					<label for="locs" class="col-xs-1 control-label" style="margin-left: 20px; margin-top: 10px;" >Agent:</label>
 					<div class="col-xs-3" title="You can see a specific agent in map.">
 						<select id="locs" class="form-control col-sm-3" style="margin-left: 10px;" placeholder="locs"></select>
 					</div>
