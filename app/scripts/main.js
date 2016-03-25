@@ -38,7 +38,7 @@ var UptimeChart = function(config) {
   });
 
   _super.selectedTab = function() {
-    if ($('#response').is(':visible')) {
+    if ($('#response')[0].style.display == '') {
       if ($('#view').find("li.active").text() == 'Response') {
         return 'Response';
       } else {
