@@ -73,6 +73,9 @@ var UptimeChart = function(config) {
   }
 
   _super.isBrushed = function() {
+    if (!_super.extent) {
+      return false;
+    }
     var ori_start = moment(
         _super.resultset.data.active[0].datapoints[0][1] * 1000).toDate();
     var ori_end = moment(
@@ -186,11 +189,15 @@ var UptimeChart = function(config) {
         + (b + 0x10000).toString(16).substring(3).toUpperCase();
   }
 
-  _super.getLabelFullName = function(akey) {
+  _super.getLabelName = function(akey, full) {
     var mapping = _super.config.mapping;
     for ( var key in mapping) {
       if (key == akey) {
-        return mapping[key];
+        if (full) {
+          return mapping[key].full;
+        } else {
+          return mapping[key].short;
+        }
       }
     }
     return akey;
@@ -211,7 +218,7 @@ var UptimeChart = function(config) {
       $('option', select).remove();
       options[options.length] = new Option('Select', '*');
       $.each(ds, function(key, obj) {
-        options[options.length] = new Option(_super.getLabelFullName(obj.loc),
+        options[options.length] = new Option(_super.getLabelName(obj.loc),
             obj.loc);
       });
       select.change(function(e) {
@@ -361,7 +368,9 @@ var UptimeChart = function(config) {
             var x = i * _super.config.legend.x + 2;
             return x + "em";
           }).text(function(d, i) {
-            return _super.getLabelFullName(d.key);
+            return _super.getLabelName(d.key);
+          }).on("mouseover", function(d, i) {
+            _super.tooltip(_super.getLabelName(d.key, 'full'), 150);
           }).on("click", function(d, i) {
             toggle('show', d, i);
             $('#' + _super.config.lineChart.combo.id).val(d.key);
@@ -393,6 +402,8 @@ var UptimeChart = function(config) {
           // }).attr("r", "0.8em")
           .style("fill", function(d) {
             return d.value.color;
+          }).on("mouseover", function(d, i) {
+            _super.tooltip(_super.getLabelName(d.key, 'full'), 150);
           }).on("click", function(d, i) {
             toggle('hide', d, i);
             $('#' + _super.config.lineChart.combo.id).val(d.key);
@@ -454,7 +465,9 @@ var UptimeChart = function(config) {
 
   _super.tooltip = function(txt, width) {
     d3.select("body").select('div.tooltip').remove();
-    txt = '<div>' + txt.split("\n").join("</div>\n<div>") + '</div>';
+    if (txt.indexOf("\n") > -1) {
+      txt = '<div>' + txt.split("\n").join("</div>\n<div>") + '</div>';
+    }
     var html = '<div>' + txt + '</div>';
     var tooltip = d3.select("body").append("div")
         .attr('pointer-events', 'none').attr("class", "tooltip").style(
@@ -639,11 +652,11 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       $.each(ds, function(key, obj) {
         if (key != 'date') {
           if (key == _super.config.lineChart.combo.init) {
-            options[options.length] = new Option(_super.getLabelFullName(key),
-                key, true, true);
+            options[options.length] = new Option(_super.getLabelName(key), key,
+                true, true);
           } else {
-            options[options.length] = new Option(_super.getLabelFullName(key),
-                key, false);
+            options[options.length] = new Option(_super.getLabelName(key), key,
+                false);
           }
         }
       });
@@ -839,12 +852,11 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           if (key != _super.config.lineChart.main.yAxis.right
               && '#FFFFFF' != _super.convertRGBDecimalToHex(d3.select(
                   ".line" + key).style("stroke"))) {
-            focus.select("circle.y" + key).attr(
-                "transform",
-                "translate(" + lc.main_x(d.date) + ","
-                    + lc.main_y[left_y](d[key]) + ")");
+            var y = lc.main_y[key](d[key]);
+            focus.select("circle.y" + key).attr("transform",
+                "translate(" + lc.main_x(d.date) + "," + y + ")");
             if (key == 'aggregate') {
-              var descript = '[Availability] \n';
+              var descript = '*****************************************************\n[Availability] \n';
               var sum = 0;
               for (var i = 0; i < _super.metric_data.length; i++) {
                 var type = _super.metric_data[i].target;
@@ -866,9 +878,9 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
                     avail = 0;
                   }
                   sum += avail;
-                  descript += ' - ' + _super.getLabelFullName(type) + ' : '
-                      + avail + ' = ' + metric + ' / (' + active + ' + '
-                      + include + ') \n';
+                  descript += ' - ' + _super.getLabelName(type) + ' : ' + avail
+                      + ' = ' + metric + ' / (' + active + ' + ' + include
+                      + ') \n';
                 }
               }
               var uptime_per = sum / _super.aggregate_max * 100;
@@ -877,33 +889,32 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
               } else {
                 uptime_per = 0;
               }
-              descript += ' - availability sum: ' + sum + ' \n';
-              descript += ' - availability max: ' + _super.aggregate_max
-                  + ' \n';
-              descript = '[' + _super.fullFormatDate(d.date)
-                  + '`s Aggregation]: ' + uptime_per + '\n = ' + sum + ' / '
-                  + _super.aggregate_max + ' * 100 /d[key]: ' + d[key] + '\n'
+              descript += ' - SUM: ' + sum + ' \n';
+              descript += ' - MAX: ' + _super.aggregate_max + ' \n';
+              descript = '[' + _super.fullFormatDate(d.date) + '`s ' + key
+                  + ']: \n' + uptime_per + ' = ' + sum + ' / '
+                  + _super.aggregate_max + ' * 100 / data[' + key + ']\n'
                   + descript;
               _super.tooltip(descript, 250);
             }
             if (key != metric && '*' != metric) {
-              var formatOutput = _super.getLabelFullName(key) + " - "
+              var formatOutput = _super.getLabelName(key) + " - "
                   + formatDate2(d.date) + " - " + d[key] + " ms";
               focus.select("text.y" + key).attr(
                   "transform",
                   "translate(" + lc.main_x(d.date) + ","
-                      + lc.main_y[left_y](d[key]) + ")").text(formatOutput);
+                      + lc.main_y[key](d[key]) + ")").text(formatOutput);
               focus.select(".y" + key).attr(
                   "transform",
                   "translate(" + lc.main_width * -1 + ", "
-                      + lc.main_y[left_y](d[key]) + ")").attr("x2",
+                      + lc.main_y[key](d[key]) + ")").attr("x2",
                   lc.main_width + lc.main_x(d.date));
             }
           } else {
             focus.select("text.y" + key).attr(
                 "transform",
-                "translate(" + lc.main_x(d.date) + ","
-                    + lc.main_y[left_y](d[key]) + ")").text('');
+                "translate(" + lc.main_x(d.date) + "," + lc.main_y[key](d[key])
+                    + ")").text('');
           }
         }
         focus.select(".x").attr("transform",
@@ -1020,13 +1031,32 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       }
     }
 
+    mc.showBrush = function() {
+      if (_super.brush) {
+        _super.mc.mlSvg.selectAll(".extent").attr("x", _super.brush.x).attr(
+            "width", _super.brush.width);
+        mc.mlSvg.selectAll(".extent").style({
+          fill : "red",
+          visibility : "visible"
+        })
+        mc.mlSvg.selectAll(".resize rect").style({
+          fill : "red",
+          visibility : "visible"
+        })
+      }
+    }
+
     var brushstart = function() {
     }
 
     var brushend = function() {
+      _super.brush = {
+        x : mc.mlSvg.selectAll(".extent").attr("x"),
+        width : mc.mlSvg.selectAll(".extent").attr("width")
+      };
+      mc.showBrush();
       _super.update();
     }
-
     mc.brush = d3.svg.brush().x(mc.mini_x).on("brush", mc.brushEvent).on(
         'brushstart', brushstart).on('brushend', brushend);
 
@@ -1094,6 +1124,8 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     }
     mc.mini.append("g").attr("class", "x brush").call(mc.brush).selectAll(
         "rect").attr("y", -6).attr("height", mc.mini_height + 7);
+
+    mc.showBrush();
   }
   _super.mc = mc;
 
@@ -1336,19 +1368,26 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
               }).on("mouseout", function(d) {
             d3.select(this).style("fill", "#ccc");
           })
-      var zoom = d3.behavior.zoom()
-          .on(
-              "zoom",
-              function() {
-                map.states.attr("transform", "translate("
-                    + d3.event.translate.join(",") + ")scale(" + d3.event.scale
-                    + ")");
-                map.states.selectAll("circle").attr("d",
-                    path.projection(projection));
-                map.states.selectAll("path").attr("d",
-                    path.projection(projection));
-              });
-
+      var zoom = d3.behavior.zoom().on(
+          "zoom",
+          function() {
+            if (map.mapSvg.zoomable) {
+              map.states.attr("transform", "translate("
+                  + d3.event.translate.join(",") + ")scale(" + d3.event.scale
+                  + ")");
+              map.states.selectAll("circle").attr("d",
+                  path.projection(projection));
+              map.states.selectAll("path").attr("d",
+                  path.projection(projection));
+            }
+          });
+      map.mapSvg.on("click", function(d, i) {
+        if (!map.mapSvg.zoomable) {
+          map.mapSvg.zoomable = true;
+        } else {
+          map.mapSvg.zoomable = false;
+        }
+      })
       map.states.selectAll("circle").data(data).enter().append("g").append(
           "circle").style("stroke", "black").attr("cx", function(d, i) {
         return projection([ +d["longitude"], +d["latitude"] ])[0];
@@ -1363,7 +1402,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
             var html = '<div>';
             html += '<div>* Site: ' + d["loc"];
             html += '</div>';
-            html += '<div>* ' + _super.getLabelFullName(map.metric) + ': '
+            html += '<div>* ' + _super.getLabelName(map.metric) + ': '
                 + Math.round(_super.map.getCircleTotal(d));
             if (map.metric != 'state') {
               html += ' (ms)';
@@ -1394,7 +1433,6 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         'fill' : 'red',
         'font' : '10px sans-serif'
       }).attr("d", path);
-
       map.mapSvg.call(zoom);
     });
   }
@@ -1599,7 +1637,7 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
     }).attr("x", function(d) {
       return x(d[0]) + x.rangeBand() / 2;
     }).attr("y", function(d) {
-      return y(d[1]) + 15;
+      return y(d[1]) - 5;
     }).attr("text-anchor", "middle").style({
       'fill' : 'black',
       'font' : '10px sans-serif'
@@ -1711,7 +1749,7 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
           return segColor(d.metric);
         });
     tr.append("td").attr("class", 'legendTbName').text(function(d) {
-      return _super.getLabelFullName(d.metric) + ":";
+      return _super.getLabelName(d.metric) + ":";
     });
     tr.append("td").attr("class", 'legendTbSum').text(function(d) {
       return d3.format(",")(d.sum);
@@ -2227,7 +2265,9 @@ UptimeChart.prototype.selectView = function(tabId, json) {
     json = _super.resultset;
   }
   _super.metric = null;
-  _super.getExtent(json.data.active[0].datapoints);
+  if (!_super.isBrushed()) {
+    _super.getExtent(json.data.active[0].datapoints);
+  }
   _super.closeDebug();
   if (json.meta.test_class == 'Http_get' || json.meta.test_class == 'Http_post') {
     $('#response').show();
@@ -2664,19 +2704,58 @@ var uptimeConfig = {
     "height" : 18
   },
   "mapping" : {
-    "nsl_ms" : "DNS", // DNS Lookup #81bc00
-    "con_ms" : "Connect", // Time To Connect #7e7f74
-    "tfb_ms" : "Wait", // Time To 1st Byte #ffa400
-    "tot_ms" : "Response", // Roundtrip Time #7D602B
-    "time_ms" : "Response", // Roundtrip Time
-    "rt_min" : "RT MIN", // Roundtrip Time Minimum (ms)
-    "rt_max" : "RT MAX", // Roundtrip Time Maximum (ms)
-    "rt_avg" : "RT AVG", // Roundtrip Time Average (ms)
-    "rt_std" : "RT STD", // Roundtrip Time Standard (ms)
-    "loss_" : "LOSS", // Loss Percentage (%)
-    "state" : "SVC",
-    "aggregate" : "AGG",
-    "judge" : "Up/Down"
+    "nsl_ms" : {
+      "short" : "DNS",
+      "full" : "DNS Lookup Time (ms)"
+    },
+    "con_ms" : {
+      "short" : "CONN",
+      "full" : "DNS LookupTime To Connect (ms)"
+    },
+    "tfb_ms" : {
+      "short" : "WAIT",
+      "full" : "Time To 1st Byte (ms)"
+    },
+    "tot_ms" : {
+      "short" : "RESP",
+      "full" : "Roundtrip Time (ms)"
+    },
+    "time_ms" : {
+      "short" : "RESP",
+      "full" : "Roundtrip Time (ms)"
+    },
+    "rt_min" : {
+      "short" : "RT MIN",
+      "full" : "Roundtrip Time Minimum (ms)"
+    },
+    "rt_max" : {
+      "short" : "RT MAX",
+      "full" : "Roundtrip Time Maximum (ms)"
+    },
+    "rt_avg" : {
+      "short" : "RT AVG",
+      "full" : "Roundtrip Time Average (ms)"
+    },
+    "rt_std" : {
+      "short" : "RT STD",
+      "full" : "Roundtrip Time Standard (ms)"
+    },
+    "loss_" : {
+      "short" : "LOSS",
+      "full" : "Loss Percentage (%)"
+    },
+    "state" : {
+      "short" : "SVC",
+      "full" : "Service status"
+    },
+    "aggregate" : {
+      "short" : "AGG",
+      "full" : "Aggregation value"
+    },
+    "judge" : {
+      "short" : "UD",
+      "full" : "Up/Down status"
+    }
   },
   "format" : {
     "full_date" : "DD/MM/YYYY HH:mm:ss"
