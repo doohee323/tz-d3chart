@@ -1261,28 +1261,39 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
 
   map.getCircleSize = function(d, loc) {
     var size = Math.round(map.getCircleTotal(d, loc));
+    var s = 0;
     for ( var key in _super.config.map.circle) {
       var val = _super.config.map.circle[key];
-      if (size < val) {
-        var s = val * map.circle_scale;
-        if (s < 5) {
-          s = 10;
-        }
-        return s;
+      s = size * map.circle_scale;
+      if (s < 8) {
+        s = 8;
+      } else if (s >= 15) {
+        s = 15;
       }
     }
-    return 50;
+    return s;
   }
 
   map.getCircleColor = function(d, loc) {
-    var size = Math.round(map.getCircleTotal(d, loc));
-    for ( var key in _super.config.map.circle) {
-      var val = _super.config.map.circle[key];
-      if (size < val) {
-        return key;
+    var size = map.getCircleSize(d, loc);
+    var color = 'blue';
+    if (map.metric == 'state') {
+      debugger;
+      for ( var key in _super.config.map.circle) {
+        var val = _super.config.map.circle[key];
+        if (size >= val) {
+          color = key;
+        }
+      }
+    } else {
+      for ( var key in _super.config.map.circle) {
+        var val = _super.config.map.circle[key];
+        if (size >= val) {
+          color = key;
+        }
       }
     }
-    return "#dc291e";
+    return color;
   }
 
   map.getCircleTotal = function(d, loc) {
@@ -2194,7 +2205,7 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
     return newAngle;
   }
 
-  gauge.configure = function(config) {
+  var defaultConfigure = function(config) {
     var prop;
     for (prop in config) {
       defaultConfig[prop] = config[prop];
@@ -2223,6 +2234,11 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
     });
   };
 
+  gauge.getColor = function(i) {
+    var d = 1 / defaultConfig.majorTicks;
+    return defaultConfig.arcColorFn(d * i);
+  }
+  
   gauge.render = function(newValue) {
     d3.select("[id='gaugeSvg']").remove();
     svg = d3.select('#histogram').append("span").attr('class', 'gauge').attr(
@@ -2281,7 +2297,7 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
 
   };
 
-  gauge.configure(config);
+  defaultConfigure(config);
 
   _super.gauge = gauge;
   return gauge;
@@ -2687,7 +2703,7 @@ var uptimeConfig = {
     "clipWidth" : 160,
     "clipHeight" : 160,
     "ringWidth" : 60,
-    "maxValue" : 300,
+    "maxValue" : 500,
     "transitionMs" : 2000
   },
   "map" : {
@@ -2697,11 +2713,12 @@ var uptimeConfig = {
       "top" : 200,
       "left" : 390
     },
-    "circle_scale" : 0.5,
+    "circle_scale" : 0.03,
     "circle" : {
-      "#81bc00" : 5,
-      "#236093" : 10,
-      "#dc291e" : 50
+      "#81bc00" : 8,
+      "#7e7f74" : 10,
+      "#ffa400" : 13,
+      "#dc291e" : 15
     },
     "scale" : 135,
     "tooltip" : {
