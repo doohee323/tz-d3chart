@@ -1278,7 +1278,6 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     var size = map.getCircleSize(d, loc);
     var color = '#81bc00';
     if (map.metric == 'state') {
-      debugger;
       for ( var key in _super.config.map.circle) {
         var val = _super.config.map.circle[key];
         if (size >= val) {
@@ -1307,20 +1306,34 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     }
     var val = 0;
     var cnt = 0;
-    for ( var key in d) {
-      if (key != 'loc' && key != 'latitude' && key != 'longitude'
-          && key != 'metric') {
-        d.key = key;
-        for (var i = 0; i < d[key].length; i++) {
-          if (parseFloat(d[key][i][0]) > 0) {
-            val += parseFloat(d[key][i][0]);
-            cnt++;
+    if (map.metric != 'state') {
+      for ( var key in d) {
+        if (key != 'loc' && key != 'latitude' && key != 'longitude'
+            && key != 'metric') {
+          d.key = key;
+          for (var i = 0; i < d[key].length; i++) {
+            if (parseFloat(d[key][i][0]) > 0) {
+              val += parseFloat(d[key][i][0]);
+              cnt++;
+            }
           }
         }
       }
-    }
-    if (cnt > 0) {
-      val = val / cnt;
+      if (cnt > 0) {
+        val = val / cnt;
+      }
+    } else {
+      for ( var key in d) {
+        if (key != 'loc' && key != 'latitude' && key != 'longitude'
+            && key != 'metric') {
+          d.key = key;
+          for (var i = 0; i < d[key].length; i++) {
+            if (!parseFloat(d[key][i][0]) || parseFloat(d[key][i][0]) == 0) {
+              val++;
+            }
+          }
+        }
+      }
     }
     d.val = val;
     return val;
@@ -1348,6 +1361,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     var json = new Array();
     var startTime = _super.extent[0];
     var endTime = _super.extent[1];
+    console.log('startTime:' + startTime + '/endTime:' + endTime);
     if (_super.extent) {
       for (var i = 0; i < _super.map.mapData.length; i++) {
         var obj = {};
@@ -1364,7 +1378,6 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
                   obj.datapoints = new Array();
                 }
                 obj.datapoints[obj.datapoints.length] = datapoints[j];
-                obj.datapoints[obj.datapoints.length - 1][1] = dt;
               }
             }
           }
@@ -2238,7 +2251,7 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
     var d = 1 / defaultConfig.majorTicks;
     return defaultConfig.arcColorFn(d * i);
   }
-  
+
   gauge.render = function(newValue) {
     d3.select("[id='gaugeSvg']").remove();
     svg = d3.select('#histogram').append("span").attr('class', 'gauge').attr(
@@ -2703,7 +2716,7 @@ var uptimeConfig = {
     "clipWidth" : 160,
     "clipHeight" : 160,
     "ringWidth" : 60,
-    "maxValue" : 500,
+    "maxValue" : 700,
     "transitionMs" : 2000
   },
   "map" : {
