@@ -232,8 +232,8 @@ var UptimeChart = function(config) {
       $('option', select).remove();
       options[options.length] = new Option('Select', '*');
       $.each(ds, function(key, obj) {
-        options[options.length] = new Option(_super.getLabelName(obj.loc,
-            'mid'), obj.loc);
+        options[options.length] = new Option(_super
+            .getLabelName(obj.loc, 'mid'), obj.loc);
       });
       select.change(function(e) {
         try {
@@ -670,11 +670,11 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       $.each(ds, function(key, obj) {
         if (key != 'date') {
           if (key == _super.config.lineChart.combo.init) {
-            options[options.length] = new Option(_super.getLabelName(key,
-                'mid'), key, true, true);
+            options[options.length] = new Option(_super
+                .getLabelName(key, 'mid'), key, true, true);
           } else {
-            options[options.length] = new Option(_super.getLabelName(key,
-                'mid'), key, false);
+            options[options.length] = new Option(_super
+                .getLabelName(key, 'mid'), key, false);
           }
         }
       });
@@ -1050,18 +1050,29 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     }
 
     mc.showBrush = function() {
-      if (_super.brush) {
-        _super.mc.mlSvg.selectAll(".extent").attr("x", _super.brush.x).attr(
-            "width", _super.brush.width);
-        mc.mlSvg.selectAll(".extent").style({
-          fill : "red",
-          visibility : "visible"
-        })
-        mc.mlSvg.selectAll(".resize rect").style({
-          fill : "red",
-          visibility : "visible"
-        })
-      }
+      setTimeout(function() {
+        if (!_super.brush) {
+          var width = parseInt(_super.mc.mlSvg.selectAll(".background").attr(
+              "width"));
+          var brushed = width * (_super.config.lineChart.main.range / 100);
+          _super.brush = {
+            x : (width - brushed),
+            width : brushed
+          };
+        }
+        if (_super.brush) {
+          _super.mc.mlSvg.selectAll(".extent").attr("x", _super.brush.x).attr(
+              "width", _super.brush.width);
+          mc.mlSvg.selectAll(".extent").style({
+            fill : "red",
+            visibility : "visible"
+          })
+          mc.mlSvg.selectAll(".resize rect").style({
+            fill : "red",
+            visibility : "visible"
+          })
+        }
+      }, 20);
     }
 
     var brushstart = function() {
