@@ -1276,7 +1276,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
 
   map.getCircleColor = function(d, loc) {
     var size = map.getCircleSize(d, loc);
-    var color = 'blue';
+    var color = '#81bc00';
     if (map.metric == 'state') {
       debugger;
       for ( var key in _super.config.map.circle) {
