@@ -77,9 +77,9 @@ var UptimeChart = function(config) {
       return false;
     }
     var ori_start = moment(
-        _super.resultset.data.active[0].datapoints[0][1] * 1000).toDate();
+        _super.resultset.data.avgActive[0].datapoints[0][1] * 1000).toDate();
     var ori_end = moment(
-        _super.resultset.data.active[0].datapoints[_super.resultset.data.active[0].datapoints.length - 1][1] * 1000)
+        _super.resultset.data.avgActive[0].datapoints[_super.resultset.data.avgActive[0].datapoints.length - 1][1] * 1000)
         .toDate();
     var brush_start = _super.extent[0];
     var brush_end = _super.extent[1];
@@ -96,7 +96,7 @@ var UptimeChart = function(config) {
     var json = [];
 
     if (!_super.isBrushed()) {
-      _super.getExtent(_super.resultset.data.active[0].datapoints);
+      _super.getExtent(_super.resultset.data.avgActive[0].datapoints);
       if (_super.selectedTab() == 'Availability') {
         _super.mc.brushEvent(_super.extent);
       }
@@ -520,6 +520,8 @@ var UptimeChart = function(config) {
     }
     $("#loading_data").hide();
   }
+  
+  $('#csv_export').text('   JSON ');
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -567,7 +569,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     var locMetric = resultset.data.metric;
     var metric = resultset.data.avgMetric;
     var judge = resultset.data.judge;
-    var active = resultset.data.active[0];
+    var active = resultset.data.avgActive[0];
     var include = resultset.data.include[0];
     var metrices = resultset.meta.metrices;
     var locs = resultset.meta.locs;
@@ -1184,6 +1186,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   map.getData = function(resultset, metric) {
     data = resultset.data.metric;
     locs = resultset.meta.locs;
+    var active = resultset.data.active;
     if (metric == null || metric == '*') {
       if (_super.selectedTab() == 'Response') {
         metric = 'tot_ms';
@@ -1191,9 +1194,25 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         metric = 'state';
       }
     }
+    var activeLoc = new Array();
+    for (var i = 0; i < active.length; i++) {
+      var bChk = false;
+      for (var j = 0; j < active[i].datapoints.length; j++) {
+        if (active[i].datapoints[j][0] && active[i].datapoints[j][0] > 0) {
+          bChk = true;
+          break;
+        }
+      }
+      if (bChk) {
+        activeLoc[activeLoc.length] = active[i].target;
+      }
+    }
     var mapData = new Array();
     for (var i = 0; i < locs.length; i++) {
       var loc = locs[i].loc;
+      if (activeLoc.indexOf(loc) == -1) {
+        break;
+      }
       var row = {};
       row.loc = loc;
       row.metric = metric;
@@ -1211,6 +1230,9 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
 
     for (var i = 0; i < locs.length; i++) {
       var loc = locs[i].loc;
+      if (activeLoc.indexOf(loc) == -1) {
+        break;
+      }
       var bExist = false;
       for (var j = 0; j < mapData.length; j++) {
         if (mapData[j].loc == loc) {
@@ -1404,7 +1426,12 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
       $('.map-top').css({
         "top" : "-150px"
       });
-    }
+    } else if (_super.width > 500) {
+        $('.map-top').css({
+          "top" : "-300px"
+        });
+    } 
+    
     var offset = [ _super.config.map.margin.left, _super.config.map.margin.top ];
     var projection = d3.geo.equirectangular().scale(_super.config.map.scale)
         .translate(offset);
@@ -2218,7 +2245,7 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
     return newAngle;
   }
 
-  var defaultConfigure = function(config) {
+  gauge.configure = function(config) {
     var prop;
     for (prop in config) {
       defaultConfig[prop] = config[prop];
@@ -2246,11 +2273,6 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
       return deg2rad(defaultConfig.minAngle + (ratio * range));
     });
   };
-
-  gauge.getColor = function(i) {
-    var d = 1 / defaultConfig.majorTicks;
-    return defaultConfig.arcColorFn(d * i);
-  }
 
   gauge.render = function(newValue) {
     d3.select("[id='gaugeSvg']").remove();
@@ -2310,7 +2332,7 @@ UptimeChart.prototype.gaugeChart = function(id, config) {
 
   };
 
-  defaultConfigure(config);
+  gauge.configure(config);
 
   _super.gauge = gauge;
   return gauge;
@@ -2325,7 +2347,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
   }
   _super.metric = null;
   if (!_super.isBrushed()) {
-    _super.getExtent(json.data.active[0].datapoints);
+    _super.getExtent(json.data.avgActive[0].datapoints);
   }
   _super.closeDebug();
   if (json.meta.test_class == 'Http_get' || json.meta.test_class == 'Http_post') {
@@ -2440,9 +2462,6 @@ UptimeChart.prototype.createChart = function(ghcid) {
   }
   // make request url
   var req_url = '/statsdata/health_uptime?hc_id=' + ghcid;
-  if (gmetric) {
-    req_url += '&metric=' + gmetric;
-  }
   if (locs) {
     req_url += '&loc=' + locs;
   }
@@ -2465,14 +2484,24 @@ UptimeChart.prototype.createChart = function(ghcid) {
         }
         var json = jQuery.parseJSON(rawJsonData);
         $("#csv_export")[0].target = req_url;
+        console.log(json.meta.req_url);
+        console.log(rawJsonData);
         if (json.data.metric.length == 0) {
           _super.showChart(false);
           $('.tot_ms_view').css({
             'height' : '100px'
           });
+          $('#stats_date_range').html('');
           console.timeEnd("query response time");
           return;
         }
+        var datapoints = json.data.active[0].datapoints;
+        var date_start = _super.toUTC(new Date(datapoints[0][1]*1000));
+        var date_end = _super.toUTC(new Date(datapoints[datapoints.length - 1][1]*1000));
+		var rangeSpan = moment(date_start).format('DD MMM YYYY HH:mm UTC') + ' <span>to</span> ' 
+					+ moment(date_end).format('DD MMM YYYY HH:mm UTC');
+		$('#stats_date_range').html(rangeSpan);
+        
         $('.tot_ms_view').css({
           'height' : '450px'
         });
@@ -2649,7 +2678,7 @@ var uptimeConfig = {
   "slider" : {
     "init" : {
       "x0" : 0,
-      "x1" : 60
+      "x1" : 120
     },
     "range" : {
       "min" : 0,
