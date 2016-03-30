@@ -1154,11 +1154,14 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   map.mapElem = mapElem;
   map.metric = metric;
 
+  var data = resultset.data.metric;
+  var locs = resultset.meta.locs;
+
   // make mapData for lineChart from maxtrix, locs
   map.getData = function(resultset, metric) {
-    var data = resultset.data.metric;
+    data = resultset.data.metric;
+    locs = resultset.meta.locs;
     var active = resultset.data.active;
-    var locs = resultset.meta.locs;
     if (metric == null || metric == '*') {
       if (_super.selectedTab() == 'Response') {
         metric = 'tot_ms';
