@@ -121,33 +121,6 @@ var UptimeChart = function(config) {
             _super.brushRange();
           });
     }
-
-    if (_super.selectedTab() == 'Response') {
-    } else {
-      var data2 = new Array();
-      if (metric == '*') {
-        data2 = _super.lineData;
-      } else {
-        if (metric) {
-          for (var i = 0; i < _super.lineData.length; i++) {
-            var tmp = {};
-            for ( var key in _super.lineData[i]) {
-              if (key == 'date' || key == metric
-                  || key == _super.config.lineChart.main.yAxis.right) {
-                tmp[key] = _super.lineData[i][key];
-              }
-            }
-            data2[data2.length] = tmp;
-          }
-        }
-      }
-      if (data2.length > 0) {
-        _super.lc.init();
-        _super.lc.update(data2, metric);
-        _super.mc.update(_super.lineData, _super.config.lineChart.combo.init);
-      }
-    }
-
     _super.map.mapData = _super.map.getData(_super.resultset, metric);
     json = _super.map.getBrushedData();
     _super.map.update(json, metric);
@@ -167,7 +140,7 @@ var UptimeChart = function(config) {
           _super.toUTC(moment(end * 1000).toDate()) ];
     }
     _super.diff = moment(end * 1000).diff(moment(start * 1000), 'minutes');
-    var range = parseInt(_super.config.lineChart.main.range);
+    var range = _super.diff * (_super.config.lineChart.main.range / 100);
     if (_super.diff > range) {
       _super.extent = [
           _super.toUTC(moment(end * 1000).add(range * -1, 'minutes').toDate()),
@@ -520,7 +493,7 @@ var UptimeChart = function(config) {
     }
     $("#loading_data").hide();
   }
-  
+
   $('#csv_export').text('   JSON ');
 }
 
@@ -1074,7 +1047,7 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
             visibility : "visible"
           })
         }
-      }, 20);
+      }, 100);
     }
 
     var brushstart = function() {
@@ -1146,9 +1119,11 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     }
 
     // /[ mc.mini lineChart ]///////////////////////////
+    mc.mini_xAxis = d3.svg.axis().scale(mc.mini_x).tickFormat(
+        d3.time.format(_super.axisFormat)).orient("bottom");
+
     mc.mini.append("g").attr("class", "x axis").attr("fill", "#585956").attr(
-        "transform", "translate(0," + mc.mini_height + ")").call(
-        _super.lc.main_xAxis);
+        "transform", "translate(0," + mc.mini_height + ")").call(mc.mini_xAxis);
     for ( var key in _super.lc.main_y) {
       mc.mini.append("path").datum(data).attr("class", "line area").attr("d",
           mc.mini_line[key]);
@@ -1179,14 +1154,11 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   map.mapElem = mapElem;
   map.metric = metric;
 
-  var data = resultset.data.metric;
-  var locs = resultset.meta.locs;
-
   // make mapData for lineChart from maxtrix, locs
   map.getData = function(resultset, metric) {
-    data = resultset.data.metric;
-    locs = resultset.meta.locs;
+    var data = resultset.data.metric;
     var active = resultset.data.active;
+    var locs = resultset.meta.locs;
     if (metric == null || metric == '*') {
       if (_super.selectedTab() == 'Response') {
         metric = 'tot_ms';
@@ -1427,11 +1399,11 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         "top" : "-150px"
       });
     } else if (_super.width > 500) {
-        $('.map-top').css({
-          "top" : "-300px"
-        });
-    } 
-    
+      $('.map-top').css({
+        "top" : "-300px"
+      });
+    }
+
     var offset = [ _super.config.map.margin.left, _super.config.map.margin.top ];
     var projection = d3.geo.equirectangular().scale(_super.config.map.scale)
         .translate(offset);
@@ -2496,12 +2468,14 @@ UptimeChart.prototype.createChart = function(ghcid) {
           return;
         }
         var datapoints = json.data.active[0].datapoints;
-        var date_start = _super.toUTC(new Date(datapoints[0][1]*1000));
-        var date_end = _super.toUTC(new Date(datapoints[datapoints.length - 1][1]*1000));
-		var rangeSpan = moment(date_start).format('DD MMM YYYY HH:mm UTC') + ' <span>to</span> ' 
-					+ moment(date_end).format('DD MMM YYYY HH:mm UTC');
-		$('#stats_date_range').html(rangeSpan);
-        
+        var date_start = _super.toUTC(new Date(datapoints[0][1] * 1000));
+        var date_end = _super.toUTC(new Date(
+            datapoints[datapoints.length - 1][1] * 1000));
+        var rangeSpan = moment(date_start).format('DD MMM YYYY HH:mm UTC')
+            + ' <span>to</span> '
+            + moment(date_end).format('DD MMM YYYY HH:mm UTC');
+        $('#stats_date_range').html(rangeSpan);
+
         $('.tot_ms_view').css({
           'height' : '450px'
         });
@@ -2700,7 +2674,7 @@ var uptimeConfig = {
         "right" : "judge"
       },
       "type" : "cardinal",
-      "range" : 30
+      "range" : 5
     },
     "mini" : {
       "margin" : {
