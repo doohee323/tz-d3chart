@@ -11,7 +11,7 @@ npm install
 #npm install --save-dev gulp-minify-css browserify
 
 npm install --save-dev batch-stream2 main-bower-files gulp-stylus gulp-livereload gulp-include gulp-browserify 
-npm install --save-dev gulp-watch gulp-rename
+npm install --save-dev gulp-watch gulp-rename gulp-add-src
 
 
 

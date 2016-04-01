@@ -6,7 +6,9 @@ var minifyCss = require('gulp-minify-css');
 var webserver = require('gulp-webserver');
 var open = require('gulp-open');
 var uglify = require('gulp-uglify');
+var sourcemaps = require('gulp-sourcemaps');
 var rename = require('gulp-rename');
+var addsrc = require('gulp-add-src');
 
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
@@ -19,17 +21,21 @@ var dirSync = require('gulp-directory-sync');
 var dependencies = [ 'react', 'react-dom' ];
 var scriptsCount = 0;
 
-var appDir = 'app';
-
-var jsxcDir = appDir + '/jsx';
-
-var srcDir = 'tmp';
+var srcDir = 'app';
 var srcDirs = {
-  js : srcDir + '/js/**/*.*',
-  css : srcDir + '/css/**/*.css',
-  img : srcDir + '/img/**/*.*',
-  data : srcDir + '/data/*.*',
-  html : srcDir + '/**/*.html'
+    js : srcDir + '/js/*.js',
+    css : srcDir + '/css/*.css',
+    img : srcDir + '/img/*.*',
+    html : srcDir + '/*.html'
+  };
+var jsxcDir = srcDir + '/jsx';
+
+var tmpDir = 'tmp';
+var tmpDirs = {
+  js : tmpDir + '/js/*.*',
+  css : tmpDir + '/css/*.css',
+  img : tmpDir + '/img/*.*',
+  html : tmpDir + '/*.html'
 };
 
 var targetDir = 'web';
@@ -37,69 +43,68 @@ var targetDirs = {
   js : targetDir + '/js',
   css : targetDir + '/css',
   img : targetDir + '/img',
-  data : targetDir + '/data',
   html : targetDir
 };
 
-// Gulp tasks
-// ----------------------------------------------------------------------------
-gulp
-    .task(
-        'copy-vendor',
-        function() {
-          gulp
-              .src(
-                  [
-                      './bower_components/bootstrap/dist/css/bootstrap.css',
-                      './bower_components/jt.timepicker/jquery.timepicker.css',
-                      './bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css',
-                      './bower_components/pikaday/css/pikaday.css' ]).pipe(
-                  gulp.dest(srcDir + '/css'));
-
-          return gulp
-              .src(
-                  [
-                      './bower_components/jquery/dist/jquery.js',
-                      './bower_components/jquery/dist/jquery-ui.js',
-                      './bower_components/datepair.js/dist/datepair.js',
-                      './bower_components/datepair.js/dist/jquery.datepair.js',
-                      './bower_components/jt.timepicker/jquery.timepicker.js',
-                      './bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js',
-                      './bower_components/moment/moment.js',
-                      './bower_components/pikaday/pikaday.js',
-                      './bower_components/bootstrap/js/*.js' ]).pipe(
-                  gulp.dest(srcDir + '/js'));
-        });
-
-gulp.task('compile', [ 'compile-js', 'compile-css', 'compile-img',
-    'deploy-data', 'compile-html' ], function() {
+gulp.task('compile', [ 'compile-js', 'compile-css', 'compile-img', 'compile-html', 'react' ], function() {
 });
 
 gulp.task('compile-js', function() {
+  return gulp.src('./bower_components/jquery/dist/jquery.js')
+  .pipe(addsrc.append('./bower_components/jquery/dist/jquery-ui.js'))
+  .pipe(addsrc.append('./bower_components/datepair.js/dist/datepair.js'))
+  .pipe(addsrc.append('./bower_components/datepair.js/dist/jquery.datepair.js'))
+  .pipe(addsrc.append('./bower_components/jt.timepicker/jquery.timepicker.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js'))
+  .pipe(addsrc.append('./bower_components/moment/moment.js'))
+  .pipe(addsrc.append('./bower_components/pikaday/pikaday.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/affix.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/alert.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/dropdown.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/tooltip.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/modal.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/transition.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/button.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/popover.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/carousel.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/scrollspy.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/collapse.js'))
+  .pipe(addsrc.append('./bower_components/bootstrap/js/tab.js'))
+  .pipe(addsrc.append(tmpDir + '/js/d3.slider.js'))
+  .pipe(addsrc.append(tmpDir + '/js/main.js'))
+  .pipe(sourcemaps.init())
+  .pipe(concat('all.js'))
+  .pipe(gulp.dest(targetDirs.js))
+  .pipe(rename('all.min.js'))
+  .pipe(uglify())
+  .pipe(sourcemaps.write('source-maps'))
+  .pipe(gulp.dest(targetDirs.js));  
+});
+
+gulp.task('react', function() {
   bundleApp(false);
-  return gulp.src(srcDirs.js)
-  .pipe(concat(targetDirs.js + '/all.js'))
-  .pipe(gulp.dest(''));
-//  .pipe(rename('all.min.js'))
-//  .pipe(uglify())
-//  .pipe(gulp.dest(''));
 });
 
 gulp.task('compile-css', function() {
-  return gulp.src(srcDirs.css).pipe(concat('styles.css')).pipe(sass()).pipe(
-      minifyCss()).pipe(gulp.dest(targetDirs.css));
+  return gulp.src('./bower_components/bootstrap/dist/css/bootstrap.css')
+  .pipe(addsrc.append('./bower_components/jt.timepicker/jquery.timepicker.css'))
+  .pipe(addsrc.append('./bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css'))
+  .pipe(addsrc.append('./bower_components/pikaday/css/pikaday.css'))
+  .pipe(addsrc.append(tmpDir + '/css/d3.slider.css'))
+  .pipe(addsrc.append(tmpDir + '/css/main.css'))
+  .pipe(sourcemaps.init())
+  .pipe(concat('styles.css'))
+  .pipe(sass())
+  .pipe(minifyCss())
+  .pipe(gulp.dest(targetDirs.css));
 });
 
 gulp.task('compile-img', function() {
-  return gulp.src(srcDirs.img).pipe(gulp.dest(targetDirs.img));
-});
-
-gulp.task('deploy-data', function() {
-  return gulp.src(srcDirs.data).pipe(gulp.dest(targetDirs.data));
+  return gulp.src(tmpDirs.img).pipe(gulp.dest(targetDirs.img));
 });
 
 gulp.task('compile-html', function() {
-  return gulp.src(srcDirs.html).pipe(gulp.dest(targetDir));
+  return gulp.src(tmpDirs.html).pipe(gulp.dest(targetDir));
 });
 
 gulp.task('server', [ 'watch' ], function() {
@@ -112,22 +117,23 @@ gulp.task('server', [ 'watch' ], function() {
   })).pipe(open(options));
 });
 
-gulp.task('all', [ 'default', 'server' ], function() {
+gulp.task('all', [ 'default', 'server', 'sync-data' ], function() {
 });
 
 gulp.task('sync-src', function() {
-  return gulp.src(appDir + '/**/*.*', {
-    base : appDir
-  }).pipe(watch(appDir, {
-    base : appDir
-  })).pipe(gulp.dest(srcDir));
+  return gulp.src([srcDirs.js, srcDirs.css, srcDirs.img, srcDirs.html], {
+    base : srcDir
+  }).pipe(watch(srcDir, {
+    base : srcDir
+  })).pipe(gulp.dest(tmpDir));
 });
 
 gulp.task('watch', function() {
-  gulp.watch(srcDirs.js, [ 'compile-js' ]);
-  gulp.watch(srcDirs.css, [ 'compile-css' ]);
-  gulp.watch(srcDirs.img, []);
-  gulp.watch(srcDirs.html, [ 'compile-html' ]);
+  gulp.watch(tmpDirs.js, [ 'compile-js' ]);
+  gulp.watch(tmpDirs.css, [ 'compile-css' ]);
+  gulp.watch(tmpDirs.html, [ 'compile-html' ]);
+  gulp.watch(tmpDirs.img, ['compile-img']);
+  gulp.watch(srcDir + '/data', ['sync-data']);
 });
 
 gulp.task('clean', function() {
@@ -135,7 +141,7 @@ gulp.task('clean', function() {
     read : false
   }).pipe(clean());
   
-  return gulp.src(srcDir, {
+  return gulp.src(tmpDir, {
     read : false
   }).pipe(clean());
 });
@@ -152,7 +158,7 @@ function bundleApp(isProduction) {
       require : dependencies,
       debug : true
     }).bundle().on('error', gutil.log).pipe(source('vendors.js')).pipe(
-        gulp.dest(srcDir + '/js'));
+        gulp.dest(targetDirs.js));
   }
   if (!isProduction) {
     dependencies.forEach(function(dep) {
@@ -163,7 +169,12 @@ function bundleApp(isProduction) {
   appBundler.transform("babelify", {
     presets : [ "es2015", "react" ]
   }).bundle().on('error', gutil.log).pipe(source('bundle.js')).pipe(
-      gulp.dest(srcDir + '/js'));
+      gulp.dest(targetDirs.js));
 }
 
-gulp.task('default', [ 'sync-src', 'copy-vendor', 'compile', 'watch' ]);
+gulp.task('sync-data', function() {
+  gutil.log(srcDir + '/data'  + '-->' + targetDir + '/data')
+  return gulp.src(srcDir + '/data/*.*').pipe(gulp.dest(targetDir + '/data'));
+});
+
+gulp.task('default', [ 'sync-src', 'compile', 'watch' ]);

@@ -16,15 +16,15 @@ var UptimeChart = function(config) {
   $('#from').val('-' + _super.config.slider.init.x1 + 'min');
   $('#until').val('-' + _super.config.slider.init.x0 + 'min');
 
-  $('#datepairElem .time').timepicker({
-    'showDuration' : true,
-    'timeFormat' : 'g:i A'
-  });
+//  $('#datepairElem .time').timepicker({
+//    'showDuration' : true,
+//    'timeFormat' : 'g:i A'
+//  });
 
-  $('#datepairElem .date').datepicker({
-    'format' : 'dd-mm-yyyy',
-    'autoclose' : true
-  });
+//  $('#datepairElem .date').datepicker({
+//    'format' : 'dd-mm-yyyy',
+//    'autoclose' : true
+//  });
 
   var basicExampleEl = document.getElementById('datepairElem');
   var datepair = new Datepair(basicExampleEl);
