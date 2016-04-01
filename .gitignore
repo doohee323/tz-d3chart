@@ -3,3 +3,5 @@ dist
 .tmp
 bower_components
 .DS_Store
+/tmp/
+/web/

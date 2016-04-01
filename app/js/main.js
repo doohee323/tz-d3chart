@@ -1411,7 +1411,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     var projection = d3.geo.equirectangular().scale(_super.config.map.scale)
         .translate(offset);
     var path = d3.geo.path().projection(projection);
-    d3.json("countries.json", function(data1) {
+    d3.json("data/countries.json", function(data1) {
       map.states.selectAll("path").data(data1.features).enter().append("path")
           .attr("d", path).on(
               "mouseover",
@@ -1608,7 +1608,7 @@ UptimeChart.prototype.gMap = function(gmapElem, data) {
             map : map,
             optimized : false,
             icon : {
-              url : '714_trans.gif',
+              url : 'img/714_trans.gif',
               size : new google.maps.Size(100, 100),
               origin : new google.maps.Point(0, 0),
               anchor : new google.maps.Point(32, 32)
@@ -2496,10 +2496,10 @@ UptimeChart.prototype.createChart = function(ghcid) {
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
           from = from.substring(1, from.length) + '.json';
-          d3.json(from, function(error, json) {
-            // d3.json('data.json', function(error, json) {
+          d3.json('data/' + from, function(error, json) {
+            // d3.json('data/data.json', function(error, json) {
             if (!json) {
-              d3.json('data.json', function(error, json) {
+              d3.json('data/data.json', function(error, json) {
                 _super.selectView(null, json);
                 _super.showChart(true);
                 console.timeEnd("query response time");
