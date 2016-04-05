@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="">
+<head>
+<meta charset="utf-8">
+<title>prototype_chart_d3</title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+<!-- build:css(.) styles/vendor.css -->
+<!-- bower:css -->
+<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
+<link rel="stylesheet" href="/bower_components/jt.timepicker/jquery.timepicker.css" />
+<link rel="stylesheet" href="/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" />
+<link rel="stylesheet" href="/bower_components/pikaday/css/pikaday.css" />
+<!-- endbower -->
+<!-- endbuild -->
+<!-- build:css(.tmp) styles/main.css -->
+<link rel="stylesheet" href="styles/main.css">
+<link rel="stylesheet" href="styles/d3.slider.css">
+<!-- endbuild -->
+</head>
+<body>
+	<!--[if lt IE 10]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+	<div class="container">
+		<div class="header">
+			<h3 class="text-muted">prototype_chart_d3</h3>
+		</div>
+
+		<div class="row">
+			<div id="chart1"></div>
+			<div class="alert alert-danger" id="ajaxMessages"
+				style="display: none">
+				<div class="label label-danger" style="float: left;">Error!</div>
+				<div style="margin-left: 50px" id="serverMessages"></div>
+			</div>
+
+				<p>
+					<p style="display: inline;">
+						<button class="btn btn-default btn-xs" onclick="uc.changeDate('-12hours')">12h</button>
+						<button class="btn btn-default btn-xs" onclick="uc.changeDate('-24hours')">24h</button>
+						<button class="btn btn-default btn-xs" onclick="uc.changeDate('-7d')">7d</button>
+						<button class="btn btn-default btn-xs" onclick="uc.changeDate('-14d')">14d</button>
+						<button class="btn btn-default btn-xs" onclick="uc.changeDate('-1m')">1m</button>
+					</p>
+					<p style="display: inline;font: 12px sans-serif; padding-left: 20px;">(min)</p>
+				</p>
+
+			<form class="form-inline">
+				<div class="form-group">
+					<div class="col-xs-4">
+						<div id="sliderDiv" title="You can make a query range with dragging.">
+							<div id="slider"></div>
+						</div>
+					</div>
+					<div class="col-xs-7">
+						<p id="datepairElem">
+						    <input type="text" class="date start" style="width: 25%; margin-top: 0px;"/>
+						    <input type="text" class="time start" style="width: 20%; margin-top: 0px;"/> ~
+						    <input type="text" class="date end" style="width: 25%; margin-top: 0px;"/>
+						    <input type="text" class="time end" style="width: 20%; margin-top: 0px;"/>
+						</p>
+						<input id='from' style='visibility: hidden' value='-60min' style="width: 40%; margin-top: 0px;">
+						<input id='until' style='visibility: hidden' value='-0min' style="width: 40%; margin-top: 0px;">
+					</div>
+					<div class="col-xs-1" style="padding-left: 0px;" title="Reload Data">
+						<button class="btn btn-default btn-sm" onclick="javascript: uc.changeDate('-1hour')">
+							<span>Latest</span>
+						</button>
+						<input id='dateCondi' style='visibility: hidden' value='' style="width: 60%"/>
+					</div>
+				</div>
+			</form> 
+		</div>
+
+		<div class="row" id="frame" style="display:none;">
+			<form class="form-inline">
+				<ul class="nav nav-tabs" id="view"
+					style="margin-bottom: 10px; font-size: 11pt;">
+					<li class="active" id='availability'><a
+						href="javascript: uc.selectView('state')" title="You can see in the availability perspective.">Availability</a></li>
+ 					<li class="inactive" id='response'><a
+						href="javascript: uc.selectView('tot_ms')"  title="You can see in the response time perspective.">Response</a></li>
+				</ul>
+			</form>
+		</div>
+		<div class="row">
+		  <div id="loading_data" style="margin-top: 10%; width: 100%; text-align: center;">
+				<img width="100px" height="100px" src="loading_spinner.gif">
+			  <div class="alert alert-block" style='height: 100px'>
+			    <b/>
+			  </div>
+		  </div>
+			<div id="nodata" style="display:none;margin-top: 1%">
+			  <div class="alert alert-block" style='height: 100px'>
+			    <b>No Data:</b>
+			    There is no data to display for your selection.
+			  </div>
+			</div>
+			<div id='result'>
+				<div class="state_view">
+					<div id="lineChart"></div>
+					<div id="minilineChart2"></div>
+				</div>
+				<div class="tot_ms_view">
+					<div id="stackedChart"></div>
+					<div id="minilineChart"></div>
+					<div id='histogram'></div>
+				</div>
+				<div id="graph">
+					<div class="map-top" style='display:none'>
+						<div class="map-bar map-control">
+							<a class="map-control-zoom-in" href="javascript: uc.map.navi('zoom-in')" title="Zoom in">+</a><a
+								class="map-control-zoom-out" href="javascript: uc.map.navi('zoom-out')" title="Zoom out">-</a>
+						</div>
+						<div class="map-bar map-control">
+							<a class="map-control-navbar-home" href="javascript: uc.map.navi('home')" title="Go to home map view"></a>
+							<a class="map-control-navbar-fwd" href="javascript: uc.map.navi('fwd')" title="Go forward in map view"></a>
+							<a class="map-control-navbar-back" href="javascript: uc.map.navi('back')" title="Go back in map view"></a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--<div id="googleMap"></div> -->
+		</div>
+
+				<div class="form-group">
+					<label style='visibility: hidden' class="col-xs-2 control-label" style="margin-top: 10px;">
+						<p id="test_class"></p>
+					</label>
+					<label style='visibility: hidden' for="gmetrices" class="col-xs-1 control-label" style="margin-top: 10px;">Metric:</label>
+					<div style='visibility: hidden' class="col-xs-4" title="You can see a specific metric chart.">
+						<select id="gmetrices" name="gmetrices"
+							class="form-control col-sm-4" style="margin-left: 10px;" placeholder="gmetrices"></select>
+					</div>
+					<label style='visibility: hidden' for="locs" class="col-xs-1 control-label" style="margin-left: 20px; margin-top: 10px;" >Agent:</label>
+					<div style='visibility: hidden' class="col-xs-2" title="You can see a specific agent in map.">
+						<select id="locs" class="form-control col-sm-2" style="margin-left: 10px;" placeholder="locs"></select>
+					</div>
+				</div>
+
+		<div class="footer"></div>
+	</div>
+
+	<!-- build:js(.) scripts/vendor.js -->
+	<!-- bower:js -->
+	<script src="/bower_components/jquery/dist/jquery.js"></script>
+	<script src="/bower_components/jquery-ui/jquery-ui.js"></script>
+	<script src="/bower_components/datepair.js/dist/datepair.js"></script>
+	<script src="/bower_components/datepair.js/dist/jquery.datepair.js"></script>
+	<script src="/bower_components/jt.timepicker/jquery.timepicker.js"></script>
+	<script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+	<script src="/bower_components/moment/moment.js"></script>
+	<script src="/bower_components/pikaday/pikaday.js"></script>
+	<!-- endbower -->
+	<!-- endbuild -->
+
+	<!-- build:js(.) scripts/plugins.js -->
+	<script src="/bower_components/bootstrap/js/affix.js"></script>
+	<script src="/bower_components/bootstrap/js/alert.js"></script>
+	<script src="/bower_components/bootstrap/js/dropdown.js"></script>
+	<script src="/bower_components/bootstrap/js/tooltip.js"></script>
+	<script src="/bower_components/bootstrap/js/modal.js"></script>
+	<script src="/bower_components/bootstrap/js/transition.js"></script>
+	<script src="/bower_components/bootstrap/js/button.js"></script>
+	<script src="/bower_components/bootstrap/js/popover.js"></script>
+	<script src="/bower_components/bootstrap/js/carousel.js"></script>
+	<script src="/bower_components/bootstrap/js/scrollspy.js"></script>
+	<script src="/bower_components/bootstrap/js/collapse.js"></script>
+	<script src="/bower_components/bootstrap/js/tab.js"></script>
+	<!-- endbuild -->
+
+	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+	<!-- 	<script src="http://maps.googleapis.com/maps/api/js"></script> -->
+	<!-- 	<script type="text/javascript" -->
+	<!-- 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9oB28RSLjXkirKBIvzVBWoLmGNK0pJq0"> -->
+	<!-- 	</script> -->
+	<script type="text/javascript"
+		src="http://maps.google.com/maps/api/js?sensor=true"></script>
+
+	<!-- build:js scripts/main.js -->
+	<script src="scripts/d3.slider.js"></script>
+	<script src="scripts/main.js"></script>
+	<!-- endbuild -->
+
+	<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+	<script>
+      (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+      function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+      e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+      e.src='https://www.google-analytics.com/analytics.js';
+      r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+      ga('create','UA-XXXXX-X');ga('send','pageview');
+    </script>
+</body>
+</html>

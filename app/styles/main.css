@@ -149,23 +149,17 @@ circle {
 
 /* judge */
 .line.linejudge {
-	stroke: #dc291e;
+	stroke: red;
 	fill-opacity: .1;
-	fill: #dc291e;
-}
-
-.line.areajudge {
-	stroke: #dc291e;
-	fill-opacity: .1;
-	fill: #dc291e;
+	fill: red;
 }
 
 .focus circle.yjudge {
-	stroke: #dc291e;
+	stroke: red;
 }
 
 .focus line.yjudge {
-	stroke: #dc291e;
+	stroke: red;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
@@ -320,41 +314,24 @@ circle {
 	opacity: .5;
 }
 
-/* aggregate */
-.line.lineaggregate {
+/* state */
+.line.linestate {
 	stroke: #CC0000;
 	stroke-width: 1.5;
 }
 
-.line.areaaggregate {
+.line.areastate {
 	stroke: #CC0000;
 	fill-opacity: .5;
 	fill: white;
 }
 
-.focus circle.yaggregate {
-	stroke: #CC0000;
-}
-
-.focus line.yaggregate {
-	stroke: #CC0000;
-	stroke-dasharray: 3 3;
-	opacity: .5;
-}
-
-/* state */
-.line.linestate {
-	stroke: steelblue;
-	fill-opacity: .1;
-	fill: steelblue;
-}
-
 .focus circle.ystate {
-	stroke: steelblue;
+	stroke: #CC0000;
 }
 
 .focus line.ystate {
-	stroke: steelblue;
+	stroke: #CC0000;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
@@ -415,7 +392,7 @@ div.debug {
 }
 
 .legendTb {
-	margin-bottom: 20px;
+	width: 120%;
 	display: inline-block;
 	border-collapse: collapse;
 	border-spacing: 0px;
@@ -435,7 +412,12 @@ div.debug {
 	padding: 4px 13px;
 }
 
-.legendTbName .legendTbSum .legendTbMean .legendTbPerc {
+.legendTbName {
+	align: right;
+	width: 150px;
+}
+
+.legendTbSum .legendTbMean .legendTbPerc {
 	align: right;
 	width: 100px;
 }
@@ -450,23 +432,24 @@ div.debug {
 }
 
 .flt {
-	width: 30%;
+	width: 26%;
 	height: 100px;
-	margin-top: 10px;
+	margin-top: 20px;
 	float: left;
 }
 
 .frt {
-	width: 20%;
+	width: 38%;
 	height: 100px;
 	margin-top: 20px;
 	float: left;
 }
 
 .gauge {
-	width: 30%;
+	width: 26%;
 	margin-left: 60px;
-	margin-top: 5px;
+	margin-top: 15px;
+	margin-bottom: -30px;
 	float: right;
 }
 

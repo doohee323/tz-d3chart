@@ -68,14 +68,14 @@
 						    <input type="text" class="date end" style="width: 25%; margin-top: 0px;"/>
 						    <input type="text" class="time end" style="width: 20%; margin-top: 0px;"/>
 						</p>
-						<input id='from' type='hidden' value='-60min' style="width: 40%; margin-top: 0px;">
-						<input id='until' type='hidden' value='-0min' style="width: 40%; margin-top: 0px;">
+						<input id='from' style='visibility: hidden' value='-60min' style="width: 40%; margin-top: 0px;">
+						<input id='until' style='visibility: hidden' value='-0min' style="width: 40%; margin-top: 0px;">
 					</div>
 					<div class="col-xs-1" style="padding-left: 0px;" title="Reload Data">
 						<button class="btn btn-default btn-sm" onclick="javascript: uc.changeDate('-1hour')">
 							<span>Latest</span>
 						</button>
-						<input id='dateCondi' type='hidden' value='' style="width: 60%"/>
+						<input id='dateCondi' style='visibility: hidden' value='' style="width: 60%"/>
 					</div>
 				</div>
 			</form> 
@@ -85,25 +85,11 @@
 			<form class="form-inline">
 				<ul class="nav nav-tabs" id="view"
 					style="margin-bottom: 10px; font-size: 11pt;">
- 					<li class="active" id='response'><a
+					<li class="active" id='availability'><a
+						href="javascript: uc.selectView('state')" title="You can see in the availability perspective.">Availability</a></li>
+ 					<li class="inactive" id='response'><a
 						href="javascript: uc.selectView('tot_ms')"  title="You can see in the response time perspective.">Response</a></li>
-					<li class="inactive" id='availability'><a
-						href="javascript: uc.selectView('aggregate')" title="You can see in the availability perspective.">Availability</a></li>
 				</ul>
-				<div class="form-group">
-					<label class="col-xs-2 control-label" style="margin-top: 10px;">
-						<p id="test_class"></p>
-					</label>
-					<label for="gmetrices" class="col-xs-1 control-label" style="margin-top: 10px;">Metric:</label>
-					<div class="col-xs-4" title="You can see a specific metric chart.">
-						<select id="gmetrices" name="gmetrices"
-							class="form-control col-sm-4" style="margin-left: 10px;" placeholder="gmetrices"></select>
-					</div>
-					<label for="locs" class="col-xs-1 control-label" style="margin-left: 20px; margin-top: 10px;" >Agent:</label>
-					<div class="col-xs-2" title="You can see a specific agent in map.">
-						<select id="locs" class="form-control col-sm-2" style="margin-left: 10px;" placeholder="locs"></select>
-					</div>
-				</div>
 			</form>
 		</div>
 		<div class="row">
@@ -120,14 +106,14 @@
 			  </div>
 			</div>
 			<div id='result'>
+				<div class="state_view">
+					<div id="lineChart"></div>
+					<div id="minilineChart2"></div>
+				</div>
 				<div class="tot_ms_view">
 					<div id="stackedChart"></div>
 					<div id="minilineChart"></div>
 					<div id='histogram'></div>
-				</div>
-				<div class="aggregate_view">
-					<div id="lineChart"></div>
-					<div id="minilineChart2"></div>
 				</div>
 				<div id="graph">
 					<div class="map-top" style='display:none'>
@@ -145,6 +131,21 @@
 			</div>
 			<!--<div id="googleMap"></div> -->
 		</div>
+
+				<div class="form-group">
+					<label style='visibility: hidden' class="col-xs-2 control-label" style="margin-top: 10px;">
+						<p id="test_class"></p>
+					</label>
+					<label style='visibility: hidden' for="gmetrices" class="col-xs-1 control-label" style="margin-top: 10px;">Metric:</label>
+					<div style='visibility: hidden' class="col-xs-4" title="You can see a specific metric chart.">
+						<select id="gmetrices" name="gmetrices"
+							class="form-control col-sm-4" style="margin-left: 10px;" placeholder="gmetrices"></select>
+					</div>
+					<label style='visibility: hidden' for="locs" class="col-xs-1 control-label" style="margin-left: 20px; margin-top: 10px;" >Agent:</label>
+					<div style='visibility: hidden' class="col-xs-2" title="You can see a specific agent in map.">
+						<select id="locs" class="form-control col-sm-2" style="margin-left: 10px;" placeholder="locs"></select>
+					</div>
+				</div>
 
 		<div class="footer"></div>
 	</div>
