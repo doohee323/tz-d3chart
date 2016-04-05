@@ -151,6 +151,12 @@ circle {
 .line.linejudge {
 	stroke: #CC0000;
 	fill-opacity: .1;
+	stroke-width: 0.1;
+}
+
+.line.areajudge {
+	stroke: #CC0000;
+	fill-opacity: .2;
 	fill: #CC0000;
 }
 
@@ -160,7 +166,7 @@ circle {
 
 .focus line.yjudge {
 	stroke: #CC0000;
-	stroke-dasharray: 3 3;
+	stroke-dasharray: 1 1;
 	opacity: .5;
 }
 
@@ -322,7 +328,7 @@ circle {
 
 .line.areastate {
 	stroke: steelblue;
-	fill-opacity: .5;
+	fill-opacity: .3;
 	fill: steelblue;
 }
 

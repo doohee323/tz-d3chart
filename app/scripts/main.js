@@ -49,6 +49,107 @@ var UptimeChart = function(config) {
     }
   }
 
+  // make chartData for Chart
+  _super.getStateData = function(resultset, type) {
+    var max = 0;
+    _super.test_class = resultset.meta.test_class;
+    $('#test_class').text("[" + _super.test_class.toUpperCase() + "]");
+    var judge = resultset.data.judge;
+    var include = resultset.data.include[0];
+    var metrices = resultset.meta.metrices;
+    var locs = resultset.meta.locs;
+
+    var locMetric;
+    var metric;
+    var active;
+    if (type == 'average') {
+      metric = resultset.data.avgMetric;
+      active = resultset.data.avgActive[0];
+    } else {
+      metric = resultset.data.metric;
+      active = resultset.data.active;
+    }
+    var chartData = new Array();
+
+    for (var q = 0; q < metric[0].datapoints.length - 1; q++) {
+      var avail = 0;
+      var sum = 0;
+      var jsonRow = {
+        date : _super.toUTC(new Date(metric[0].datapoints[q][1] * 1000))
+      };
+      for (var i = 0; i < metric.length; i++) {
+        var target = metric[i].target;
+        var loc;
+        if (type != 'average') {
+          loc = target.substring(0, target.lastIndexOf('.'));
+          target = target.substring(target.lastIndexOf('.') + 1, target.length);
+        }
+        if (!metric[i].description) {
+          metric[i].description = new Array();
+        }
+        if (!metric[i].description[q]) {
+          metric[i].description[q] = {};
+        }
+        if (type != 'average') {
+          var active = resultset.data.active;
+          for (var p = 0; p < active.length; p++) {
+            if (active[p].target == loc) {
+              active = active[p];
+              break;
+            }
+          }
+        }
+        if (typeof active.datapoints != "undefined") {
+          // availability = metric(#2) / (active(#1) + include(#3))
+          var v1 = active.datapoints[q][0];
+          var v2 = metric[i].datapoints[q][0] != null ? metric[i].datapoints[q][0]
+              : 0;
+          var v3 = include.datapoints[q][0];
+          if (v1) {
+            v1 = Number((v1).toFixed(1));
+          }
+          metric[i].description[q].v1 = v1;
+          metric[i].description[q].v2 = v2;
+          metric[i].description[q].v3 = v3;
+          avail = Math.floor((v2 / (v1 + v3)));
+          if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
+            avail = 0;
+          }
+          jsonRow[target] = v2;
+        } else {
+          console.log('active is null');
+        }
+        sum += avail;
+      } // for i
+      if (judge && active != null) {
+        if (!judge[0].datapoints[q][0] || judge[0].datapoints[q][0] == 0) {
+          jsonRow['judge'] = 0;
+        } else {
+          jsonRow['judge'] = judge[0].datapoints[q][0];
+        }
+      }
+      if (sum > max) {
+        max = sum;
+      }
+      jsonRow['state'] = sum;
+      chartData.push(jsonRow);
+    } // for q
+    _super.metric_data = metric;
+    _super.state_max = max;
+
+    for (var i = 0; i < chartData.length; i++) {
+      var state = chartData[i]['state'];
+      var state_per = (max - state) / max * 100;
+      if (state_per) {
+        state_per = Number((state_per).toFixed(1));
+      } else {
+        state_per = 0;
+      }
+      chartData[i]['state'] = state_per;
+    }
+    return chartData;
+  }
+
   _super.brushRange = function(type) {
     d3.selectAll('.brushed_range').remove();
     if (_super.selectedTab() == 'Response') {
@@ -524,81 +625,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
   // make chartData for Chart
   lc.getData = function(resultset) {
-    var max = 0;
-    _super.test_class = resultset.meta.test_class;
-    $('#test_class').text("[" + _super.test_class.toUpperCase() + "]");
-    var locMetric = resultset.data.metric;
-    var metric = resultset.data.avgMetric;
-    var judge = resultset.data.judge;
-    var active = resultset.data.avgActive[0];
-    var include = resultset.data.include[0];
-    var metrices = resultset.meta.metrices;
-    var locs = resultset.meta.locs;
-    var chartData = new Array();
-
-    for (var q = 0; q < metric[0].datapoints.length - 1; q++) {
-      var avail = 0;
-      var sum = 0;
-      var jsonRow = {
-        date : _super.toUTC(new Date(metric[0].datapoints[q][1] * 1000))
-      };
-      for (var i = 0; i < metric.length; i++) {
-        var target = metric[i].target;
-        if (!metric[i].description) {
-          metric[i].description = new Array();
-        }
-        if (!metric[i].description[q]) {
-          metric[i].description[q] = {};
-        }
-        if (active != null) {
-          // availability = metric(#2) / (active(#1) + include(#3))
-          var v1 = active.datapoints[q][0];
-          var v2 = metric[i].datapoints[q][0] != null ? metric[i].datapoints[q][0]
-              : 0;
-          var v3 = include.datapoints[q][0];
-          if (v1) {
-            v1 = Number((v1).toFixed(1));
-          }
-          metric[i].description[q].v1 = v1;
-          metric[i].description[q].v2 = v2;
-          metric[i].description[q].v3 = v3;
-          avail = Math.floor((v2 / (v1 + v3)));
-          if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
-            avail = 0;
-          }
-          jsonRow[target] = v2;
-        } else {
-          console.log('active is null');
-        }
-        sum += avail;
-      } // for i
-      if (judge && active != null) {
-        if (!judge[0].datapoints[q][0] || judge[0].datapoints[q][0] == 0) {
-          jsonRow['judge'] = 0;
-        } else {
-          jsonRow['judge'] = judge[0].datapoints[q][0];
-        }
-      }
-      if (sum > max) {
-        max = sum;
-      }
-      jsonRow['state'] = sum;
-      chartData.push(jsonRow);
-    } // for q
-    _super.metric_data = metric;
-    _super.state_max = max;
-
-    for (var i = 0; i < chartData.length; i++) {
-      var state = chartData[i]['state'];
-      var state_per = (max - state) / max * 100;
-      if (state_per) {
-        state_per = Number((state_per).toFixed(1));
-      } else {
-        state_per = 0;
-      }
-      chartData[i]['state'] = state_per;
-    }
-    return chartData;
+    return _super.getStateData(resultset, 'average');
   }
 
   if (!_super.lineData) {
@@ -732,6 +759,9 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       }
     }
     lc.main_y[left_y] = d3.scale.linear().rangeRound([ lc.main_height, 5 ]);
+    if (left_y != 'judge') {
+      lc.main_y['judge'] = d3.scale.linear().rangeRound([ lc.main_height, 5 ]);
+    }
 
     // /[ line definition ]///////////////////////////
     var chart_type;
@@ -771,7 +801,15 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
       var area = d3.svg.area().interpolate(chart_type).x(function(d) {
         return lc.main_x(d.date);
       }).y0(lc.main_height).y1(function(d) {
-        return lc.main_y[key](d.state);
+        if (key == 'judge') {
+          if (!d[key] || d[key] == 0) {
+            return lc.main_y[key](1);
+          } else {
+            return lc.main_y[key](0);
+          }
+        } else {
+          return lc.main_y[key](d[key]);
+        }
       });
       lc.main.append("path").datum(data).attr("class", "line area" + key).attr(
           "d", area);
@@ -782,10 +820,16 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         "transform", "translate(0," + lc.main_height + ")").call(lc.main_xAxis);
     // /[ main left y ]///////////////////////////
     var main_yAxisLeft = d3.svg.axis().scale(lc.main_y[left_y]).orient("left");
+    var unit;
+    if (left_y == 'state') {
+      unit = '(%)';
+    } else {
+      unit = '(ms)';
+    }
     lc.main.append("g").attr("class", "y axis").attr("fill", "#585956").call(
         main_yAxisLeft).append("text").attr("transform", "translate(5, -25)")
         .attr("y", 12).attr("dy", ".71em").style("text-anchor", "end").text(
-            "(%)");
+            unit);
     // /[ main right y ]///////////////////////////
     if (left_y != _super.config.lineChart.main.yAxis.right) {
       if (lc.main_y[_super.config.lineChart.main.yAxis.right]) {
@@ -1136,7 +1180,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
 
   // make mapData for lineChart from maxtrix, locs
   map.getData = function(resultset, metric) {
-    data = resultset.data.metric;
+    data = _super.getStateData(resultset);
     locs = resultset.meta.locs;
     var active = resultset.data.active;
     if (metric == null || metric == '*') {
@@ -1199,7 +1243,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         row.longitude = locs[i].longitude;
         for ( var key in mapData[0]) {
           if (key != 'loc' && key != 'latitude' && key != 'longitude'
-              && key != 'metric') {
+              && key != 'metric' && key != 'key') {
             row[key] = 0;
           }
         }
@@ -1283,7 +1327,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     if (map.metric != 'state') {
       for ( var key in d) {
         if (key != 'loc' && key != 'latitude' && key != 'longitude'
-            && key != 'metric') {
+            && key != 'metric' && key != 'key') {
           d.key = key;
           for (var i = 0; i < d[key].length; i++) {
             if (parseFloat(d[key][i][0]) > 0) {
@@ -1299,7 +1343,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     } else {
       for ( var key in d) {
         if (key != 'loc' && key != 'latitude' && key != 'longitude'
-            && key != 'metric') {
+            && key != 'metric' && key != 'key') {
           d.key = key;
           for (var i = 0; i < d[key].length; i++) {
             if (!parseFloat(d[key][i][0]) || parseFloat(d[key][i][0]) == 0) {
