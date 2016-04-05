@@ -2748,7 +2748,7 @@ var uptimeConfig = {
         "right" : "state"
       },
       "type" : "cardinal",
-      "range" : 5
+      "range" : 30
     },
     "mini" : {
       "margin" : {
@@ -2800,7 +2800,7 @@ var uptimeConfig = {
     "margin" : {
       "width" : 950,
       "height" : 400,
-      "top" : 200,
+      "top" : 100,
       "left" : 390
     },
     "circle_scale" : 0.03,
