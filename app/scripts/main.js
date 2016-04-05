@@ -1113,10 +1113,6 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       }
     }
     mc.mini_y[left_y] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
-    if (data[0][_super.config.lineChart.main.yAxis.right]) {
-      mc.mini_y[_super.config.lineChart.main.yAxis.right] = d3.scale.linear()
-          .rangeRound([ mc.mini_height, 0 ]);
-    }
 
     // /[ line definition ]///////////////////////////
     var chart_type;
@@ -1148,6 +1144,26 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
     for ( var key in _super.lc.main_y) {
       mc.mini.append("path").datum(data).attr("class", "line area").attr("d",
           mc.mini_line[key]);
+      if (key == 'judge') {
+        chart_type = 'step';
+      } else {
+        chart_type = _super.config.lineChart.main.type;
+      }
+      var area = d3.svg.area().interpolate(chart_type).x(function(d) {
+        return mc.mini_x(d.date);
+      }).y0(mc.mini_height).y1(function(d) {
+        if (key == 'judge') {
+          if (!d[key] || d[key] == 0) {
+            return mc.mini_y[key](1);
+          } else {
+            return mc.mini_y[key](0);
+          }
+        } else {
+          return mc.mini_y[key](d[key]);
+        }
+      });
+      mc.mini.append("path").datum(data).attr("class", "line area" + key).attr(
+          "d", area);
     }
     mc.mini.append("g").attr("class", "x brush").call(mc.brush).selectAll(
         "rect").attr("y", -6).attr("height", mc.mini_height + 7);
