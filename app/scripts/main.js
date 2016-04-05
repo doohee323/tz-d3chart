@@ -115,7 +115,7 @@ var UptimeChart = function(config) {
           metric[i].description[q].v2 = v2;
           metric[i].description[q].v3 = v3;
           avail = Math.floor((v2 / (v1 + v3)));
-          if (isNaN(avail)) {
+          if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
             avail = 0;
           }
           jsonRow[target] = v2;
@@ -907,7 +907,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
                 if (!include)
                   include = 0;
                 var avail = Math.floor((metric / (active + include)));
-                if (isNaN(avail)) {
+                if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
                   avail = 0;
                 }
                 sum += avail;
@@ -1309,7 +1309,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
       } else if (val > 90 && val < 100) {
         s = 12;
       } else if (val == 0) {
-        s = 8;
+        s = 7;
       } else {
         s = 15;
       }
@@ -2725,7 +2725,7 @@ var uptimeConfig = {
     },
     "range" : {
       "min" : 0,
-      "max" : 600
+      "max" : 120
     },
     "step" : 5
   },
@@ -2799,6 +2799,7 @@ var uptimeConfig = {
       "left" : 390
     },
     "circle" : {
+      "#7e7f74" : 6,
       "#81bc00" : 8,
       "#dc291e" : 12,
       "#ffa400" : 15
