@@ -323,12 +323,12 @@ circle {
 /* state */
 .line.linestate {
 	stroke: steelblue;
-	stroke-width: 1.5;
+	stroke-width: 0.5;
 }
 
 .line.areastate {
 	stroke: steelblue;
-	fill-opacity: .3;
+	fill-opacity: .1;
 	fill: steelblue;
 }
 

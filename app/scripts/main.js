@@ -134,8 +134,10 @@ var UptimeChart = function(config) {
       jsonRow['state'] = sum;
       chartData.push(jsonRow);
     } // for q
-    _super.metric_data = metric;
-    _super.state_max = max;
+    if (type == 'average') {
+      _super.metric_data = metric;
+      _super.state_max = max;
+    }
 
     for (var i = 0; i < chartData.length; i++) {
       var state = chartData[i]['state'];
@@ -879,7 +881,6 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
               continue;
             }
           }
-
           var y = lc.main_y[key](d[key]);
           focus.select("circle.y" + key).attr("transform",
               "translate(" + lc.main_x(d.date) + "," + y + ")");
