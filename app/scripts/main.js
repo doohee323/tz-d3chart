@@ -1113,6 +1113,9 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       }
     }
     mc.mini_y[left_y] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
+    if (left_y != 'judge') {
+      mc.mini_y['judge'] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
+    }
 
     // /[ line definition ]///////////////////////////
     var chart_type;
