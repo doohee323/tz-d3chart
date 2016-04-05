@@ -755,6 +755,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         return d[key];
       }));
     }
+
     // /[ main lineChart ]///////////////////////////
     for ( var key in lc.main_y) {
       lc.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
@@ -762,6 +763,15 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           "data-legend", function(d) {
             return key;
           });
+      var area = d3.svg.area().interpolate(chart_type).x(function(d) {
+        return lc.main_x(d.date);
+      }).y0(lc.main_height).y1(function(d) {
+        return lc.main_y[key](d.state);
+      });
+      lc.main.append("path").datum(data).attr("class", "line area" + key).attr(
+          "d", area).attr("data-legend", function(d) {
+        return key;
+      });
     }
 
     // /[ main left x ]///////////////////////////
@@ -2799,7 +2809,7 @@ var uptimeConfig = {
       "full" : "Loss Percentage (%)"
     },
     "state" : {
-      "short" : "Service",
+      "short" : "Service status",
       "full" : "Service status"
     },
     "judge" : {

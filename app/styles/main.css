@@ -149,17 +149,17 @@ circle {
 
 /* judge */
 .line.linejudge {
-	stroke: red;
+	stroke: #CC0000;
 	fill-opacity: .1;
-	fill: red;
+	fill: #CC0000;
 }
 
 .focus circle.yjudge {
-	stroke: red;
+	stroke: #CC0000;
 }
 
 .focus line.yjudge {
-	stroke: red;
+	stroke: #CC0000;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }
@@ -316,22 +316,22 @@ circle {
 
 /* state */
 .line.linestate {
-	stroke: #CC0000;
+	stroke: steelblue;
 	stroke-width: 1.5;
 }
 
 .line.areastate {
-	stroke: #CC0000;
+	stroke: steelblue;
 	fill-opacity: .5;
-	fill: white;
+	fill: steelblue;
 }
 
 .focus circle.ystate {
-	stroke: #CC0000;
+	stroke: steelblue;
 }
 
 .focus line.ystate {
-	stroke: #CC0000;
+	stroke: steelblue;
 	stroke-dasharray: 3 3;
 	opacity: .5;
 }

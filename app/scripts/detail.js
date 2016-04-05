@@ -731,7 +731,11 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         }
       }
     }
-    lc.main_y[left_y] = d3.scale.linear().rangeRound([ lc.main_height, 5 ]);
+    lc.main_y[left_y] = d3.scale.linear().rangeRound([ lc.main_height, 0 ]);
+    if (data[0][_super.config.lineChart.main.yAxis.right]) {
+      lc.main_y[_super.config.lineChart.main.yAxis.right] = d3.scale.linear()
+          .rangeRound([ lc.main_height, 0 ]);
+    }
 
     // /[ line definition ]///////////////////////////
     var chart_type;
@@ -755,6 +759,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         return d[key];
       }));
     }
+
     // /[ main lineChart ]///////////////////////////
     for ( var key in lc.main_y) {
       lc.main.append("path").datum(data).attr("clip-path", "url(#clip)").attr(
@@ -1046,13 +1051,20 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
       }
     });
 
-    var left_y = _super.config.lineChart.main.yAxis.left;
-    for ( var key in _super.lc.main_y) {
-      mc.mini_y[key] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
+    var left_y;
+    if (metric != '*') {
+      left_y = metric;
+    } else {
+      left_y = _super.config.lineChart.main.yAxis.left;
+      for ( var key in _super.lc.main_y) {
+        mc.mini_y[key] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
+      }
     }
     mc.mini_y[left_y] = d3.scale.linear().rangeRound([ mc.mini_height, 0 ]);
-    mc.mini_y[_super.config.lineChart.main.yAxis.right] = d3.scale.linear()
-        .rangeRound([ mc.mini_height, 0 ]);
+    if (data[0][_super.config.lineChart.main.yAxis.right]) {
+      mc.mini_y[_super.config.lineChart.main.yAxis.right] = d3.scale.linear()
+          .rangeRound([ mc.mini_height, 0 ]);
+    }
 
     // /[ line definition ]///////////////////////////
     var chart_type;
@@ -2680,7 +2692,7 @@ var uptimeConfig = {
     },
     "combo" : {
       "id" : "gmetrices",
-      "init" : "state"
+      "init" : "*"
     }
   },
   "histogram" : {
@@ -2799,7 +2811,7 @@ var uptimeConfig = {
       "full" : "Loss Percentage (%)"
     },
     "state" : {
-      "short" : "Service",
+      "short" : "Service status",
       "full" : "Service status"
     },
     "judge" : {
