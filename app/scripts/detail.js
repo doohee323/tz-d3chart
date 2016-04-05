@@ -731,11 +731,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
         }
       }
     }
-    lc.main_y[left_y] = d3.scale.linear().rangeRound([ lc.main_height, 0 ]);
-    if (data[0][_super.config.lineChart.main.yAxis.right]) {
-      lc.main_y[_super.config.lineChart.main.yAxis.right] = d3.scale.linear()
-          .rangeRound([ lc.main_height, 0 ]);
-    }
+    lc.main_y[left_y] = d3.scale.linear().rangeRound([ lc.main_height, 5 ]);
 
     // /[ line definition ]///////////////////////////
     var chart_type;
@@ -767,6 +763,18 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           "data-legend", function(d) {
             return key;
           });
+      if (key == 'judge') {
+        chart_type = 'step';
+      } else {
+        chart_type = _super.config.lineChart.main.type;
+      }
+      var area = d3.svg.area().interpolate(chart_type).x(function(d) {
+        return lc.main_x(d.date);
+      }).y0(lc.main_height).y1(function(d) {
+        return lc.main_y[key](d.state);
+      });
+      lc.main.append("path").datum(data).attr("class", "line area" + key).attr(
+          "d", area);
     }
 
     // /[ main left x ]///////////////////////////
