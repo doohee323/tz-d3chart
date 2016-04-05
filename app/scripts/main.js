@@ -1399,13 +1399,13 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         var obj = {};
         for ( var key in _super.map.mapData[i]) {
           if (key == 'loc' || key == 'latitude' || key == 'longitude'
-              || key == 'metric' || key == 'datapoints') {
+              || key == 'metric') {
             obj[key] = _super.map.mapData[i][key];
           } else {
             var datapoints = _super.map.mapData[i].datapoints;
             for (var j = 0; j < datapoints.length; j++) {
-              var dt = new Date(datapoints[j][1] * 1000);
-              if (_super.toUTC(dt) >= startTime && _super.toUTC(dt) <= endTime) {
+              var dt = datapoints[j].date;
+              if (dt >= startTime && dt <= endTime) {
                 if (!obj.datapoints) {
                   obj.datapoints = new Array();
                 }
