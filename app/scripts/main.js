@@ -589,14 +589,14 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
     _super.state_max = max;
 
     for (var i = 0; i < chartData.length; i++) {
-      var uptime = chartData[i]['state'];
-      var uptime_per = uptime / max * 100;
-      if (uptime_per) {
-        uptime_per = Number((uptime_per).toFixed(1));
+      var state = chartData[i]['state'];
+      var state_per = (max - state) / max * 100;
+      if (state_per) {
+        state_per = Number((state_per).toFixed(1));
       } else {
-        uptime_per = 0;
+        state_per = 0;
       }
-      chartData[i]['state'] = uptime_per;
+      chartData[i]['state'] = state_per;
     }
     return chartData;
   }
@@ -863,8 +863,9 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
             descript += ' - SUM: ' + sum + ' \n';
             descript += ' - MAX: ' + _super.state_max + ' \n';
             descript = '[' + _super.fullFormatDate(d.date) + '`s ' + key
-                + ']: \n' + uptime_per + ' = ' + sum + ' / ' + _super.state_max
-                + ' * 100 / data[' + key + ']\n' + descript;
+                + ']: \n' + uptime_per + ' = (' + _super.state_max + '-' + sum
+                + ') / ' + _super.state_max + ' * 100 / data[' + key + ']\n'
+                + descript;
             _super.tooltip(descript, 250);
           }
           var formatOutput = _super.getLabelName(key) + " - "
