@@ -98,10 +98,13 @@ var UptimeChart = function(config) {
               break;
             }
           }
+          jsonRow.loc = loc;
         }
         if (typeof active.datapoints != "undefined") {
-          // availability = metric(#2) / (active(#1) + include(#3))
           var v1 = active.datapoints[q][0];
+          if (!v1) {
+            v1 = 0;
+          }
           var v2 = metric[i].datapoints[q][0] != null ? metric[i].datapoints[q][0]
               : 0;
           var v3 = include.datapoints[q][0];
@@ -112,16 +115,14 @@ var UptimeChart = function(config) {
           metric[i].description[q].v2 = v2;
           metric[i].description[q].v3 = v3;
           avail = Math.floor((v2 / (v1 + v3)));
-          if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
+          if (isNaN(avail)) {
             avail = 0;
           }
           jsonRow[target] = v2;
-        } else {
-          console.log('active is null');
+          sum += avail;
         }
-        sum += avail;
       } // for i
-      if (judge && active != null) {
+      if (judge && typeof active.datapoints != "undefined") {
         if (!judge[0].datapoints[q][0] || judge[0].datapoints[q][0] == 0) {
           jsonRow['judge'] = 0;
         } else {
@@ -885,7 +886,9 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
           focus.select("circle.y" + key).attr("transform",
               "translate(" + lc.main_x(d.date) + "," + y + ")");
           if (key == 'state') {
-            var descript = '*****************************************************\n[Availability] \n';
+            var descript = '*****************************************************\n';
+            descript += '[ Availability: metric / (active + include)\n';
+            descript += '[ Average: (MAX - SUM) / MAX * 100 ]\n';
             var sum = 0;
             for (var i = 0; i < _super.metric_data.length; i++) {
               var type = _super.metric_data[i].target;
@@ -898,21 +901,22 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
                 }
               }
               if (j > 0 && _super.metric_data[i].description[j]) {
-                // availability = metric(#2) / (active(#1) + include(#3))
                 var active = _super.metric_data[i].description[j].v1;
                 var metric = _super.metric_data[i].description[j].v2;
                 var include = _super.metric_data[i].description[j].v3;
+                if (!include)
+                  include = 0;
                 var avail = Math.floor((metric / (active + include)));
-                if (isNaN(avail) || avail == Number.POSITIVE_INFINITY) {
+                if (isNaN(avail)) {
                   avail = 0;
                 }
                 sum += avail;
-                descript += ' - ' + _super.getLabelName(type) + ' : ' + avail
-                    + ' = ' + metric + ' / (' + active + ' + ' + include
-                    + ') \n';
+                descript += ' - ' + _super.getLabelName(type, 'full') + ' : '
+                    + avail + ' = ' + Number((metric).toFixed(1)) + '/ ('
+                    + active + ' + ' + include + ') \n';
               }
             }
-            var uptime_per = sum / _super.state_max * 100;
+            var uptime_per = (_super.state_max - sum) / _super.state_max * 100;
             if (uptime_per) {
               uptime_per = Number((uptime_per).toFixed(1));
             } else {
@@ -922,8 +926,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
             descript += ' - MAX: ' + _super.state_max + ' \n';
             descript = '[' + _super.fullFormatDate(d.date) + '`s ' + key
                 + ']: \n' + uptime_per + ' = (' + _super.state_max + '-' + sum
-                + ') / ' + _super.state_max + ' * 100 / data[' + key + ']\n'
-                + descript;
+                + ') / ' + _super.state_max + ' * 100\n' + descript;
             _super.tooltip(descript, 250);
           }
           var formatOutput = _super.getLabelName(key) + " - "
@@ -1191,7 +1194,6 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   map.states;
   map.circles;
   map.labels;
-  map.circle_scale = _super.config.map.circle_scale;
   map.mapElem = mapElem;
   map.metric = metric;
 
@@ -1226,48 +1228,49 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     var mapData = new Array();
     for (var i = 0; i < locs.length; i++) {
       var loc = locs[i].loc;
-      if (activeLoc.indexOf(loc) == -1) {
-        break;
-      }
-      var row = {};
-      row.loc = loc;
-      row.metric = metric;
-      row.latitude = locs[i].latitude;
-      row.longitude = locs[i].longitude;
-      for (var j = 0; j < data.length; j++) {
-        if (data[j].target == loc + '.' + metric) {
-          row.datapoints = data[j].datapoints;
+      if (activeLoc.indexOf(loc) > -1) {
+        var row = {};
+        row.loc = loc;
+        row.metric = metric;
+        row.latitude = locs[i].latitude;
+        row.longitude = locs[i].longitude;
+        for (var j = 0; j < data.length; j++) {
+          if (data[j].loc == loc) {
+            if (!row.datapoints) {
+              row.datapoints = new Array();
+            }
+            row.datapoints.push(data[j]);
+          }
         }
-      }
-      if (Object.keys(row).length > 3) {
-        mapData.push(row);
+        if (Object.keys(row).length > 3) {
+          mapData.push(row);
+        }
       }
     }
 
     for (var i = 0; i < locs.length; i++) {
       var loc = locs[i].loc;
-      if (activeLoc.indexOf(loc) == -1) {
-        break;
-      }
-      var bExist = false;
-      for (var j = 0; j < mapData.length; j++) {
-        if (mapData[j].loc == loc) {
-          bExist = true;
-          break;
-        }
-      }
-      if (!bExist) {
-        var row = {};
-        row.loc = loc;
-        row.latitude = locs[i].latitude;
-        row.longitude = locs[i].longitude;
-        for ( var key in mapData[0]) {
-          if (key != 'loc' && key != 'latitude' && key != 'longitude'
-              && key != 'metric' && key != 'key') {
-            row[key] = 0;
+      if (activeLoc.indexOf(loc) > -1) {
+        var bExist = false;
+        for (var j = 0; j < mapData.length; j++) {
+          if (mapData[j].loc == loc) {
+            bExist = true;
+            break;
           }
         }
-        mapData.push(row);
+        if (!bExist) {
+          var row = {};
+          row.loc = loc;
+          row.latitude = locs[i].latitude;
+          row.longitude = locs[i].longitude;
+          for ( var key in mapData[0]) {
+            if (key != 'loc' && key != 'latitude' && key != 'longitude'
+                && key != 'metric' && key != 'key') {
+              row[key] = 0;
+            }
+          }
+          mapData.push(row);
+        }
       }
     }
 
@@ -1298,14 +1301,16 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   });
 
   map.getCircleSize = function(d, loc) {
-    var size = Math.round(map.getCircleTotal(d, loc));
-    var s = 0;
+    var val = Math.round(map.getCircleTotal(d, loc));
+    var s = 8;
     for ( var key in _super.config.map.circle) {
-      var val = _super.config.map.circle[key];
-      s = size * map.circle_scale;
-      if (s < 8) {
+      if (val == 100) {
         s = 8;
-      } else if (s >= 15) {
+      } else if (val > 90 && val < 100) {
+        s = 12;
+      } else if (val == 0) {
+        s = 8;
+      } else {
         s = 15;
       }
     }
@@ -1315,19 +1320,10 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
   map.getCircleColor = function(d, loc) {
     var size = map.getCircleSize(d, loc);
     var color = '#81bc00';
-    if (map.metric == 'state') {
-      for ( var key in _super.config.map.circle) {
-        var val = _super.config.map.circle[key];
-        if (size >= val) {
-          color = key;
-        }
-      }
-    } else {
-      for ( var key in _super.config.map.circle) {
-        var val = _super.config.map.circle[key];
-        if (size >= val) {
-          color = key;
-        }
+    for ( var key in _super.config.map.circle) {
+      var val = _super.config.map.circle[key];
+      if (size >= val) {
+        color = key;
       }
     }
     return color;
@@ -1344,14 +1340,25 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     }
     var val = 0;
     var cnt = 0;
-    if (map.metric != 'state') {
+    if (map.metric == 'judge') {
       for ( var key in d) {
         if (key != 'loc' && key != 'latitude' && key != 'longitude'
             && key != 'metric' && key != 'key') {
-          d.key = key;
           for (var i = 0; i < d[key].length; i++) {
-            if (parseFloat(d[key][i][0]) > 0) {
-              val += parseFloat(d[key][i][0]);
+            if (!parseFloat(d[key][i][map.metric])
+                || parseFloat(d[key][i][map.metric]) == 0) {
+              val++;
+            }
+          }
+        }
+      }
+    } else {
+      for ( var key in d) {
+        if (key != 'loc' && key != 'latitude' && key != 'longitude'
+            && key != 'metric' && key != 'key') {
+          for (var i = 0; i < d[key].length; i++) {
+            if (parseFloat(d[key][i][map.metric]) > 0) {
+              val += parseFloat(d[key][i][map.metric]);
               cnt++;
             }
           }
@@ -1360,20 +1367,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
       if (cnt > 0) {
         val = val / cnt;
       }
-    } else {
-      for ( var key in d) {
-        if (key != 'loc' && key != 'latitude' && key != 'longitude'
-            && key != 'metric' && key != 'key') {
-          d.key = key;
-          for (var i = 0; i < d[key].length; i++) {
-            if (!parseFloat(d[key][i][0]) || parseFloat(d[key][i][0]) == 0) {
-              val++;
-            }
-          }
-        }
-      }
     }
-    d.val = val;
     return val;
   }
 
@@ -1405,7 +1399,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
         var obj = {};
         for ( var key in _super.map.mapData[i]) {
           if (key == 'loc' || key == 'latitude' || key == 'longitude'
-              || key == 'metric') {
+              || key == 'metric' || key == 'datapoints') {
             obj[key] = _super.map.mapData[i][key];
           } else {
             var datapoints = _super.map.mapData[i].datapoints;
@@ -2804,12 +2798,10 @@ var uptimeConfig = {
       "top" : 100,
       "left" : 390
     },
-    "circle_scale" : 0.03,
     "circle" : {
       "#81bc00" : 8,
-      "#7e7f74" : 10,
-      "#ffa400" : 13,
-      "#dc291e" : 15
+      "#dc291e" : 12,
+      "#ffa400" : 15
     },
     "scale" : 135,
     "tooltip" : {
