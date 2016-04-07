@@ -392,10 +392,11 @@ var UptimeChart = function(config) {
                         .style("stroke")
               }
             } else {
-              for(var amet in _super.metrices) {
+              for ( var amet in _super.metrices) {
                 if (amet == metric) {
                   items[self.attr("data-legend")] = {
-                    pos : self.attr("data-legend-pos") || _super.getBBox(this).y,
+                    pos : self.attr("data-legend-pos")
+                        || _super.getBBox(this).y,
                     color : self.attr("data-legend-color") != undefined ? self
                         .attr("data-legend-color")
                         : self.style("fill") != 'none' ? self.style("fill")
@@ -403,8 +404,8 @@ var UptimeChart = function(config) {
                   }
                 } else {
                   items[amet] = {
-                      "color": "#DFDFDC",
-                      "pos": 0
+                    "color" : "#DFDFDC",
+                    "pos" : 0
                   }
                 }
               }
