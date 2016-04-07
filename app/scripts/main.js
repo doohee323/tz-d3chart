@@ -392,13 +392,20 @@ var UptimeChart = function(config) {
                         .style("stroke")
               }
             } else {
-              if (self.attr("data-legend") == metric) {
-                items[self.attr("data-legend")] = {
-                  pos : self.attr("data-legend-pos") || _super.getBBox(this).y,
-                  color : self.attr("data-legend-color") != undefined ? self
-                      .attr("data-legend-color")
-                      : self.style("fill") != 'none' ? self.style("fill")
-                          : self.style("stroke")
+              for(var amet in _super.metrices) {
+                if (amet == metric) {
+                  items[self.attr("data-legend")] = {
+                    pos : self.attr("data-legend-pos") || _super.getBBox(this).y,
+                    color : self.attr("data-legend-color") != undefined ? self
+                        .attr("data-legend-color")
+                        : self.style("fill") != 'none' ? self.style("fill")
+                            : self.style("stroke")
+                  }
+                } else {
+                  items[amet] = {
+                      "color": "#DFDFDC",
+                      "pos": 0
+                  }
                 }
               }
             }
@@ -2566,6 +2573,8 @@ UptimeChart.prototype.createChart = function(ghcid) {
             // d3.json('data.json', function(error, json) {
             if (!json) {
               d3.json('data.json', function(error, json) {
+                console.log(json.meta.req_url);
+                console.log(json);
                 _super.selectView(null, json);
                 _super.showChart(true);
                 console.timeEnd("query response time");
