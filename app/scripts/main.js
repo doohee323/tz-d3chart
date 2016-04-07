@@ -1454,7 +1454,7 @@ UptimeChart.prototype.mapChart = function(mapElem, resultset, metric) {
     var projection = d3.geo.equirectangular().scale(_super.config.map.scale)
         .translate(offset);
     var path = d3.geo.path().projection(projection);
-    d3.json("countries.json", function(data1) {
+    d3.json("/assets/countries.json", function(data1) {
       map.states.selectAll("path").data(data1.features).enter().append("path")
           .attr("d", path).on(
               "mouseover",
@@ -2569,11 +2569,11 @@ UptimeChart.prototype.createChart = function(ghcid) {
           _super.showChart(false);
         } catch (e) {
           _super.ajaxMessage('error', 'Unable to load data from server!');
-          from = from.substring(1, from.length) + '.json';
+          from = '/assets/' + from.substring(1, from.length) + '.json';
           d3.json(from, function(error, json) {
             // d3.json('data.json', function(error, json) {
             if (!json) {
-              d3.json('data.json', function(error, json) {
+              d3.json('/assets/data.json', function(error, json) {
                 console.log(json.meta.req_url);
                 console.log(json);
                 _super.selectView(null, json);

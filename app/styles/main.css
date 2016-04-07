@@ -549,13 +549,13 @@ path:hover {
 }
 
 .map-control-navbar-home {
-	background-image: url("home.png");
+	background-image: url("/assets/home.png");
 }
 
 .map-control-navbar-fwd {
-	background-image: url("arrow_right.png");
+	background-image: url("/assets/arrow_right.png");
 }
 
 .map-control-navbar-back {
-	background-image: url("arrow_left.png");
+	background-image: url("/assets/arrow_left.png");
 }
