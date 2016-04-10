@@ -412,7 +412,7 @@ var UptimeChart = function(config) {
             }
           })
       items = d3.entries(items).sort(function(a, b) {
-        return a.value.pos - b.value.pos;
+        return a.key.length - b.key.length; // a.value.pos - b.value.pos;
       })
 
       // set first in array
@@ -492,9 +492,7 @@ var UptimeChart = function(config) {
       .style("fill", function(d) {
         return d.value.color;
       }).on("mouseover", function(d, i) {
-        _super.tooltip(_super.getLabelName(d.key, 'full'), 190);
       }).on("mouseout", function() {
-        d3.select("body").select('div.tooltip').remove();
       }).on("click", function(d, i) {
         toggle('hide', d, i);
         $('#' + _super.config.lineChart.combo.id).val(d.key);
