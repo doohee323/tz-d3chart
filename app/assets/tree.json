@@ -1,164 +1,174 @@
 {
-  "DNS::CNAME::fdmd.test.net": {
-    "rules": [
-      {
-        "rule_id": 46735,
-        "is_default": 0,
-        "user_id": 616,
-        "action_type": "round_robin",
-        "action_meta": {
-          "resources": [
-            {
-              "type": "network",
-              "id": 7133,
-              "base_url": "14.107.35.38",
-              "url_type": "A"
-            },
-            {
-              "type": "network",
-              "id": 7131,
-              "base_url": "14.107.35.31",
-              "url_type": "A"
-            }
-          ]
-        },
-        "origin_ip": [
-          {
-            "type": 4,
-            "network": "82.212.82.50"
-          }
-        ]
-      },
-      {
-        "rule_id": 46702,
-        "is_default": 0,
-        "user_id": 616,
-        "action_type": "round_robin",
-        "action_meta": {
-          "resources": [
-            {
-              "type": "network",
-              "id": 6820,
-              "base_url": "l3md.test.net",
-              "url_type": "CNAME"
-            },
-            {
-              "type": "network",
-              "id": 6822,
-              "base_url": "l3md.test.net2",
-              "url_type": "CNAME"
-            }
-          ]
-        },
-        "origin_geo": [
-          {
-            "country": {
-              "JO": 1
-            }
-          }
-        ]
-      },
-      {
-        "rule_id": 46612,
-        "is_default": 0,
-        "user_id": 616,
-        "action_type": "round_robin",
-        "action_meta": {
-          "resources": [
-            {
-              "type": "network",
-              "id": 6821,
-              "base_url": "akmd.test.net",
-              "url_type": "CNAME"
-            },
-            {
-              "type": "network",
-              "id": 6823,
-              "base_url": "akmd.test.net3",
-              "url_type": "CNAME"
-            },
-            {
-              "type": "network",
-              "id": 6824,
-              "base_url": "akmd.test.net4",
-              "url_type": "CNAME"
-            }
-          ]
-        },
-        "origin_geo": [
-          {
-            "country": {
-              "AE": 1
-            },
-            "region": {
-              "DU": 1
-            }
-          }
-        ]
-      },
-      {
-        "rule_id": 46610,
-        "is_default": 0,
-        "user_id": 616,
-        "action_type": "round_robin",
-        "action_meta": {
-          "resources": [
-            {
-              "type": "network",
-              "id": 6820,
-              "base_url": "l3md.test.net",
-              "url_type": "CNAME"
-            }
-          ]
-        },
-        "origin_geo": [
-          {
-            "country": {
-              "SA": 1
-            }
-          }
-        ]
-      },
-      {
-        "rule_id": 46608,
-        "is_default": 0,
-        "user_id": 616,
-        "action_type": "round_robin",
-        "action_meta": {
-          "resources": [
-            {
-              "type": "network",
-              "id": 6822,
-              "base_url": "llmd.test.net",
-              "url_type": "CNAME"
-            }
-          ]
-        },
-        "origin_geo": [
-          {
-            "country": {
-              "EG": 1
-            }
-          }
-        ]
-      },
-      {
-        "rule_id": 44916,
-        "is_default": 1,
-        "user_id": 616,
-        "action_type": "round_robin",
-        "action_meta": {
-          "resources": [
-            {
-              "type": "network",
-              "id": 6821,
-              "base_url": "akmd.test.net",
-              "url_type": "CNAME"
-            }
-          ]
-        }
-      }
-    ],
-    "ruleset_id": 10801
-  }
+	"DNS::CNAME::fdmd.test.net": {
+		"rules": [
+			{
+				"rule_id": 46735,
+				"is_default": 0,
+				"user_id": 616,
+				"action_type": "round_robin",
+				"action_meta": {
+					"resources": [
+						{
+							"type": "network",
+							"id": 7133,
+							"base_url": "14.107.35.38",
+							"url_type": "A",
+							"status": 0
+						},
+						{
+							"type": "network",
+							"id": 7131,
+							"base_url": "14.107.35.31",
+							"url_type": "A",
+							"status": 1
+						}
+					]
+				},
+				"origin_ip": [
+					{
+						"type": 4,
+						"network": "82.212.82.50"
+					}
+				]
+			},
+			{
+				"rule_id": 46702,
+				"is_default": 0,
+				"user_id": 616,
+				"action_type": "round_robin",
+				"action_meta": {
+					"resources": [
+						{
+							"type": "network",
+							"id": 6820,
+							"base_url": "l3md.test.net",
+							"url_type": "CNAME",
+							"status": 0
+						},
+						{
+							"type": "network",
+							"id": 6822,
+							"base_url": "l3md.test.net2",
+							"url_type": "CNAME",
+							"status": 0
+						}
+					]
+				},
+				"origin_geo": [
+					{
+						"country": {
+							"JO": 1
+						}
+					}
+				]
+			},
+			{
+				"rule_id": 46612,
+				"is_default": 0,
+				"user_id": 616,
+				"action_type": "round_robin",
+				"action_meta": {
+					"resources": [
+						{
+							"type": "network",
+							"id": 6821,
+							"base_url": "akmd.test.net",
+							"url_type": "CNAME",
+							"status": 0
+						},
+						{
+							"type": "network",
+							"id": 6823,
+							"base_url": "akmd.test.net3",
+							"url_type": "CNAME",
+							"status": 0
+						},
+						{
+							"type": "network",
+							"id": 6824,
+							"base_url": "akmd.test.net4",
+							"url_type": "CNAME",
+							"status": 0
+						}
+					]
+				},
+				"origin_geo": [
+					{
+						"country": {
+							"AE": 1
+						},
+						"region": {
+							"DU": 1
+						}
+					}
+				]
+			},
+			{
+				"rule_id": 46610,
+				"is_default": 0,
+				"user_id": 616,
+				"action_type": "round_robin",
+				"action_meta": {
+					"resources": [
+						{
+							"type": "network",
+							"id": 6820,
+							"base_url": "l3md.test.net",
+							"url_type": "CNAME",
+							"status": 0
+						}
+					]
+				},
+				"origin_geo": [
+					{
+						"country": {
+							"SA": 1
+						}
+					}
+				]
+			},
+			{
+				"rule_id": 46608,
+				"is_default": 0,
+				"user_id": 616,
+				"action_type": "round_robin",
+				"action_meta": {
+					"resources": [
+						{
+							"type": "network",
+							"id": 6822,
+							"base_url": "llmd.test.net",
+							"url_type": "CNAME",
+							"status": 0
+						}
+					]
+				},
+				"origin_geo": [
+					{
+						"country": {
+							"EG": 1
+						}
+					}
+				]
+			},
+			{
+				"rule_id": 44916,
+				"is_default": 1,
+				"user_id": 616,
+				"action_type": "round_robin",
+				"action_meta": {
+					"resources": [
+						{
+							"type": "network",
+							"id": 6821,
+							"base_url": "akmd.test.net",
+							"url_type": "CNAME",
+							"status": 0
+						}
+					]
+				}
+			}
+		],
+		"ruleset_id": 10801
+	}
 }
