@@ -12,15 +12,13 @@
 							"type": "network",
 							"id": 7133,
 							"base_url": "14.107.35.38",
-							"url_type": "A",
-							"status": 0
+							"url_type": "A"
 						},
 						{
 							"type": "network",
 							"id": 7131,
 							"base_url": "14.107.35.31",
-							"url_type": "A",
-							"status": 1
+							"url_type": "A"
 						}
 					]
 				},
@@ -42,15 +40,13 @@
 							"type": "network",
 							"id": 6820,
 							"base_url": "l3md.test.net",
-							"url_type": "CNAME",
-							"status": 0
+							"url_type": "CNAME"
 						},
 						{
 							"type": "network",
 							"id": 6822,
 							"base_url": "l3md.test.net2",
-							"url_type": "CNAME",
-							"status": 0
+							"url_type": "CNAME"
 						}
 					]
 				},
@@ -73,22 +69,19 @@
 							"type": "network",
 							"id": 6821,
 							"base_url": "akmd.test.net",
-							"url_type": "CNAME",
-							"status": 0
+							"url_type": "CNAME"
 						},
 						{
 							"type": "network",
 							"id": 6823,
 							"base_url": "akmd.test.net3",
-							"url_type": "CNAME",
-							"status": 0
+							"url_type": "CNAME"
 						},
 						{
 							"type": "network",
 							"id": 6824,
 							"base_url": "akmd.test.net4",
-							"url_type": "CNAME",
-							"status": 0
+							"url_type": "CNAME"
 						}
 					]
 				},
@@ -114,8 +107,7 @@
 							"type": "network",
 							"id": 6820,
 							"base_url": "l3md.test.net",
-							"url_type": "CNAME",
-							"status": 0
+							"url_type": "CNAME"
 						}
 					]
 				},
@@ -138,8 +130,7 @@
 							"type": "network",
 							"id": 6822,
 							"base_url": "llmd.test.net",
-							"url_type": "CNAME",
-							"status": 0
+							"url_type": "CNAME"
 						}
 					]
 				},
@@ -162,8 +153,7 @@
 							"type": "network",
 							"id": 6821,
 							"base_url": "akmd.test.net",
-							"url_type": "CNAME",
-							"status": 0
+							"url_type": "CNAME"
 						}
 					]
 				}
