@@ -559,3 +559,13 @@ path:hover {
 .map-control-navbar-back {
 	background-image: url("/assets/arrow_left.png");
 }
+
+.x.axis path {
+	display: none;
+}
+
+.area {
+	fill: url(#sparkline-gradient);
+	opacity: .9;
+	stroke-width: 0.5px;
+}

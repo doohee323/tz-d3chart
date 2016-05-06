@@ -412,7 +412,8 @@ var UptimeChart = function(config) {
             }
           })
       items = d3.entries(items).sort(function(a, b) {
-        return a.key.length - b.key.length; // a.value.pos - b.value.pos;
+        return a.key.length - b.key.length; // a.value.pos -
+        // b.value.pos;
       })
 
       // set first in array
@@ -744,6 +745,7 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
     data.forEach(function(d) {
       try {
+        debugger;
         var dt = _super.parseDate(d.date);
         d.date = dt;
       } catch (e) {
@@ -1712,7 +1714,8 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
       return;
     }
 
-    // _super.hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top / 2))
+    // _super.hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top /
+    // 2))
     // .attr("text-anchor", "middle").style("text-decoration", "underline")
     // .text("Average Response Time");
     var y = d3.scale.linear().range([ height, 0 ]).domain([ 0, _super.sc.max ]);
