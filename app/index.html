@@ -2,8 +2,229 @@
 <html lang="">
 <head>
 <meta charset="utf-8">
+<title>tz-d3chart</title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+<link rel="stylesheet" href="styles/jquery-ui.css">
+
+<!-- build:css(.) styles/vendor.css -->
+<!-- bower:css -->
+<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
+<link rel="stylesheet" href="/bower_components/jt.timepicker/jquery.timepicker.css" />
+<link rel="stylesheet" href="/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" />
+<link rel="stylesheet" href="/bower_components/pikaday/css/pikaday.css" />
+<!-- endbower -->
+<!-- endbuild -->
+<!-- build:css(.tmp) styles/main.css -->
+<link rel="stylesheet" href="styles/main.css">
+<!-- endbuild -->
+
+<style>
+.x.axis path {
+	display: none;
+}
+
+.area {
+	fill: url(#sparkline-gradient);
+	fill-opacity: .7;
+	stroke-width: 0.5px;
+}
+</style>
+
 </head>
-<script>
-	location.href = 'list.html';
-</script>
+<body>
+	<!--[if lt IE 10]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+	<div class="container">
+		<div class="header">
+			<h3 class="text-muted">tz-d3chart</h3>
+		</div>
+
+		<div class="side-body">
+			<legend style="margin-top: 30px">
+				<i data-placement="right"></i> Down
+			</legend>
+			<div id="table_down_wrapper"
+				class="dataTables_wrapper form-inline no-footer">
+				<table
+					class="table table-striped table-bordered dataTable no-footer"
+					id="table_down" style="font-size: small; width: 100%;" role="grid">
+					<tbody>
+						<tr id="row-hc_739" data-hc_id="739" role="row" class="odd">
+							<td style="text-align: left; width: 50%"><b>CloudFront Primary Media</b><br>test.cloudfront.net</td>
+							<td style="text-align: center; width: 10%">HTTP Get</td>
+							<td style="text-align: center; width: 30%"><a
+								href="javascript:location.href='main.html#739'"><div
+										id="spark_739"
+										style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
+									</div></a></td>
+							<td style="text-align: center; whitespace: no-wrap; width: 10%"><a
+								href="javascript:location.href='main.html#739'"
+								class="btn btn-default btn-sm">Detail</a></td>
+						</tr>
+						<tr id="row-hc_532" data-hc_id="532" role="row" class="even">
+							<td style="text-align: left"><b>127.1.2.4</b><br>127.1.2.4</td>
+							<td style="text-align: center">HTTP Get</td>
+							<td style="text-align: center"><a
+								href="javascript:location.href='main.html#532'"><div
+										id="spark_532"
+										style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
+									</div></a></td>
+							<td style="text-align: center; whitespace: no-wrap"><a
+								href="javascript:location.href='main.html#532'"
+								class="btn btn-default btn-sm">Detail</a></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<legend style="margin-top: 30px">
+				<i class="fa fa-fw fa-check-circle fa-lg text-success"
+					data-placement="right" data-original-title="Health Up"></i> Up
+			</legend>
+			<div id="table_up_wrapper"
+				class="dataTables_wrapper form-inline no-footer">
+				<table
+					class="table table-striped table-bordered dataTable no-footer"
+					id="table_up" style="font-size: small; width: 100%;" role="grid">
+					<tbody>
+						<tr id="row-hc_526" data-hc_id="526" role="row" class="odd">
+							<td style="text-align: left; width: 50%"><b>dns.npl.lab</b><br>dns.npl.lab</td>
+							<td style="text-align: center; width: 10%">Dns</td>
+							<td style="text-align: center; width: 30%"><a
+								href="javascript:location.href='main.html#526'"><div
+										id="spark_526"
+										style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
+									</div></a></td>
+							<td style="text-align: center; whitespace: no-wrap; width: 10%"><a
+								href="javascript:location.href='main.html#526'"
+								class="btn btn-default btn-sm">Detail</a></td>
+						</tr>
+						<tr id="row-hc_527" data-hc_id="527" role="row" class="even">
+							<td style="text-align: left"><b>dns2.npl.lab</b><br>dns2.npl.lab</td>
+							<td style="text-align: center">Dns</td>
+							<td style="text-align: center"><a
+								href="javascript:location.href='main.html#527'"><div
+										id="spark_527"
+										style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
+									</div></a></td>
+							<td style="text-align: center; whitespace: no-wrap"><a
+								href="javascript:location.href='main.html#527'"
+								class="btn btn-default btn-sm">Detail</a></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<legend style="margin-top: 30px">
+				<i class="fa fa-fw fa-ban fa-lg muted" data-rel="tooltip"
+					data-placement="right" data-original-title="Health Disabled"></i>
+				Disabled
+			</legend>
+			<div id="table_disabled_wrapper"
+				class="dataTables_wrapper form-inline no-footer">
+				<table
+					class="table table-striped table-bordered dataTable no-footer"
+					id="table_disabled" style="font-size: small; width: 100%;"
+					role="grid">
+					<tbody>
+						<tr id="row-hc_720" data-hc_id="720" role="row" class="odd">
+							<td style="text-align: left; width: 50%"">www.facebook.com</td>
+							<td style="text-align: center; width: 10%"">HTTPS Get</td>
+							<td style="text-align: center; width: 30%""><a
+								href="javascript:location.href='main.html#720'"><div
+										id="spark_720"
+										style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
+									</div></a></td>
+							<td style="text-align: center; whitespace: no-wrap; width: 10%""><a
+								href="javascript:location.href='main.html#720'"
+								class="btn btn-default btn-sm">Detail</a></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+		</div>
+
+		<div class="footer"></div>
+	</div>
+
+	<!-- build:js(.) scripts/vendor.js -->
+	<!-- bower:js -->
+	<script src="/bower_components/jquery/dist/jquery.js"></script>
+	<script src="/bower_components/jquery-ui/jquery-ui.js"></script>
+	<script src="/bower_components/datepair.js/dist/datepair.js"></script>
+	<script src="/bower_components/datepair.js/dist/jquery.datepair.js"></script>
+	<script src="/bower_components/jt.timepicker/jquery.timepicker.js"></script>
+	<script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+	<script src="/bower_components/moment/moment.js"></script>
+	<script src="/bower_components/pikaday/pikaday.js"></script>
+	<!-- endbower -->
+	<!-- endbuild -->
+
+	<!-- build:js(.) scripts/plugins.js -->
+	<script src="/bower_components/bootstrap/js/affix.js"></script>
+	<script src="/bower_components/bootstrap/js/alert.js"></script>
+	<script src="/bower_components/bootstrap/js/dropdown.js"></script>
+	<script src="/bower_components/bootstrap/js/tooltip.js"></script>
+	<script src="/bower_components/bootstrap/js/modal.js"></script>
+	<script src="/bower_components/bootstrap/js/transition.js"></script>
+	<script src="/bower_components/bootstrap/js/button.js"></script>
+	<script src="/bower_components/bootstrap/js/popover.js"></script>
+	<script src="/bower_components/bootstrap/js/carousel.js"></script>
+	<script src="/bower_components/bootstrap/js/scrollspy.js"></script>
+	<script src="/bower_components/bootstrap/js/collapse.js"></script>
+	<script src="/bower_components/bootstrap/js/tab.js"></script>
+	<!-- endbuild -->
+
+	<script type="text/javascript" src="scripts/d3.v3.min.js"></script>
+	<!-- 	<script src="http://maps.googleapis.com/maps/api/js"></script> -->
+	<!-- 	<script type="text/javascript" -->
+	<!-- 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9oB28RSLjXkirKBIvzVBWoLmGNK0pJq0"> -->
+	<!-- 	</script> -->
+	<script type="text/javascript"
+		src="http://maps.google.com/maps/api/js?sensor=true"></script>
+
+	<!-- build:js scripts/main.js -->
+	<script src="scripts/list.js"></script>
+	<!-- endbuild -->
+
+	<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+	<script>
+    (function(b, o, i, l, e, r) {
+      b.GoogleAnalyticsObject = l;
+      b[l] || (b[l] = function() {
+        (b[l].q = b[l].q || []).push(arguments)
+      });
+      b[l].l = +new Date;
+      e = o.createElement(i);
+      r = o.getElementsByTagName(i)[0];
+      e.src = 'https://www.google-analytics.com/analytics.js';
+      r.parentNode.insertBefore(e, r)
+    }(window, document, 'script', 'ga'));
+    ga('create', 'UA-XXXXX-X');
+    ga('send', 'pageview');
+    
+    var health_tables = ['table_other','table_down','table_up','table_disabled',];
+
+    $(document).ready(function(){
+      var us = new UptimeSparkline();
+    	health_tables.forEach(function(table_id,index,arr) {
+    		$('#' + table_id + ' tr').each(function( index ) {
+    			var hc_id = $( this ).attr('data-hc_id');
+    		  us.createChart(hc_id, 'spark_' + hc_id);
+    		});
+    	});
+
+    });    
+  </script>
+</body>
 </html>
+
