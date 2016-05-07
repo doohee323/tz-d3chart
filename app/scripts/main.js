@@ -2572,14 +2572,19 @@ UptimeChart.prototype.createChart = function(ghcid) {
           d3.json(from, function(error, json) {
             // d3.json('data.json', function(error, json) {
             if (!json) {
-              d3.json('/assets/' + _super.ghcid + '_detail.json',
-                  function(error, json) {
-                    console.log(json.meta.req_url);
-                    console.log(json);
-                    _super.selectView(null, json);
-                    _super.showChart(true);
-                    console.timeEnd("query response time");
-                  });
+              if (!_super.ghcid) {
+                _super.ghcid = '720';
+              }
+              d3.json('/assets/' + _super.ghcid + '_detail.json', function(
+                  error, json) {
+                if (json) {
+                  console.log(json.meta.req_url);
+                  console.log(json);
+                  _super.selectView(null, json);
+                  _super.showChart(true);
+                  console.timeEnd("query response time");
+                }
+              });
             } else {
               setTimeout(function() {
                 _super.selectView(null, json);
@@ -2752,7 +2757,7 @@ var uptimeConfig = {
       "yAxis" : {
         "right" : "state"
       },
-      "type" : "cardinal",
+      "type" : "basic",
       "range" : 30
     },
     "mini" : {
@@ -2908,4 +2913,3 @@ if (url.indexOf('#') > -1) {
 }
 var uc = new UptimeChart(uptimeConfig);
 uc.createChart(hcid);
-

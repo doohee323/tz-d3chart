@@ -26,7 +26,7 @@ var uptimeConfig = {
       "yAxis" : {
         "right" : "state"
       },
-      "type" : "cardinal",
+      "type" : "basic",
       "range" : 5
     },
     "mini" : {
