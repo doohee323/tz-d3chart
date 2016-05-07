@@ -2,7 +2,7 @@
 <html lang="">
 <head>
 <meta charset="utf-8">
-<title>prototype_chart_d3</title>
+<title>tz-d3chart</title>
 <meta name="description" content="">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -42,92 +42,43 @@
 
 	<div class="container">
 		<div class="header">
-			<h3 class="text-muted">prototype_chart_d3</h3>
+			<h3 class="text-muted">tz-d3chart</h3>
 		</div>
 
 		<div class="side-body">
-			<div class="alert alert-warning" id="ajaxMessages"
-				style="display: none"></div>
-			<div class="alert alert-info" id="jqueryDatatableAlert"
-				style="display: none"></div>
-
-			<div class="row">
-				<p class="pull-right" style="padding-top: 15px">
-					<a class="btn btn-primary" href="/cm/app/monitoring/add"
-						style="margin-left: 30px"><i class="fa fa-plus"></i> Create
-						New Monitor</a>
-				</p>
-			</div>
-
-			<div class="row">
-				<div class="col-xs-2">
-					<input class="form-control" placeholder="Search All..." type="text"
-						id="Search_All">
-				</div>
-			</div>
-
 			<legend style="margin-top: 30px">
-				<i title=""
-					class="fa fa-fw fa-exclamation-triangle fa-lg text-danger"
-					data-rel="tooltip" data-placement="right"
-					data-original-title="Health Down"></i> Down
+				<i title="" data-placement="right"></i> Down
 			</legend>
 			<div id="table_down_wrapper"
 				class="dataTables_wrapper form-inline no-footer">
 				<table
 					class="table table-striped table-bordered dataTable no-footer"
-					id="table_down" style="font-size: small; width: 1098px;"
+					id="table_down" style="font-size: small; width: 100%;"
 					role="grid">
 					<tbody>
 						<tr id="row-hc_739" data-hc_id="739" role="row" class="odd">
 							<td style="text-align: center" class="sorting_1"><i title=""
-								class="fa fa-fw fa-exclamation-triangle fa-lg text-danger"
-								data-rel="tooltip" data-placement="right"
-								data-original-title="Health Down"></i></td>
-							<td style="text-align: left"><b>CloudFront Primary Media</b><br>d323fdhqj3t3nl.cloudfront.net</td>
+								data-placement="right"></i></td>
+							<td style="text-align: left"><b>CloudFront Primary Media</b><br>test.cloudfront.net</td>
 							<td style="text-align: center">HTTP Get</td>
 							<td style="text-align: center"><div id="spark_739"
 									style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
 								</div></td>
-							<td style="text-align: center; whitespace: no-wrap"
-								class=" noSort"><a data-rel="tooltip" title=""
-								href="javascript:showHealthStatusResults(739)"
-								class="btn btn-default btn-sm"
-								data-original-title="Current Health Summary"><i
-									class="fa fa-info-circle"></i></a> <a data-rel="tooltip" title=""
-								href="/cm/app/monitoring/analysis/uptime/739"
-								class="btn btn-default btn-sm" data-original-title="Health Logs"><i
-									class="fa fa-bar-chart"></i> <i class="fa fa-angle-right"></i></a>
-								<a data-rel="tooltip" title=""
-								href="javascript:showHealthcheckDialog(739)"
-								class="btn btn-default btn-sm"
-								data-original-title="Configure Health Check"><i
-									class="fa fa-cog"></i></a></td>
+							<td style="text-align: center; whitespace: no-wrap"><a
+								title="" href="javascript:location.href='main.html#739'"
+								class="btn btn-default btn-sm">detail</a></td>
 						</tr>
 						<tr id="row-hc_532" data-hc_id="532" role="row" class="even">
 							<td style="text-align: center" class="sorting_1"><i title=""
-								class="fa fa-fw fa-exclamation-triangle fa-lg text-danger"
-								data-rel="tooltip" data-placement="right"
-								data-original-title="Health Down"></i></td>
+								data-placement="right"></i></td>
 							<td style="text-align: left"><b>127.1.2.4</b><br>127.1.2.4</td>
 							<td style="text-align: center">HTTP Get</td>
 							<td style="text-align: center"><div id="spark_532"
 									style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
 								</div></td>
-							<td style="text-align: center; whitespace: no-wrap"
-								class=" noSort"><a data-rel="tooltip" title=""
-								href="javascript:showHealthStatusResults(532)"
-								class="btn btn-default btn-sm"
-								data-original-title="Current Health Summary"><i
-									class="fa fa-info-circle"></i></a> <a data-rel="tooltip" title=""
-								href="/cm/app/monitoring/analysis/uptime/532"
-								class="btn btn-default btn-sm" data-original-title="Health Logs"><i
-									class="fa fa-bar-chart"></i> <i class="fa fa-angle-right"></i></a>
-								<a data-rel="tooltip" title=""
-								href="javascript:showHealthcheckDialog(532)"
-								class="btn btn-default btn-sm"
-								data-original-title="Configure Health Check"><i
-									class="fa fa-cog"></i></a></td>
+							<td style="text-align: center; whitespace: no-wrap"><a
+								title="" href="javascript:location.href='main.html#532'"
+								class="btn btn-default btn-sm">detail</a></td>
 						</tr>
 					</tbody>
 					<thead>
@@ -157,65 +108,39 @@
 
 			<legend style="margin-top: 30px">
 				<i title="" class="fa fa-fw fa-check-circle fa-lg text-success"
-					data-rel="tooltip" data-placement="right"
-					data-original-title="Health Up"></i> Up
+					data-placement="right" data-original-title="Health Up"></i> Up
 			</legend>
 			<div id="table_up_wrapper"
 				class="dataTables_wrapper form-inline no-footer">
 				<table
 					class="table table-striped table-bordered dataTable no-footer"
-					id="table_up" style="font-size: small; width: 1098px;" role="grid">
+					id="table_up" style="font-size: small; width: 100%;" role="grid">
 					<tbody>
-
 						<tr id="row-hc_526" data-hc_id="526" role="row" class="odd">
 							<td style="text-align: center" class="sorting_1"><i title=""
 								class="fa fa-fw fa-check-circle fa-lg text-success"
-								data-rel="tooltip" data-placement="right"
-								data-original-title="Health Up"></i></td>
+								data-placement="right" data-original-title="Health Up"></i></td>
 							<td style="text-align: left"><b>dns.npl.lab</b><br>dns.npl.lab</td>
 							<td style="text-align: center">Dns</td>
 							<td style="text-align: center"><div id="spark_526"
 									style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
 								</div></td>
-							<td style="text-align: center; whitespace: no-wrap"
-								class=" noSort"><a data-rel="tooltip" title=""
-								href="javascript:showHealthStatusResults(526)"
-								class="btn btn-default btn-sm"
-								data-original-title="Current Health Summary"><i
-									class="fa fa-info-circle"></i></a> <a data-rel="tooltip" title=""
-								href="/cm/app/monitoring/analysis/uptime/526"
-								class="btn btn-default btn-sm" data-original-title="Health Logs"><i
-									class="fa fa-bar-chart"></i> <i class="fa fa-angle-right"></i></a>
-								<a data-rel="tooltip" title=""
-								href="javascript:showHealthcheckDialog(526)"
-								class="btn btn-default btn-sm"
-								data-original-title="Configure Health Check"><i
-									class="fa fa-cog"></i></a></td>
+							<td style="text-align: center; whitespace: no-wrap"><a
+								title="" href="javascript:location.href='main.html#526'"
+								class="btn btn-default btn-sm">detail</a></td>
 						</tr>
 						<tr id="row-hc_527" data-hc_id="527" role="row" class="even">
 							<td style="text-align: center" class="sorting_1"><i title=""
 								class="fa fa-fw fa-check-circle fa-lg text-success"
-								data-rel="tooltip" data-placement="right"
-								data-original-title="Health Up"></i></td>
+								data-placement="right" data-original-title="Health Up"></i></td>
 							<td style="text-align: left"><b>dns2.npl.lab</b><br>dns2.npl.lab</td>
 							<td style="text-align: center">Dns</td>
 							<td style="text-align: center"><div id="spark_527"
 									style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
 								</div></td>
-							<td style="text-align: center; whitespace: no-wrap"
-								class=" noSort"><a data-rel="tooltip" title=""
-								href="javascript:showHealthStatusResults(527)"
-								class="btn btn-default btn-sm"
-								data-original-title="Current Health Summary"><i
-									class="fa fa-info-circle"></i></a> <a data-rel="tooltip" title=""
-								href="/cm/app/monitoring/analysis/uptime/527"
-								class="btn btn-default btn-sm" data-original-title="Health Logs"><i
-									class="fa fa-bar-chart"></i> <i class="fa fa-angle-right"></i></a>
-								<a data-rel="tooltip" title=""
-								href="javascript:showHealthcheckDialog(527)"
-								class="btn btn-default btn-sm"
-								data-original-title="Configure Health Check"><i
-									class="fa fa-cog"></i></a></td>
+							<td style="text-align: center; whitespace: no-wrap"><a
+								title="" href="javascript:location.href='main.html#527'"
+								class="btn btn-default btn-sm">detail</a></td>
 						</tr>
 					</tbody>
 					<thead>
@@ -252,10 +177,9 @@
 				class="dataTables_wrapper form-inline no-footer">
 				<table
 					class="table table-striped table-bordered dataTable no-footer"
-					id="table_disabled" style="font-size: small; width: 1098px;"
+					id="table_disabled" style="font-size: small; width: 100%;"
 					role="grid">
 					<tbody>
-
 						<tr id="row-hc_1127" role="row" class="odd">
 							<td style="text-align: center" class="sorting_1"><i title=""
 								class="fa fa-fw fa-ban fa-lg muted" data-rel="tooltip"
@@ -265,20 +189,9 @@
 							<td style="text-align: center"><div id="spark_1127"
 									style="vertical-align: middle; display: inline-block; width: 350px; height: 50px; overflow: hidden; text-align: left;">
 								</div></td>
-							<td style="text-align: center; whitespace: no-wrap"
-								class=" noSort"><a data-rel="tooltip" title=""
-								href="javascript:showHealthStatusResults(1127)"
-								class="btn btn-default btn-sm" disabled=""
-								data-original-title="Current Health Summary"><i
-									class="fa fa-info-circle"></i></a> <a data-rel="tooltip" title=""
-								href="/cm/app/monitoring/analysis/uptime/1127"
-								class="btn btn-default btn-sm" disabled=""
-								data-original-title="Health Logs"><i class="fa fa-bar-chart"></i>
-									<i class="fa fa-angle-right"></i></a> <a data-rel="tooltip"
-								title="" href="javascript:showHealthcheckDialog(1127)"
-								class="btn btn-default btn-sm"
-								data-original-title="Configure Health Check"><i
-									class="fa fa-cog"></i></a></td>
+							<td style="text-align: center; whitespace: no-wrap"><a
+								title="" href="javascript:location.href='main.html#1127'"
+								class="btn btn-default btn-sm">detail</a></td>
 						</tr>
 					</tbody>
 					<thead>

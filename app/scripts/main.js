@@ -745,7 +745,6 @@ UptimeChart.prototype.lineChart = function(chartElem, resultset, cb) {
 
     data.forEach(function(d) {
       try {
-        debugger;
         var dt = _super.parseDate(d.date);
         d.date = dt;
       } catch (e) {
@@ -2483,7 +2482,6 @@ UptimeChart.prototype.selectView = function(tabId, json) {
 
 UptimeChart.prototype.createChart = function(ghcid) {
   var _super = this;
-
   if (ghcid) {
     _super.ghcid = ghcid;
     _super.ajaxMessage('clear', null);
@@ -2574,13 +2572,14 @@ UptimeChart.prototype.createChart = function(ghcid) {
           d3.json(from, function(error, json) {
             // d3.json('data.json', function(error, json) {
             if (!json) {
-              d3.json('/assets/data.json', function(error, json) {
-                console.log(json.meta.req_url);
-                console.log(json);
-                _super.selectView(null, json);
-                _super.showChart(true);
-                console.timeEnd("query response time");
-              });
+              d3.json('/assets/' + _super.ghcid + '_detail.json',
+                  function(error, json) {
+                    console.log(json.meta.req_url);
+                    console.log(json);
+                    _super.selectView(null, json);
+                    _super.showChart(true);
+                    console.timeEnd("query response time");
+                  });
             } else {
               setTimeout(function() {
                 _super.selectView(null, json);
@@ -2901,8 +2900,12 @@ var uptimeConfig = {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-var uc = new UptimeChart(uptimeConfig);
-uc.createChart(1);
 
-// $(document).tooltip();
+var url = location.href;
+var hcid;
+if (url.indexOf('#') > -1) {
+  hcid = url.substring(url.indexOf('#') + 1, url.length);
+}
+var uc = new UptimeChart(uptimeConfig);
+uc.createChart(hcid);
 
