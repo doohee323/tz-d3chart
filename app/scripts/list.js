@@ -27,7 +27,13 @@ var UptimeSparkline = function() {
     }
     $('#' + element_id).html('');
 
-    var key = 'time_ms';
+    var key = 'tot_ms';
+    if(data[0].tot_ms) {
+      key = 'tot_ms';
+    } else {
+      key = 'time_ms';
+    }
+    
     data.forEach(function(d) {
       d.date = new Date(d.date);
       if (isNaN(d[key])) {
@@ -64,11 +70,6 @@ var UptimeSparkline = function() {
       return y(d[key]);
     });
 
-    x.domain([ data[0].date, data[data.length - 1].date ]);
-    y.domain([ 0, d3.max(data, function(d) {
-      return d[key];
-    }) ]);
-
     var max = 0, min = 0, mean = 0;
     max = d3.max(data, function(d) {
       return d[key];
@@ -79,6 +80,12 @@ var UptimeSparkline = function() {
     mean = d3.mean(data, function(d) {
       return d[key];
     });
+
+    x.domain([ data[0].date, data[data.length - 1].date ]);
+    y.domain([ 0, d3.max(data, function(d) {
+      return d[key];
+    }) ]);
+
     var lvl1 = mean - 1;
     var lvl2 = mean + 1;
     console.log(height + '/' + max + '/' + min + '/' + mean + '/' + lvl1 + '/'
@@ -108,7 +115,7 @@ var UptimeSparkline = function() {
     svg.append("path").datum(data).attr("class", "area").attr("d", area);
 
     // line chart
-    var valueline = d3.svg.line().x(function(d) {
+    var valueline = d3.svg.line().interpolate('cardinal').x(function(d) {
       return x(d.date);
     }).y(function(d) {
       return y(d[key]);
