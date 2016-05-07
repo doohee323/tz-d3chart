@@ -323,7 +323,7 @@ circle {
 /* state */
 .line.linestate {
 	stroke: steelblue;
-	stroke-width: 0.5;
+	stroke-width: 0.2;
 }
 
 .line.areastate {
@@ -566,7 +566,7 @@ path:hover {
 
 .area {
 	fill: url(#sparkline-gradient);
-	opacity: .9;
+	fill-opacity: .7;
 	stroke-width: 0.5px;
 }
 

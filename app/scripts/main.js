@@ -592,8 +592,6 @@ var UptimeChart = function(config) {
     }
     $("#loading_data").hide();
   }
-
-  $('#csv_export').text('   JSON ');
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -1075,11 +1073,11 @@ UptimeChart.prototype.miniLineChart = function(chartElem, resultset, cb) {
           _super.mc.mlSvg.selectAll(".extent").attr("x", _super.brush.x).attr(
               "width", _super.brush.width);
           mc.mlSvg.selectAll(".extent").style({
-            fill : "red",
+            fill : "yellow",
             visibility : "visible"
           })
           mc.mlSvg.selectAll(".resize rect").style({
-            fill : "red",
+            fill : "yellow",
             visibility : "visible"
           })
         }
@@ -1713,8 +1711,7 @@ UptimeChart.prototype.histogramChart = function(id, data, cb) {
       return;
     }
 
-    // _super.hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top /
-    // 2))
+    // _super.hgsvg.append("text").attr("x", 60).attr("y", 0 - (hgDim.top / 2))
     // .attr("text-anchor", "middle").style("text-decoration", "underline")
     // .text("Average Response Time");
     var y = d3.scale.linear().range([ height, 0 ]).domain([ 0, _super.sc.max ]);
@@ -2399,7 +2396,9 @@ UptimeChart.prototype.selectView = function(tabId, json) {
     _super.getExtent(json.data.avgActive[0].datapoints);
   }
   _super.closeDebug();
-  if (json.meta.test_class == 'Http_get' || json.meta.test_class == 'Http_post') {
+  json.meta.test_class = json.meta.test_class.toLowerCase();
+
+  if (json.meta.test_class == 'http_get' || json.meta.test_class == 'http_post') {
     $('#response').show();
     _super.config.lineChart.main.yAxis.left = 'tot_ms';
     _super.lineChart("#lineChart", json, function(data) {
@@ -2482,6 +2481,7 @@ UptimeChart.prototype.selectView = function(tabId, json) {
 
 UptimeChart.prototype.createChart = function(ghcid) {
   var _super = this;
+
   if (ghcid) {
     _super.ghcid = ghcid;
     _super.ajaxMessage('clear', null);
@@ -2534,7 +2534,7 @@ UptimeChart.prototype.createChart = function(ghcid) {
         $("#csv_export")[0].target = req_url;
         console.log(json.meta.req_url);
         console.log(rawJsonData);
-        if (json.data.metric.length == 0) {
+        if (json.data.metric.length == 0 || json.data.active.length == 0) {
           _super.showChart(false);
           $('.tot_ms_view').css({
             'height' : '100px'
@@ -2561,8 +2561,8 @@ UptimeChart.prototype.createChart = function(ghcid) {
       }).error(
       function(XMLHttpRequest, textStatus, errorThrown) {
         try {
-          var tmp = $P.json_decode(XMLHttpRequest.responseText);
-          var msg = (tmp && $P.property_exists(tmp, 'message')) ? tmp.message
+          var tmp = JSON.parse(XMLHttpRequest.responseText);
+          var msg = (tmp && tmp.hasOwnProperty('message')) ? tmp.message
               : XMLHttpRequest.responseText;
           _super.ajaxMessage('error', 'Unable to load data: ' + msg);
           _super.showChart(false);
@@ -2757,7 +2757,7 @@ var uptimeConfig = {
       "yAxis" : {
         "right" : "state"
       },
-      "type" : "basic",
+      "type" : "basis",
       "range" : 30
     },
     "mini" : {
@@ -2905,6 +2905,8 @@ var uptimeConfig = {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
+// var uc = new UptimeChart(uptimeConfig);
+// uc.createChart(1);
 
 var url = location.href;
 var hcid;
