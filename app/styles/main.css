@@ -82,7 +82,7 @@ body {
 }
 
 .line {
-	stroke: black;
+	stroke: steelblue;
 	fill: none;
 	stroke-width: 0.75px;
 }
@@ -568,4 +568,17 @@ path:hover {
 	fill: url(#sparkline-gradient);
 	opacity: .9;
 	stroke-width: 0.5px;
+}
+
+/* stepline */
+.stepline.line {
+	stroke: #CC0000;
+	fill-opacity: .1;
+	stroke-width: 0.1;
+}
+
+.stepline.area {
+	stroke: #CC0000;
+	fill-opacity: .2;
+	fill: #CC0000;
 }

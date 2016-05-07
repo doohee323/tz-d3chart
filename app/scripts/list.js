@@ -27,7 +27,7 @@ var UptimeSparkline = function() {
     }
     $('#' + element_id).html('');
 
-    var key = 'judge';
+    var key = 'time_ms';
     data.forEach(function(d) {
       d.date = new Date(d.date);
       if (isNaN(d[key])) {
@@ -54,7 +54,7 @@ var UptimeSparkline = function() {
         "translate(" + margin.left + "," + margin.top + ")");
 
     var x = d3.time.scale().range([ 0, width ]);
-    var y = d3.scale.linear().range([ 10, 0 ]);
+    var y = d3.scale.linear().range([ height, 0 ]);
     var xAxis = d3.svg.axis().scale(x).orient("bottom");
     var yAxis = d3.svg.axis().scale(y).orient("left");
 
@@ -65,9 +65,9 @@ var UptimeSparkline = function() {
     });
 
     x.domain([ data[0].date, data[data.length - 1].date ]);
-    y.domain(d3.extent(data, function(d) {
+    y.domain([ 0, d3.max(data, function(d) {
       return d[key];
-    }));
+    }) ]);
 
     var max = 0, min = 0, mean = 0;
     max = d3.max(data, function(d) {
@@ -79,45 +79,51 @@ var UptimeSparkline = function() {
     mean = d3.mean(data, function(d) {
       return d[key];
     });
-
-    var lvl1 = mean - 50;
-    var lvl2 = mean + 50;
+    var lvl1 = mean - 1;
+    var lvl2 = mean + 1;
     console.log(height + '/' + max + '/' + min + '/' + mean + '/' + lvl1 + '/'
         + lvl2);
 
-    var area = d3.svg.area().interpolate("basic").x(function(d) {
-      return x(d.date);
-    }).y0(100).y1(function(d) {
-      return y(d[key]);
-    });
-
-    // svg.append("linearGradient").attr("id", "sparkline-gradient").attr(
-    // "gradientUnits", "userSpaceOnUse").attr("x1", 0).attr("y1", y(lvl1))
-    // .attr("x2", 0).attr("y2", y(lvl2)).selectAll("stop").data([ {
-    // offset : "0%",
-    // color : "steelblue"
-    // }, {
-    // offset : "40%",
-    // color : "yellow"
-    // }, {
-    // offset : "100%",
-    // color : "orange"
-    // } ]).enter().append("stop").attr("offset", function(d) {
-    // if (d.offset == "90%") {
-    // // debugger;
-    // }
-    // return d.offset;
-    // }).attr("stop-color", function(d) {
-    // if (d.offset == "90%") {
-    // // debugger;
-    // }
-    // return d.color;
-    // });
+    // gradient chart
+    svg.append("linearGradient").attr("id", "sparkline-gradient").attr(
+        "gradientUnits", "userSpaceOnUse").attr("x1", 0).attr("y1", y(lvl1))
+        .attr("x2", 0).attr("y2", y(lvl2)).selectAll("stop").data([ {
+          offset : "0%",
+          color : "steelblue"
+        }, {
+          offset : "50%",
+          color : "yellow"
+        }, {
+          offset : "100%",
+          color : "red"
+        } ]).enter().append("stop").attr("offset", function(d) {
+          return d.offset;
+        }).attr("stop-color", function(d) {
+          return d.color;
+        });
 
     svg.append("g").attr("class", "x axis").attr("transform",
         "translate(0," + height + ")").call(xAxis);
 
     svg.append("path").datum(data).attr("class", "area").attr("d", area);
+
+    // line chart
+    var valueline = d3.svg.line().x(function(d) {
+      return x(d.date);
+    }).y(function(d) {
+      return y(d[key]);
+    });
+    svg.append("path").attr("class", "line").attr("d", valueline(data));
+
+    // step chart
+    var stepline = d3.svg.line().interpolate('step').x(function(d) {
+      return x(d.date);
+    }).y(function(d) {
+      return y(d.judge);
+    });
+
+    svg.append("path").attr("class", "stepline area").attr("d", stepline(data));
+
   }
 
 }
