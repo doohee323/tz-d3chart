@@ -175,8 +175,8 @@ var uptimeConfig = {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-var uc = new UptimeChart(uptimeConfig);
-uc.createChart(1);
-
+//var uc = new UptimeChart(uptimeConfig);
+//uc.createChart(1);
+//
 // $(document).tooltip();
 

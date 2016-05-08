@@ -2908,10 +2908,4 @@ var uptimeConfig = {
 // var uc = new UptimeChart(uptimeConfig);
 // uc.createChart(1);
 
-var url = location.href;
-var hcid;
-if (url.indexOf('#') > -1) {
-  hcid = url.substring(url.indexOf('#') + 1, url.length);
-}
-var uc = new UptimeChart(uptimeConfig);
-uc.createChart(hcid);
+

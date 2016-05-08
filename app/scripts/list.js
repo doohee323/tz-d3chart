@@ -1,4 +1,5 @@
 var UptimeSparkline = function() {
+  var _super = this;
   this.createChart = function(hc_id, element_id) {
     if (hc_id) {
       $.ajax({
@@ -8,18 +9,18 @@ var UptimeSparkline = function() {
         'element_id' : element_id,
         'hc_id' : hc_id
       }).done(function(json) {
-        createSparkline(this.element_id, json);
+        _super.createSparkline(this.element_id, json);
       }).fail(function(msg) {
         var from = '/assets/' + this.hc_id + '.json';
         var element_id = this.element_id;
         d3.json(from, function(error, json) {
-          createSparkline(element_id, json);
+          _super.createSparkline(element_id, json);
         });
       })
     }
   }
 
-  function createSparkline(element_id, data) {
+  this.createSparkline = function(element_id, data) {
     if (!data || !data.length) {
       $('#' + element_id).html(
           '<span class="text-danger">No data available</span>');
@@ -28,12 +29,12 @@ var UptimeSparkline = function() {
     $('#' + element_id).html('');
 
     var key = 'tot_ms';
-    if(data[0].tot_ms) {
+    if (data[0].tot_ms) {
       key = 'tot_ms';
     } else {
       key = 'time_ms';
     }
-    
+
     data.forEach(function(d) {
       d.date = new Date(d.date);
       if (isNaN(d[key])) {
@@ -130,7 +131,5 @@ var UptimeSparkline = function() {
     });
 
     svg.append("path").attr("class", "stepline area").attr("d", stepline(data));
-
   }
-
 }

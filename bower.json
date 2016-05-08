@@ -10,7 +10,8 @@
     "bootstrap-datepicker": "^1.6.0",
     "jquery-timepicker": "*",
     "moment": "^2.11.2",
-    "pikaday": "^1.4.0"
+    "pikaday": "^1.4.0",
+    "d3": "^3.5.17"
   },
   "overrides": {
     "bootstrap": {

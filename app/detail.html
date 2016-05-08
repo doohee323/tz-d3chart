@@ -162,6 +162,7 @@
 	<script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
 	<script src="/bower_components/moment/moment.js"></script>
 	<script src="/bower_components/pikaday/pikaday.js"></script>
+	<script src="/bower_components/d3/d3.js"></script>
 	<!-- endbower -->
 	<!-- endbuild -->
 
@@ -180,7 +181,6 @@
 	<script src="/bower_components/bootstrap/js/tab.js"></script>
 	<!-- endbuild -->
 
-	<script type="text/javascript" src="scripts/d3.v3.min.js"></script>
 	<!-- 	<script src="http://maps.googleapis.com/maps/api/js"></script> -->
 	<!-- 	<script type="text/javascript" -->
 	<!-- 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9oB28RSLjXkirKBIvzVBWoLmGNK0pJq0"> -->
@@ -193,6 +193,19 @@
 	<script src="scripts/main.js"></script>
 	<script src="scripts/detail.js"></script>
 	<!-- endbuild -->
+
+	<script>
+	var uc;
+    $(document).ready(function(){
+		var url = location.href;
+		var hcid;
+		if (url.indexOf('#') > -1) {
+		  hcid = url.substring(url.indexOf('#') + 1, url.length);
+		}
+		uc = new UptimeChart(uptimeConfig);
+		uc.createChart(hcid);
+    });
+    </script>
 
 	<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
 	<script>

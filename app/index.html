@@ -10,8 +10,6 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
-<link rel="stylesheet" href="styles/jquery-ui.css">
-
 <!-- build:css(.) styles/vendor.css -->
 <!-- bower:css -->
 <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
@@ -21,7 +19,9 @@
 <!-- endbower -->
 <!-- endbuild -->
 <!-- build:css(.tmp) styles/main.css -->
+<link rel="stylesheet" href="styles/jquery-ui.css">
 <link rel="stylesheet" href="styles/main.css">
+<link rel="stylesheet" href="styles/d3.slider.css">
 <!-- endbuild -->
 </head>
 <body>
@@ -140,6 +140,7 @@
 	<script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
 	<script src="/bower_components/moment/moment.js"></script>
 	<script src="/bower_components/pikaday/pikaday.js"></script>
+	<script src="/bower_components/d3/d3.js"></script>
 	<!-- endbower -->
 	<!-- endbuild -->
 
@@ -159,7 +160,6 @@
 	<script src="/bower_components/bootstrap/js/tab.js"></script>
 	<!-- endbuild -->
 
-	<script type="text/javascript" src="scripts/d3.v3.min.js"></script>
 	<!-- 	<script src="http://maps.googleapis.com/maps/api/js"></script> -->
 	<!-- 	<script type="text/javascript" -->
 	<!-- 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9oB28RSLjXkirKBIvzVBWoLmGNK0pJq0"> -->
@@ -168,8 +168,23 @@
 		src="http://maps.google.com/maps/api/js?sensor=true"></script>
 
 	<!-- build:js scripts/main.js -->
+	<script src="scripts/d3.slider.js"></script>
+	<script src="scripts/main.js"></script>
 	<script src="scripts/list.js"></script>
 	<!-- endbuild -->
+
+	<script>
+    $(document).ready(function(){
+		var health_tables = ['table_other','table_down','table_up','table_disabled',];
+      	var us = new UptimeSparkline();
+    	health_tables.forEach(function(table_id,index,arr) {
+    		$('#' + table_id + ' tr').each(function( index ) {
+    			var hc_id = $( this ).attr('data-hc_id');
+    		  us.createChart(hc_id, 'spark_' + hc_id);
+    		});
+    	});
+    });      
+    </script>
 
 	<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
 	<script>
@@ -186,19 +201,6 @@
     }(window, document, 'script', 'ga'));
     ga('create', 'UA-XXXXX-X');
     ga('send', 'pageview');
-    
-    var health_tables = ['table_other','table_down','table_up','table_disabled',];
-
-    $(document).ready(function(){
-      var us = new UptimeSparkline();
-    	health_tables.forEach(function(table_id,index,arr) {
-    		$('#' + table_id + ' tr').each(function( index ) {
-    			var hc_id = $( this ).attr('data-hc_id');
-    		  us.createChart(hc_id, 'spark_' + hc_id);
-    		});
-    	});
-
-    });      
     </script>
 </body>
 </html>
