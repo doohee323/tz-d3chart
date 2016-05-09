@@ -97,13 +97,13 @@ var UptimeSparkline = function() {
         "gradientUnits", "userSpaceOnUse").attr("x1", 0).attr("y1", y(lvl1))
         .attr("x2", 0).attr("y2", y(lvl2)).selectAll("stop").data([ {
           offset : "0%",
-          color : "steelblue"
+          color : "#EBF5FB"  
         }, {
           offset : "50%",
-          color : "yellow"
+          color : "#D6EAF8"
         }, {
           offset : "100%",
-          color : "red"
+          color : "#AED6F1"
         } ]).enter().append("stop").attr("offset", function(d) {
           return d.offset;
         }).attr("stop-color", function(d) {
