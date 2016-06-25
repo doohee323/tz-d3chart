@@ -52,11 +52,12 @@ if [ $ENV == "vagrant" ]; then
 	cp /vagrant/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
 	sudo chown -R vagrant:vagrant $HOME
 else
-	echo cp $HOME/tz-d3chart/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
-	sudo cp $HOME/tz-d3chart/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
+	echo cp $HOME/tz-d3chart/etc/nginx/$PROJ_NAME2.conf /etc/nginx/sites-enabled
+	sudo cp $HOME/tz-d3chart/etc/nginx/$PROJ_NAME2.conf /etc/nginx/sites-enabled
+	sudo chown -Rf topzone:staff /var/log/nginx/
 fi
 
-echo nginx -s stop && nginx
-sudo nginx -s stop && nginx 
+echo nginx -s stop && sudo nginx
+sudo nginx -s stop && sudo nginx 
 
 exit 0
