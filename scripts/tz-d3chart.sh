@@ -15,7 +15,7 @@ if [ $ENV == "vagrant" ]; then
 	HOME=/home/vagrant
 fi
 
-PROJ_NAME=tz-d3chart
+export PROJ_NAME=tz-d3chart
 
 sudo apt-get update
 sudo apt-get install nginx -y
@@ -40,7 +40,7 @@ grunt build
 
 ### [deploy app] ###############################################################
 mkdir -p $HOME/$PROJ_NAME/dist/assets
-cp $HOME/$PROJ_NAME/app/assets $HOME/$PROJ_NAME/dist/assets
+cp $HOME/$PROJ_NAME/app/assets/* $HOME/$PROJ_NAME/dist/assets
 if [ $ENV == "vagrant" ]; then
 	rm -Rf /vagrant/dist
 	cp -Rf $HOME/$PROJ_NAME/dist /vagrant/dist
@@ -52,8 +52,8 @@ if [ $ENV == "vagrant" ]; then
 	cp /vagrant/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
 	sudo chown -R vagrant:vagrant $HOME
 else
-	echo cp $HOME/tz-d3chart/etc/nginx/$PROJ_NAME2.conf /etc/nginx/sites-enabled
-	sudo cp $HOME/tz-d3chart/etc/nginx/$PROJ_NAME2.conf /etc/nginx/sites-enabled
+	echo cp $HOME/tz-d3chart/etc/nginx/${PROJ_NAME}2.conf /etc/nginx/sites-enabled
+	sudo cp $HOME/tz-d3chart/etc/nginx/${PROJ_NAME}2.conf /etc/nginx/sites-enabled
 	sudo chown -Rf topzone:staff /var/log/nginx/
 fi
 
