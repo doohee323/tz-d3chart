@@ -8,7 +8,7 @@ export ENV=vagrant
 if [ ! -d "/home/vagrant" ]; then
   ENV=prod
 fi
-ecno "======= ENV:"$ENV
+echo "======= ENV:"$ENV
 
 if [ $ENV == "vagrant" ]; then
 	su - vagrant
