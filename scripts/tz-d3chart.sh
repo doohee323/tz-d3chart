@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 
-su - vagrant
-
 export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+export ENV=vagrant
+if [ ! -d "/home/vagrant" ]; then
+  ENV=prod
+fi
+ecno "======= ENV:"$ENV
+
+if [ $ENV == "vagrant" ]; then
+	su - vagrant
+	HOME=/home/vagrant
+fi
+
 PROJ_NAME=tz-d3chart
-HOME=/home/vagrant
 
 sudo apt-get update
 sudo apt-get install nginx -y
@@ -31,18 +39,24 @@ sudo npm install -g grunt-cli
 grunt build
 
 ### [deploy app] ###############################################################
-mkdir -p $HOME/$PROJ_NAME/dist/assets
-cp $HOME/$PROJ_NAME/app/assets $HOME/$PROJ_NAME/dist/assets
-rm -Rf /vagrant/dist
-cp -Rf $HOME/$PROJ_NAME/dist /vagrant/dist
+if [ $ENV == "vagrant" ]; then
+	mkdir -p $HOME/$PROJ_NAME/dist/assets
+	cp $HOME/$PROJ_NAME/app/assets $HOME/$PROJ_NAME/dist/assets
+	rm -Rf /vagrant/dist
+	cp -Rf $HOME/$PROJ_NAME/dist /vagrant/dist
+fi
 
 ### [nginx] ###############################################################
-echo cp /vagrant/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
-cp /vagrant/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
+if [ $ENV == "vagrant" ]; then
+	echo cp /vagrant/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
+	cp /vagrant/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
+	sudo chown -R vagrant:vagrant $HOME
+else
+	echo cp $HOME/tz-d3chart/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
+	sudo cp $HOME/tz-d3chart/etc/nginx/$PROJ_NAME.conf /etc/nginx/sites-enabled
+fi
 
 echo nginx -s stop && nginx
 sudo nginx -s stop && nginx 
-
-sudo chown -R vagrant:vagrant $HOME
 
 exit 0
