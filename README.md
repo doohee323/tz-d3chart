@@ -31,7 +31,16 @@ http://prototype-chart-d3.s3-website-us-west-1.amazonaws.com
 	
 ```
 
-# Etc
+# Build and Deploy on vagrant
+```
+	# add /etc/hosts
+	192.168.82.162	local1.test.com
+
+	bash make.sh
+	http://local1.test.com
+```
+
+# etc
 ```
 	cf. transparent gif image.
 	http://www.lcdf.org/gifsicle/gifsicle-1.88.tar.gz
