@@ -40,6 +40,20 @@ http://prototype-chart-d3.s3-website-us-west-1.amazonaws.com
 	http://local1.test.com
 ```
 
+# Build on server
+```
+	cd ~/tz-d3chart/scripts
+	bash tz-d3chart.sh
+	
+	# change in /etc/nginx/sites-enabled/tz-d3chart.conf
+	
+	ex) 
+	server_name topzone.biz;
+	root /home/topzone/tz-d3chart/dist;
+
+	http://topzone.biz
+```
+
 # etc
 ```
 	cf. transparent gif image.

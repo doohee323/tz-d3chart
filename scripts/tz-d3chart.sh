@@ -39,9 +39,9 @@ sudo npm install -g grunt-cli
 grunt build
 
 ### [deploy app] ###############################################################
+mkdir -p $HOME/$PROJ_NAME/dist/assets
+cp $HOME/$PROJ_NAME/app/assets $HOME/$PROJ_NAME/dist/assets
 if [ $ENV == "vagrant" ]; then
-	mkdir -p $HOME/$PROJ_NAME/dist/assets
-	cp $HOME/$PROJ_NAME/app/assets $HOME/$PROJ_NAME/dist/assets
 	rm -Rf /vagrant/dist
 	cp -Rf $HOME/$PROJ_NAME/dist /vagrant/dist
 fi
