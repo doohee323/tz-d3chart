@@ -32,7 +32,7 @@ grunt build
 
 ### [deploy app] ###############################################################
 mkdir -p $HOME/$PROJ_NAME/dist/assets
-cp $HOME/$PROJ_NAME/app/assets/*.json $HOME/$PROJ_NAME/dist/assets
+cp $HOME/$PROJ_NAME/app/assets $HOME/$PROJ_NAME/dist/assets
 rm -Rf /vagrant/dist
 cp -Rf $HOME/$PROJ_NAME/dist /vagrant/dist
 
